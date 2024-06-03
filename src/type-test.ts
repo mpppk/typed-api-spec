@@ -26,12 +26,14 @@ export type ExpectExtends<VALUE, EXPECTED> = EXPECTED extends VALUE
   ? true
   : false;
 export type ExpectValidArgs<
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   FUNC extends (...args: any[]) => any,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ARGS extends any[],
 > = ARGS extends Parameters<FUNC> ? true : false;
 
-export type UnionToIntersection<U> = (
-  U extends any ? (k: U) => void : never
-) extends (k: infer I) => void
-  ? I
-  : never;
+export type UnionToIntersection<U> =
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (U extends any ? (k: U) => void : never) extends (k: infer I) => void
+    ? I
+    : never;
