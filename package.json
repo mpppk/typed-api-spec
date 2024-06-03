@@ -42,6 +42,11 @@
       "require": "./dist/index.js",
       "import": "./dist/index.mjs",
       "types": "./dist/index.d.ts"
+    },
+    "./express": {
+      "require": "./dist/express.js",
+      "import": "./dist/express.mjs",
+      "types": "./dist/express.d.ts"
     }
   },
   "main": "./dist/index.js",
