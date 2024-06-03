@@ -18,6 +18,21 @@ export type ApiQuerySchema<
     : NonNullable<E[Path][M]>["query"] extends undefined
       ? never
       : NonNullable<NonNullable<E[Path][M]>["query"]>;
+export type ApiBodySchema<
+  E extends ApiEndpoints,
+  Path extends keyof E & string,
+  M extends Method,
+> = E[Path] extends undefined
+  ? undefined
+  : E[Path][M] extends undefined
+    ? undefined
+    : NonNullable<E[Path][M]>["body"] extends undefined
+      ? undefined
+      : NonNullable<NonNullable<E[Path][M]>["body"]>;
+
+export type InferOrUndefined<T> = T extends z.ZodTypeAny
+  ? z.infer<T>
+  : undefined;
 
 type ZodTypeWithKey<Key extends string> = z.ZodType<
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
