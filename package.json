@@ -1,0 +1,53 @@
+{
+  "name": "@mpppk/typed-api-spec",
+  "version": "0.0.1",
+  "scripts": {
+    "build": "tsup ./src",
+    "watch:build": "tsup ./src --watch",
+    "format": "prettier --write .",
+    "watch:type-check": "npx tsc --noEmit --watch",
+    "test": "run-p test:*",
+    "test:unit": "vitest",
+    "test:lint": "eslint .",
+    "test:format": "prettier --check .",
+    "test:type-check": "tsc --noEmit",
+    "example:express": "tsx examples/express.ts",
+    "example:fetch": "tsx examples/fetch.ts"
+  },
+  "author": "mpppk",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/debug": "^4.1.8",
+    "@typescript-eslint/eslint-plugin": "^7.0.0",
+    "@typescript-eslint/parser": "^7.0.0",
+    "@vitest/coverage-v8": "^1.0.0",
+    "dotenv-cli": "^7.2.1",
+    "eslint": "^.36.0",
+    "eslint-config-prettier": "^9.0.0",
+    "npm-run-all2": "^6.0.0",
+    "prettier": "^3.0.0",
+    "tsup": "^8.0.0",
+    "tsx": "^4.0.0",
+    "typescript": "^5.4.5",
+    "vitest": "^1.0.0",
+    "zod": "^3.21.4"
+  },
+  "files": [
+    "dist",
+    "package.json"
+  ],
+  "exports": {
+    ".": {
+      "require": "./dist/index.js",
+      "import": "./dist/index.mjs",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "dependencies": {
+    "@types/express": "^4.17.21",
+    "debug": "^4.3.4"
+  }
+}
