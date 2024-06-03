@@ -1,5 +1,5 @@
 import express from "express";
-import { typed } from "../src/express";
+import { asAsync, typed } from "../src";
 import { pathMap } from "./spec";
 
 const newApp = () => {
@@ -12,7 +12,7 @@ const newApp = () => {
   // // wApp is same as app, but with additional type information
   // const wApp = app as TRouter<typeof pathMap>;
   // ```
-  const wApp = typed(pathMap, app);
+  const wApp = asAsync(typed(pathMap, app));
   wApp.get("/users", (req, res) => {
     {
       // @ts-expect-error params is not defined because pathMap["/users"]["get"].params is not defined

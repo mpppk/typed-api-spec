@@ -1,4 +1,4 @@
-import { IRouter, Router } from "express";
+import { IRouter, RequestHandler, Router } from "express";
 import { ApiEndpoints, ApiResponses, ApiResSchema, ApiSpec, Method } from "./";
 import { Validator, Validators } from "./validator";
 import {
@@ -101,4 +101,32 @@ export const newValidator = <E extends ApiEndpoints>(endpoints: E) => {
           : undefined,
     };
   };
+};
+
+type AsyncRequestHandler<Handler extends RequestHandler> = (
+  req: Parameters<NoInfer<Handler>>[0],
+  res: Parameters<NoInfer<Handler>>[1],
+  next: Parameters<NoInfer<Handler>>[2],
+) => Promise<unknown>;
+
+export const wrap = <Handler extends RequestHandler>(
+  handler: AsyncRequestHandler<Handler>,
+): Handler => {
+  return ((req, res, next) => {
+    handler(req, res, next).catch(next);
+  }) as Handler;
+};
+
+const wrapHandlers = (handlers: never[]) =>
+  handlers.map((h) => wrap(h) as never);
+export const asAsync = <T extends ApiEndpoints>(
+  router: TRouter<T>,
+): TRouter<T> => {
+  return Method.reduce((acc, method) => {
+    return {
+      ...acc,
+      [method]: (path: string, ...handlers: never[]) =>
+        router[method](path, ...wrapHandlers(handlers)),
+    };
+  }, {} as TRouter<T>);
 };
