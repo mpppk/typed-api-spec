@@ -11,14 +11,17 @@ import { StatusCode } from "./hono-types";
 import { z } from "zod";
 import { ParseUrlParams } from "./url";
 
+interface ParsedQs {
+  [key: string]: undefined | string | string[] | ParsedQs | ParsedQs[];
+}
 type Handler<
   Spec extends ApiSpec | undefined,
   SC extends keyof NonNullable<ApiSpec>["res"] & StatusCode = 200,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   Locals extends Record<string, any> = Record<string, never>,
 > = (
-  // FIXME: strict type
-  req: Request<ParamsDictionary, unknown, unknown, unknown, Locals>,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  req: Request<ParamsDictionary, any, any, ParsedQs, Locals>,
   res: ExpressResponse<NonNullable<Spec>["res"], SC, Locals>,
   next: NextFunction,
 ) => void;
