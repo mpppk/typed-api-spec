@@ -6,3 +6,9 @@ export type JSON$stringifyT = <T>(
   replacer?: undefined,
   space?: number | string | undefined,
 ) => TypedString<T>;
+
+type JSONT = JSON & {
+  stringify: JSON$stringifyT;
+};
+
+export default JSONT;

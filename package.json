@@ -43,10 +43,30 @@
       "import": "./dist/index.mjs",
       "types": "./dist/index.d.ts"
     },
+    "./common": {
+      "require": "./dist/common/index.js",
+      "import": "./dist/common/index.mjs",
+      "types": "./dist/common/index.d.ts"
+    },
     "./express": {
-      "require": "./dist/express.js",
-      "import": "./dist/express.mjs",
-      "types": "./dist/express.d.ts"
+      "require": "./dist/express/index.js",
+      "import": "./dist/express/index.mjs",
+      "types": "./dist/express/index.d.ts"
+    },
+    "./fetch": {
+      "require": "./dist/fetch/index.js",
+      "import": "./dist/fetch/index.mjs",
+      "types": "./dist/fetch/index.d.ts"
+    },
+    "./json": {
+      "require": "./dist/json/index.js",
+      "import": "./dist/json/index.mjs",
+      "types": "./dist/json/index.d.ts"
+    },
+    "./zod": {
+      "require": "./dist/zod/index.js",
+      "import": "./dist/zod/index.mjs",
+      "types": "./dist/zod/index.d.ts"
     }
   },
   "main": "./dist/index.js",

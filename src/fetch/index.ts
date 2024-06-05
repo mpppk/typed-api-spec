@@ -1,22 +1,19 @@
 import {
   ApiBodySchema,
   ApiEndpoints,
-  ApiResponses,
-  ApiResSchema,
   InferOrUndefined,
+  MergeApiResponses,
   Method,
-} from "./spec";
-import { StatusCode, ClientResponse } from "./hono-types";
-import { z } from "zod";
+} from "../common";
 import {
   MatchedPatterns,
   OriginPattern,
   ParseURL,
   ToUrlParamPattern,
-} from "./url";
-import { TypedString } from "./json";
+} from "../common";
+import { TypedString } from "../json";
 
-interface TRequestInit<
+export interface RequestInitT<
   M extends Method,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   Body extends Record<string, any> | undefined,
@@ -25,17 +22,7 @@ interface TRequestInit<
   body?: TypedString<Body>;
 }
 
-type ApiClientResponses<AResponses extends ApiResponses> = {
-  [SC in keyof AResponses & StatusCode]: ClientResponse<
-    z.infer<ApiResSchema<AResponses, SC>>,
-    SC,
-    "json"
-  >;
-};
-export type MergeApiResponses<AR extends ApiResponses> =
-  ApiClientResponses<AR>[keyof ApiClientResponses<AR>];
-
-export type TFetch<Origin extends OriginPattern, E extends ApiEndpoints> = <
+type FetchT<Origin extends OriginPattern, E extends ApiEndpoints> = <
   Input extends
     | `${Origin}${ToUrlParamPattern<keyof E & string>}`
     | `${Origin}${ToUrlParamPattern<keyof E & string>}?${string}`,
@@ -44,6 +31,8 @@ export type TFetch<Origin extends OriginPattern, E extends ApiEndpoints> = <
   M extends Method = "get",
 >(
   input: Input,
-  init?: TRequestInit<M, InferOrUndefined<ApiBodySchema<E, CandidatePaths, M>>>,
+  init?: RequestInitT<M, InferOrUndefined<ApiBodySchema<E, CandidatePaths, M>>>,
   // FIXME: NonNullable
 ) => Promise<MergeApiResponses<NonNullable<E[CandidatePaths][M]>["res"]>>;
+
+export default FetchT;

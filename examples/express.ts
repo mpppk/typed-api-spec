@@ -1,5 +1,5 @@
 import express from "express";
-import { asAsync, typed } from "../src";
+import { asAsync, typed } from "../src/express";
 import { pathMap } from "./spec";
 
 const newApp = () => {
@@ -9,7 +9,7 @@ const newApp = () => {
   // ```
   // // validatorMiddleware allows to use res.locals.validate method
   // app.use(validatorMiddleware(pathMap));
-  // // wApp is same as app, but with additional type information
+  // // wApp is same as app, but with additional common information
   // const wApp = app as TRouter<typeof pathMap>;
   // ```
   const wApp = asAsync(typed(pathMap, app));
