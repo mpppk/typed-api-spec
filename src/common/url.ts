@@ -1,5 +1,5 @@
 import { ParseQueryString } from "./query-string";
-import { ApiEndpoints } from "./spec";
+import { ZodApiEndpoints } from "../zod";
 
 export type ParseUrlParams<T> = T extends `${string}:${infer R}`
   ? R extends `${infer P}/${infer L}`
@@ -43,7 +43,10 @@ export type ToUrlPattern<T> = T extends `${infer O}?${infer R}`
   ? `${ToUrlParamPattern<O>}?${ToUrlPattern<R>}`
   : ToUrlParamPattern<T>;
 
-export type MatchedPatterns<E extends ApiEndpoints, T extends string> = keyof {
+export type MatchedPatterns<
+  E extends ZodApiEndpoints,
+  T extends string,
+> = keyof {
   [K in keyof E as T extends ToUrlPattern<K> ? K : never]: true;
 };
 

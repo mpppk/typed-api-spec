@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { ApiEndpoints } from "../src";
+import { ZodApiEndpoints } from "../src";
 
 export const pathMap = {
   "/users": {
@@ -31,5 +31,5 @@ export const pathMap = {
       },
     },
   },
-} satisfies ApiEndpoints;
+} satisfies ZodApiEndpoints;
 export type PathMap = typeof pathMap;

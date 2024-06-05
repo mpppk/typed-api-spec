@@ -1,10 +1,4 @@
-import {
-  ApiBodySchema,
-  ApiEndpoints,
-  InferOrUndefined,
-  MergeApiResponses,
-  Method,
-} from "../common";
+import { MergeApiResponses, Method } from "../common";
 import {
   MatchedPatterns,
   OriginPattern,
@@ -12,6 +6,7 @@ import {
   ToUrlParamPattern,
 } from "../common";
 import { TypedString } from "../json";
+import { InferOrUndefined, ZodApiBodySchema, ZodApiEndpoints } from "../zod";
 
 export interface RequestInitT<
   M extends Method,
@@ -22,7 +17,7 @@ export interface RequestInitT<
   body?: TypedString<Body>;
 }
 
-type FetchT<Origin extends OriginPattern, E extends ApiEndpoints> = <
+type FetchT<Origin extends OriginPattern, E extends ZodApiEndpoints> = <
   Input extends
     | `${Origin}${ToUrlParamPattern<keyof E & string>}`
     | `${Origin}${ToUrlParamPattern<keyof E & string>}?${string}`,
@@ -31,7 +26,10 @@ type FetchT<Origin extends OriginPattern, E extends ApiEndpoints> = <
   M extends Method = "get",
 >(
   input: Input,
-  init?: RequestInitT<M, InferOrUndefined<ApiBodySchema<E, CandidatePaths, M>>>,
+  init?: RequestInitT<
+    M,
+    InferOrUndefined<ZodApiBodySchema<E, CandidatePaths, M>>
+  >,
   // FIXME: NonNullable
 ) => Promise<MergeApiResponses<NonNullable<E[CandidatePaths][M]>["res"]>>;
 
