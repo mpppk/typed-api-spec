@@ -58,20 +58,17 @@ export type ZodApiResSchema<
 export type ToApiEndpoints<E extends ZodApiEndpoints> = {
   [Path in keyof E & string]: ToApiEndpoint<E, Path>;
 };
-type ToApiEndpoint<
-  E extends ZodApiEndpoints,
-  Path extends keyof E,
-> = FilterNever<{
+export type ToApiEndpoint<E extends ZodApiEndpoints, Path extends keyof E> = {
   [M in keyof E[Path] & Method]: E[Path][M] extends undefined
-    ? never
+    ? undefined
     : ToApiSpec<NonNullable<E[Path][M]>>;
-}>;
-type ToApiSpec<ZAS extends ZodApiSpec> = {
+};
+export type ToApiSpec<ZAS extends ZodApiSpec> = {
   query: InferOrUndefined<ZAS["query"]>;
   params: InferOrUndefined<ZAS["params"]>;
   body: InferOrUndefined<ZAS["body"]>;
   res: ToApiResponses<ZAS["res"]>;
 };
-type ToApiResponses<AR extends ZodApiResponses> = {
+export type ToApiResponses<AR extends ZodApiResponses> = {
   [SC in keyof AR & StatusCode]: z.infer<ZodApiResSchema<AR, SC>>;
 };

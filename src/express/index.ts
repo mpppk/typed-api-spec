@@ -3,9 +3,10 @@ import {
   ZodApiEndpoints,
   ZodApiSpec,
   Method,
-  ApiSpec,
   ApiResponses,
-  ApiResSchema,
+  ApiRes,
+  ToApiEndpoints,
+  ApiSpec,
 } from "../index";
 import { ZodValidator, ZodValidators } from "../zod";
 import {
@@ -21,7 +22,7 @@ export interface ParsedQs {
   [key: string]: undefined | string | string[] | ParsedQs | ParsedQs[];
 }
 export type Handler<
-  Spec extends ZodApiSpec | undefined,
+  Spec extends ApiSpec | undefined,
   SC extends keyof NonNullable<ApiSpec>["res"] & StatusCode = 200,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   Locals extends Record<string, any> = Record<string, never>,
@@ -37,10 +38,10 @@ export type ExpressResponse<
   SC extends keyof Responses & StatusCode,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   LocalsObj extends Record<string, any> = Record<string, any>,
-> = Omit<Response<ApiResSchema<Responses, SC>, LocalsObj, SC>, "status"> & {
+> = Omit<Response<ApiRes<Responses, SC>, LocalsObj, SC>, "status"> & {
   status: <SC extends keyof Responses & StatusCode>(
     s: SC,
-  ) => Response<ApiResSchema<Responses, SC>, LocalsObj, SC>;
+  ) => Response<ApiRes<Responses, SC>, LocalsObj, SC>;
 };
 
 export type ValidateLocals<
@@ -53,21 +54,20 @@ export type ValidateLocals<
       ) => ZodValidators<AS, QueryKeys>;
     }
   : Record<string, never>;
-
 export type RouterT<
-  Endpoints extends ZodApiEndpoints,
+  ZodE extends ZodApiEndpoints,
   SC extends StatusCode = StatusCode,
 > = Omit<IRouter, Method> & {
-  [M in Method]: <Path extends string & keyof Endpoints>(
+  [M in Method]: <Path extends string & keyof ZodE>(
     path: Path,
     ...handlers: Array<
       Handler<
-        Endpoints[Path][M],
+        ToApiEndpoints<ZodE>[Path][M],
         SC,
-        ValidateLocals<Endpoints[Path][M], ParseUrlParams<Path>>
+        ValidateLocals<ZodE[Path][M], ParseUrlParams<Path>>
       >
     >
-  ) => RouterT<Endpoints, SC>;
+  ) => RouterT<ZodE, SC>;
 };
 
 const validatorMiddleware = (pathMap: ZodApiEndpoints) => {

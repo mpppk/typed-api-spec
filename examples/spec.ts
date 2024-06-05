@@ -32,5 +32,4 @@ export const pathMap = {
     },
   },
 } satisfies ZodApiEndpoints;
-export type ZodPathMap = typeof pathMap;
-export type PathMap = ToApiEndpoints<ZodPathMap>;
+export type PathMap = ToApiEndpoints<typeof pathMap>;

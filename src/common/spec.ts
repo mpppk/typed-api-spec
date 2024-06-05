@@ -50,7 +50,7 @@ export type ApiBodySchema<
       ? undefined
       : NonNullable<NonNullable<E[Path][M]>["body"]>;
 
-export type ApiResSchema<
+export type ApiRes<
   AResponses extends ApiResponses,
   SC extends keyof AResponses & StatusCode,
   Res = object,
@@ -58,7 +58,7 @@ export type ApiResSchema<
 export type ApiResponses<Res = object> = Partial<Record<StatusCode, Res>>;
 export type ApiClientResponses<AResponses extends ApiResponses> = {
   [SC in keyof AResponses & StatusCode]: ClientResponse<
-    ApiResSchema<AResponses, SC>,
+    ApiRes<AResponses, SC>,
     SC,
     "json"
   >;
