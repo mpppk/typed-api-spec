@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { ZodApiEndpoints } from "../src";
+import { ToApiEndpoints, ZodApiEndpoints } from "../src";
 
 export const pathMap = {
   "/users": {
@@ -32,4 +32,5 @@ export const pathMap = {
     },
   },
 } satisfies ZodApiEndpoints;
-export type PathMap = typeof pathMap;
+export type ZodPathMap = typeof pathMap;
+export type PathMap = ToApiEndpoints<ZodPathMap>;

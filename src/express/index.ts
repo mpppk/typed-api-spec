@@ -1,10 +1,11 @@
 import { IRouter, RequestHandler, Router } from "express";
 import {
   ZodApiEndpoints,
-  ApiResponses,
-  ApiResSchema,
   ZodApiSpec,
   Method,
+  ApiSpec,
+  ApiResponses,
+  ApiResSchema,
 } from "../index";
 import { ZodValidator, ZodValidators } from "../zod";
 import {
@@ -14,7 +15,6 @@ import {
   Response,
 } from "express-serve-static-core";
 import { StatusCode } from "../common";
-import { z } from "zod";
 import { ParseUrlParams } from "../common";
 
 export interface ParsedQs {
@@ -22,7 +22,7 @@ export interface ParsedQs {
 }
 export type Handler<
   Spec extends ZodApiSpec | undefined,
-  SC extends keyof NonNullable<ZodApiSpec>["res"] & StatusCode = 200,
+  SC extends keyof NonNullable<ApiSpec>["res"] & StatusCode = 200,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   Locals extends Record<string, any> = Record<string, never>,
 > = (
@@ -37,13 +37,10 @@ export type ExpressResponse<
   SC extends keyof Responses & StatusCode,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   LocalsObj extends Record<string, any> = Record<string, any>,
-> = Omit<
-  Response<z.infer<ApiResSchema<Responses, SC>>, LocalsObj, SC>,
-  "status"
-> & {
+> = Omit<Response<ApiResSchema<Responses, SC>, LocalsObj, SC>, "status"> & {
   status: <SC extends keyof Responses & StatusCode>(
     s: SC,
-  ) => Response<z.infer<ApiResSchema<Responses, SC>>, LocalsObj, SC>;
+  ) => Response<ApiResSchema<Responses, SC>, LocalsObj, SC>;
 };
 
 export type ValidateLocals<

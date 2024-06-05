@@ -1,11 +1,5 @@
-import { z } from "zod";
+import { ParseUrlParams } from "./url";
 import { ClientResponse, StatusCode } from "./hono-types";
-
-export type ApiResponses = Partial<Record<StatusCode, z.ZodTypeAny>>;
-export type ApiResSchema<
-  AResponses extends ApiResponses,
-  SC extends keyof AResponses & StatusCode,
-> = AResponses[SC] extends z.ZodTypeAny ? AResponses[SC] : never;
 
 export const Method = [
   "get",
@@ -17,9 +11,54 @@ export const Method = [
   "head",
 ] as const;
 export type Method = (typeof Method)[number];
-type ApiClientResponses<AResponses extends ApiResponses> = {
+
+export type ApiEndpoint<Path> = Partial<
+  Record<Method, ApiSpec<ParseUrlParams<Path>>>
+>;
+export type ApiEndpoints = {
+  [K in string]: ApiEndpoint<K>;
+};
+
+export interface ApiSpec<
+  ParamKeys extends string = string,
+  Params extends Record<ParamKeys, string | number> = Record<
+    ParamKeys,
+    string | number
+  >,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  Query extends Record<string, string> = Record<string, any>,
+  Body extends object = object,
+  Response extends Partial<Record<StatusCode, object>> = Partial<
+    Record<StatusCode, object>
+  >,
+> {
+  query?: Query;
+  params?: Params;
+  body?: Body;
+  res: Response;
+}
+
+export type ApiBodySchema<
+  E extends ApiEndpoints,
+  Path extends keyof E & string,
+  M extends Method,
+> = E[Path] extends undefined
+  ? undefined
+  : E[Path][M] extends undefined
+    ? undefined
+    : NonNullable<E[Path][M]>["body"] extends undefined
+      ? undefined
+      : NonNullable<NonNullable<E[Path][M]>["body"]>;
+
+export type ApiResSchema<
+  AResponses extends ApiResponses,
+  SC extends keyof AResponses & StatusCode,
+  Res = object,
+> = AResponses[SC] extends Res ? AResponses[SC] : never;
+export type ApiResponses<Res = object> = Partial<Record<StatusCode, Res>>;
+export type ApiClientResponses<AResponses extends ApiResponses> = {
   [SC in keyof AResponses & StatusCode]: ClientResponse<
-    z.infer<ApiResSchema<AResponses, SC>>,
+    ApiResSchema<AResponses, SC>,
     SC,
     "json"
   >;
