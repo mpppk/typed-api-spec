@@ -6,7 +6,7 @@ import {
   ApiSpec,
   Method,
 } from "../index";
-import { Index, Validators } from "../zod";
+import { ZodValidator, ZodValidators } from "../zod";
 import {
   NextFunction,
   ParamsDictionary,
@@ -53,7 +53,7 @@ export type ValidateLocals<
   ? {
       validate: (
         req: Request<ParamsDictionary, unknown, unknown, unknown>,
-      ) => Validators<AS, QueryKeys>;
+      ) => ZodValidators<AS, QueryKeys>;
     }
   : Record<string, never>;
 
@@ -98,15 +98,15 @@ export const newValidator = <E extends ApiEndpoints>(endpoints: E) => {
     return {
       params: () =>
         spec?.params?.safeParse(req.params) as E[Path][M] extends ApiSpec
-          ? Index<E[Path][M]["params"]>
+          ? ZodValidator<E[Path][M]["params"]>
           : undefined,
       body: () =>
         spec?.body?.safeParse(req.body) as E[Path][M] extends ApiSpec
-          ? Index<E[Path][M]["body"]>
+          ? ZodValidator<E[Path][M]["body"]>
           : undefined,
       query: () =>
         spec?.query?.safeParse(req.query) as E[Path][M] extends ApiSpec
-          ? Index<E[Path][M]["query"]>
+          ? ZodValidator<E[Path][M]["query"]>
           : undefined,
     };
   };

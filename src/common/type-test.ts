@@ -1,4 +1,4 @@
-// from github.com/common-challenges/common-challenges/utils/index.d.ts
+// from github.com/type-challenges/type-challenges/utils/index.d.ts
 export type Expect<T extends true> = T;
 export type ExpectTrue<T extends true> = T;
 export type ExpectFalse<T extends false> = T;
