@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { StatusCode } from "./hono-types";
+import { ClientResponse, StatusCode } from "./hono-types";
 import { ParseUrlParams } from "./url";
 
 export type ApiResponses = Partial<Record<StatusCode, z.ZodTypeAny>>;
@@ -68,3 +68,13 @@ export type Method = (typeof Method)[number];
 export type ApiEndpoints = {
   [K in string]: Partial<Record<Method, ApiSpec<ParseUrlParams<K>>>>;
 };
+
+type ApiClientResponses<AResponses extends ApiResponses> = {
+  [SC in keyof AResponses & StatusCode]: ClientResponse<
+    z.infer<ApiResSchema<AResponses, SC>>,
+    SC,
+    "json"
+  >;
+};
+export type MergeApiResponses<AR extends ApiResponses> =
+  ApiClientResponses<AR>[keyof ApiClientResponses<AR>];

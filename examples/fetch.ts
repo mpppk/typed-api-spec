@@ -1,12 +1,12 @@
 import { PathMap } from "./spec";
-import { TFetch } from "../src";
-import { JSON$stringifyT } from "../src/json";
+import { JSON$stringifyT } from "../src";
 import { unreachable } from "../src/utils";
+import FetchT from "../src/fetch";
 
-const fetchT = fetch as TFetch<typeof origin, PathMap>;
+const fetchT = fetch as FetchT<typeof origin, PathMap>;
 const origin = "http://localhost:3000";
 const headers = { "Content-Type": "application/json" };
-// stringify is same as JSON.stringify but with type information
+// stringify is same as JSON.stringify but with common information
 const stringify = JSON.stringify as JSON$stringifyT;
 
 const main = async () => {
@@ -34,7 +34,7 @@ const main = async () => {
 
   {
     // query parameter example
-    // TODO: Add type information for query parameter
+    // TODO: Add common information for query parameter
     const path = `${origin}/users?page=1`;
     const method = "get";
     const res = await fetchT(path, { method });
@@ -56,7 +56,7 @@ const main = async () => {
       method,
       headers,
       // body is the request schema defined in pathMap["/users"]["post"].body
-      // stringify is same as JSON.stringify but with type information
+      // stringify is same as JSON.stringify but with common information
       body: stringify({ userName: "user1" }),
     });
     if (res.ok) {

@@ -1,20 +1,26 @@
 import { IRouter, RequestHandler, Router } from "express";
-import { ApiEndpoints, ApiResponses, ApiResSchema, ApiSpec, Method } from "./";
-import { Validator, Validators } from "./validator";
+import {
+  ApiEndpoints,
+  ApiResponses,
+  ApiResSchema,
+  ApiSpec,
+  Method,
+} from "../index";
+import { Index, Validators } from "../zod";
 import {
   NextFunction,
   ParamsDictionary,
   Request,
   Response,
 } from "express-serve-static-core";
-import { StatusCode } from "./hono-types";
+import { StatusCode } from "../common";
 import { z } from "zod";
-import { ParseUrlParams } from "./url";
+import { ParseUrlParams } from "../common";
 
-interface ParsedQs {
+export interface ParsedQs {
   [key: string]: undefined | string | string[] | ParsedQs | ParsedQs[];
 }
-type Handler<
+export type Handler<
   Spec extends ApiSpec | undefined,
   SC extends keyof NonNullable<ApiSpec>["res"] & StatusCode = 200,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -26,7 +32,7 @@ type Handler<
   next: NextFunction,
 ) => void;
 
-type ExpressResponse<
+export type ExpressResponse<
   Responses extends ApiResponses,
   SC extends keyof Responses & StatusCode,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -40,7 +46,7 @@ type ExpressResponse<
   ) => Response<z.infer<ApiResSchema<Responses, SC>>, LocalsObj, SC>;
 };
 
-type ValidateLocals<
+export type ValidateLocals<
   AS extends ApiSpec | undefined,
   QueryKeys extends string,
 > = AS extends ApiSpec
@@ -51,7 +57,7 @@ type ValidateLocals<
     }
   : Record<string, never>;
 
-type TRouter<
+export type RouterT<
   Endpoints extends ApiEndpoints,
   SC extends StatusCode = StatusCode,
 > = Omit<IRouter, Method> & {
@@ -64,7 +70,7 @@ type TRouter<
         ValidateLocals<Endpoints[Path][M], ParseUrlParams<Path>>
       >
     >
-  ) => TRouter<Endpoints, SC>;
+  ) => RouterT<Endpoints, SC>;
 };
 
 const validatorMiddleware = (pathMap: ApiEndpoints) => {
@@ -78,7 +84,7 @@ const validatorMiddleware = (pathMap: ApiEndpoints) => {
 export const typed = <const Endpoints extends ApiEndpoints>(
   pathMap: Endpoints,
   router: Router,
-): TRouter<Endpoints> => {
+): RouterT<Endpoints> => {
   router.use(validatorMiddleware(pathMap));
   return router;
 };
@@ -92,21 +98,21 @@ export const newValidator = <E extends ApiEndpoints>(endpoints: E) => {
     return {
       params: () =>
         spec?.params?.safeParse(req.params) as E[Path][M] extends ApiSpec
-          ? Validator<E[Path][M]["params"]>
+          ? Index<E[Path][M]["params"]>
           : undefined,
       body: () =>
         spec?.body?.safeParse(req.body) as E[Path][M] extends ApiSpec
-          ? Validator<E[Path][M]["body"]>
+          ? Index<E[Path][M]["body"]>
           : undefined,
       query: () =>
         spec?.query?.safeParse(req.query) as E[Path][M] extends ApiSpec
-          ? Validator<E[Path][M]["query"]>
+          ? Index<E[Path][M]["query"]>
           : undefined,
     };
   };
 };
 
-type AsyncRequestHandler<Handler extends RequestHandler> = (
+export type AsyncRequestHandler<Handler extends RequestHandler> = (
   req: Parameters<NoInfer<Handler>>[0],
   res: Parameters<NoInfer<Handler>>[1],
   next: Parameters<NoInfer<Handler>>[2],
@@ -123,13 +129,13 @@ export const wrap = <Handler extends RequestHandler>(
 const wrapHandlers = (handlers: never[]) =>
   handlers.map((h) => wrap(h) as never);
 export const asAsync = <T extends ApiEndpoints>(
-  router: TRouter<T>,
-): TRouter<T> => {
+  router: RouterT<T>,
+): RouterT<T> => {
   return Method.reduce((acc, method) => {
     return {
       ...acc,
       [method]: (path: string, ...handlers: never[]) =>
         router[method](path, ...wrapHandlers(handlers)),
     };
-  }, {} as TRouter<T>);
+  }, {} as RouterT<T>);
 };

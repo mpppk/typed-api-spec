@@ -1,8 +1,5 @@
 import { Equal, Expect } from "./type-test";
-import { OriginPattern, ParseOrigin, ParseURL } from "./url";
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const o: OriginPattern = "https://example.com";
+import { ParseOrigin, ParseURL } from "./url";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 type cases = [
