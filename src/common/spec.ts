@@ -1,23 +1,43 @@
-import { z } from "zod";
-import { ClientResponse, StatusCode } from "./hono-types";
 import { ParseUrlParams } from "./url";
+import { ClientResponse, StatusCode } from "./hono-types";
 
-export type ApiResponses = Partial<Record<StatusCode, z.ZodTypeAny>>;
-export type ApiResSchema<
-  AResponses extends ApiResponses,
-  SC extends keyof AResponses & StatusCode,
-> = AResponses[SC] extends z.ZodTypeAny ? AResponses[SC] : never;
-export type ApiQuerySchema<
-  E extends ApiEndpoints,
-  Path extends keyof E & string,
-  M extends Method,
-> = E[Path] extends undefined
-  ? never
-  : E[Path][M] extends undefined
-    ? never
-    : NonNullable<E[Path][M]>["query"] extends undefined
-      ? never
-      : NonNullable<NonNullable<E[Path][M]>["query"]>;
+export const Method = [
+  "get",
+  "post",
+  "put",
+  "delete",
+  "patch",
+  "options",
+  "head",
+] as const;
+export type Method = (typeof Method)[number];
+
+export type ApiEndpoint<Path> = Partial<
+  Record<Method, ApiSpec<ParseUrlParams<Path>>>
+>;
+export type ApiEndpoints = {
+  [K in string]: ApiEndpoint<K>;
+};
+
+export interface ApiSpec<
+  ParamKeys extends string = string,
+  Params extends Record<ParamKeys, string | number> = Record<
+    ParamKeys,
+    string | number
+  >,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  Query extends Record<string, string> = Record<string, any>,
+  Body extends object = object,
+  Response extends Partial<Record<StatusCode, object>> = Partial<
+    Record<StatusCode, object>
+  >,
+> {
+  query?: Query;
+  params?: Params;
+  body?: Body;
+  res: Response;
+}
+
 export type ApiBodySchema<
   E extends ApiEndpoints,
   Path extends keyof E & string,
@@ -30,48 +50,15 @@ export type ApiBodySchema<
       ? undefined
       : NonNullable<NonNullable<E[Path][M]>["body"]>;
 
-export type InferOrUndefined<T> = T extends z.ZodTypeAny
-  ? z.infer<T>
-  : undefined;
-
-type ZodTypeWithKey<Key extends string> = z.ZodType<
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  Record<Key, any>,
-  z.ZodTypeDef,
-  Record<Key, string>
->;
-export interface ApiSpec<
-  ParamKeys extends string = string,
-  Params extends ZodTypeWithKey<NoInfer<ParamKeys>> = ZodTypeWithKey<
-    NoInfer<ParamKeys>
-  >,
-  Query extends z.ZodTypeAny = z.ZodTypeAny,
-  Body extends z.ZodTypeAny = z.ZodTypeAny,
-  Response extends ApiResponses = Partial<Record<StatusCode, z.ZodTypeAny>>,
-> {
-  query?: Query;
-  params?: Params;
-  body?: Body;
-  res: Response;
-}
-
-export const Method = [
-  "get",
-  "post",
-  "put",
-  "delete",
-  "patch",
-  "options",
-  "head",
-] as const;
-export type Method = (typeof Method)[number];
-export type ApiEndpoints = {
-  [K in string]: Partial<Record<Method, ApiSpec<ParseUrlParams<K>>>>;
-};
-
-type ApiClientResponses<AResponses extends ApiResponses> = {
+export type ApiRes<
+  AResponses extends ApiResponses,
+  SC extends keyof AResponses & StatusCode,
+  Res = object,
+> = AResponses[SC] extends Res ? AResponses[SC] : never;
+export type ApiResponses<Res = object> = Partial<Record<StatusCode, Res>>;
+export type ApiClientResponses<AResponses extends ApiResponses> = {
   [SC in keyof AResponses & StatusCode]: ClientResponse<
-    z.infer<ApiResSchema<AResponses, SC>>,
+    ApiRes<AResponses, SC>,
     SC,
     "json"
   >;

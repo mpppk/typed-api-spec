@@ -1,7 +1,6 @@
 import {
   ApiBodySchema,
   ApiEndpoints,
-  InferOrUndefined,
   MergeApiResponses,
   Method,
 } from "../common";
@@ -31,7 +30,7 @@ type FetchT<Origin extends OriginPattern, E extends ApiEndpoints> = <
   M extends Method = "get",
 >(
   input: Input,
-  init?: RequestInitT<M, InferOrUndefined<ApiBodySchema<E, CandidatePaths, M>>>,
+  init?: RequestInitT<M, ApiBodySchema<E, CandidatePaths, M>>,
   // FIXME: NonNullable
 ) => Promise<MergeApiResponses<NonNullable<E[CandidatePaths][M]>["res"]>>;
 

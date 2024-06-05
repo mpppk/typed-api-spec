@@ -1,10 +1,12 @@
 import { IRouter, RequestHandler, Router } from "express";
 import {
-  ApiEndpoints,
-  ApiResponses,
-  ApiResSchema,
-  ApiSpec,
+  ZodApiEndpoints,
+  ZodApiSpec,
   Method,
+  ApiResponses,
+  ApiRes,
+  ToApiEndpoints,
+  ApiSpec,
 } from "../index";
 import { ZodValidator, ZodValidators } from "../zod";
 import {
@@ -14,7 +16,6 @@ import {
   Response,
 } from "express-serve-static-core";
 import { StatusCode } from "../common";
-import { z } from "zod";
 import { ParseUrlParams } from "../common";
 
 export interface ParsedQs {
@@ -37,43 +38,39 @@ export type ExpressResponse<
   SC extends keyof Responses & StatusCode,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   LocalsObj extends Record<string, any> = Record<string, any>,
-> = Omit<
-  Response<z.infer<ApiResSchema<Responses, SC>>, LocalsObj, SC>,
-  "status"
-> & {
+> = Omit<Response<ApiRes<Responses, SC>, LocalsObj, SC>, "status"> & {
   status: <SC extends keyof Responses & StatusCode>(
     s: SC,
-  ) => Response<z.infer<ApiResSchema<Responses, SC>>, LocalsObj, SC>;
+  ) => Response<ApiRes<Responses, SC>, LocalsObj, SC>;
 };
 
 export type ValidateLocals<
-  AS extends ApiSpec | undefined,
+  AS extends ZodApiSpec | undefined,
   QueryKeys extends string,
-> = AS extends ApiSpec
+> = AS extends ZodApiSpec
   ? {
       validate: (
         req: Request<ParamsDictionary, unknown, unknown, unknown>,
       ) => ZodValidators<AS, QueryKeys>;
     }
   : Record<string, never>;
-
 export type RouterT<
-  Endpoints extends ApiEndpoints,
+  ZodE extends ZodApiEndpoints,
   SC extends StatusCode = StatusCode,
 > = Omit<IRouter, Method> & {
-  [M in Method]: <Path extends string & keyof Endpoints>(
+  [M in Method]: <Path extends string & keyof ZodE>(
     path: Path,
     ...handlers: Array<
       Handler<
-        Endpoints[Path][M],
+        ToApiEndpoints<ZodE>[Path][M],
         SC,
-        ValidateLocals<Endpoints[Path][M], ParseUrlParams<Path>>
+        ValidateLocals<ZodE[Path][M], ParseUrlParams<Path>>
       >
     >
-  ) => RouterT<Endpoints, SC>;
+  ) => RouterT<ZodE, SC>;
 };
 
-const validatorMiddleware = (pathMap: ApiEndpoints) => {
+const validatorMiddleware = (pathMap: ZodApiEndpoints) => {
   const validator = newValidator(pathMap);
   return (_req: Request, res: Response, next: NextFunction) => {
     res.locals.validate = validator;
@@ -81,7 +78,7 @@ const validatorMiddleware = (pathMap: ApiEndpoints) => {
   };
 };
 
-export const typed = <const Endpoints extends ApiEndpoints>(
+export const typed = <const Endpoints extends ZodApiEndpoints>(
   pathMap: Endpoints,
   router: Router,
 ): RouterT<Endpoints> => {
@@ -89,7 +86,7 @@ export const typed = <const Endpoints extends ApiEndpoints>(
   return router;
 };
 
-export const newValidator = <E extends ApiEndpoints>(endpoints: E) => {
+export const newValidator = <E extends ZodApiEndpoints>(endpoints: E) => {
   return <Path extends keyof E, M extends keyof E[Path] & Method>(
     req: Request,
   ) => {
@@ -97,15 +94,15 @@ export const newValidator = <E extends ApiEndpoints>(endpoints: E) => {
       endpoints[req.route.path][req.method.toLowerCase() as Method];
     return {
       params: () =>
-        spec?.params?.safeParse(req.params) as E[Path][M] extends ApiSpec
+        spec?.params?.safeParse(req.params) as E[Path][M] extends ZodApiSpec
           ? ZodValidator<E[Path][M]["params"]>
           : undefined,
       body: () =>
-        spec?.body?.safeParse(req.body) as E[Path][M] extends ApiSpec
+        spec?.body?.safeParse(req.body) as E[Path][M] extends ZodApiSpec
           ? ZodValidator<E[Path][M]["body"]>
           : undefined,
       query: () =>
-        spec?.query?.safeParse(req.query) as E[Path][M] extends ApiSpec
+        spec?.query?.safeParse(req.query) as E[Path][M] extends ZodApiSpec
           ? ZodValidator<E[Path][M]["query"]>
           : undefined,
     };
@@ -128,7 +125,7 @@ export const wrap = <Handler extends RequestHandler>(
 
 const wrapHandlers = (handlers: never[]) =>
   handlers.map((h) => wrap(h) as never);
-export const asAsync = <T extends ApiEndpoints>(
+export const asAsync = <T extends ZodApiEndpoints>(
   router: RouterT<T>,
 ): RouterT<T> => {
   return Method.reduce((acc, method) => {
