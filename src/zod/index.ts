@@ -1,7 +1,8 @@
-import { z } from "zod";
+import { z, ZodType } from "zod";
 import { Method, ParseUrlParams, StatusCode } from "../common";
 import { FilterNever } from "../common";
 
+export const anyZ = <T>() => z.any() as ZodType<T>;
 type SafeParse<Z extends z.ZodTypeAny> = ReturnType<Z["safeParse"]>;
 export type ZodValidator<V extends z.ZodTypeAny | undefined> =
   V extends z.ZodTypeAny ? () => ReturnType<V["safeParse"]> : never;

@@ -3,6 +3,7 @@ import {
   ApiEndpoints,
   MergeApiResponses,
   Method,
+  Replace,
 } from "../common";
 import {
   MatchedPatterns,
@@ -23,9 +24,9 @@ export interface RequestInitT<
 
 type FetchT<Origin extends OriginPattern, E extends ApiEndpoints> = <
   Input extends
-    | `${Origin}${ToUrlParamPattern<keyof E & string>}`
-    | `${Origin}${ToUrlParamPattern<keyof E & string>}?${string}`,
-  InputPath extends ParseURL<Input>["path"],
+    | `${ToUrlParamPattern<Origin>}${ToUrlParamPattern<keyof E & string>}`
+    | `${ToUrlParamPattern<Origin>}${ToUrlParamPattern<keyof E & string>}?${string}`,
+  InputPath extends Replace<ParseURL<Input>["path"], Origin, "">,
   CandidatePaths extends MatchedPatterns<E, InputPath>,
   M extends Method = "get",
 >(
