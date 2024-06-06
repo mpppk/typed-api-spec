@@ -26,7 +26,11 @@ type FetchT<Origin extends OriginPattern, E extends ApiEndpoints> = <
   Input extends
     | `${ToUrlParamPattern<Origin>}${ToUrlParamPattern<keyof E & string>}`
     | `${ToUrlParamPattern<Origin>}${ToUrlParamPattern<keyof E & string>}?${string}`,
-  InputPath extends Replace<ParseURL<Input>["path"], Origin, "">,
+  InputPath extends Replace<
+    ParseURL<Input>["path"],
+    ToUrlParamPattern<Origin>,
+    ""
+  >,
   CandidatePaths extends MatchedPatterns<E, InputPath>,
   M extends Method = "get",
 >(
