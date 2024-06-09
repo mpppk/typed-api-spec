@@ -32,7 +32,7 @@ export type InferOrUndefined<T> = T extends z.ZodTypeAny
 export type ZodApiEndpoints = {
   [Path in string]: ZodApiEndpoint<Path>;
 };
-type ZodApiEndpoint<Path> = Partial<
+type ZodApiEndpoint<Path extends string> = Partial<
   Record<Method, ZodApiSpec<ParseUrlParams<Path>>>
 >;
 export interface ZodApiSpec<
