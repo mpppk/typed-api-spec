@@ -22,6 +22,9 @@ export interface RequestInitT<
   body?: TypedString<Body>;
 }
 
+/**
+ * FetchT is a type for window.fetch like function but more strict type information
+ */
 type FetchT<Origin extends UrlPrefixPattern, E extends ApiEndpoints> = <
   Input extends
     | `${ToUrlParamPattern<Origin>}${ToUrlParamPattern<keyof E & string>}`

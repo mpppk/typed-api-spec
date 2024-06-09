@@ -2,6 +2,16 @@ import { ParseQueryString } from "./query-string";
 import { ExtractByPrefix, Split } from "./type";
 
 type ExtractParams<T extends string> = ExtractByPrefix<T, ":">;
+
+/**
+ * Extract URL parameters from URL pattern
+ *
+ * @example
+ * ```
+ * type T0 = ParseUrlParams<"/users/:userId">;
+ * // => "userId"
+ * ```
+ */
 export type ParseUrlParams<T extends string> = ExtractParams<
   Split<T, "/">[number]
 >;
@@ -9,25 +19,81 @@ export type ParseUrlParams<T extends string> = ExtractParams<
 export type UrlSchema = "http" | "https" | "about" | "blob" | "data" | "file";
 type UrlPrefix = `${UrlSchema}://` | "";
 export type UrlPrefixPattern = `${UrlPrefix}${string}`;
+
+/**
+ * Convert URL definition to acceptable URL pattern
+ *
+ * @example
+ * ```
+ * type T0 = ToUrlParamPattern<"/users/:userId">;
+ * // => "/users/${string}"
+ * ```
+ */
 export type ToUrlParamPattern<T> = T extends `${infer O}:${infer R}`
   ? R extends `${string}/${infer L}`
     ? `${O}${string}/${ToUrlParamPattern<L>}`
     : `${O}${string}`
   : T;
 
+/**
+ * Convert URL definition with query to acceptable URL pattern
+ *
+ * @example
+ * ```
+ * type T0 = ToUrlPattern<"/users/:userId?key=value">;
+ * // => "/users/${string}?key=value"
+ * ```
+ */
 export type ToUrlPattern<T> = T extends `${infer O}?${infer R}`
   ? `${ToUrlParamPattern<O>}?${ToUrlPattern<R>}`
   : ToUrlParamPattern<T>;
 
+/**
+ * Extract matched URL pattern from URL
+ * T: URL
+ * Patterns: URL pattern candidates
+ *
+ * @example
+ * ```
+ * type T0 = MatchedPatterns<"/users/1", "/users/:userId" | "org/:orgId">;
+ * // => "/users/:userId"
+ * ```
+ */
 export type MatchedPatterns<T extends string, Patterns extends string> = keyof {
-  [K in Patterns as T extends ToUrlPattern<K> ? K : never]: true;
+  [P in Patterns as T extends ToUrlPattern<P> ? P : never]: true;
 };
+
+/**
+ * Parse host and port
+ *
+ * @example
+ * ```
+ * type T0 = ParseHostAndPort<"example.com">;
+ * // => { host: "example.com", port: undefined }
+ *
+ * type T1 = ParseHostAndPort<"example.com:8080">;
+ * // => { host: "example.com", port: "8080" }
+ * ```
+ */
 export type ParseHostAndPort<T> = T extends `${infer Host}:${infer Port}`
   ? Port extends `${number}`
     ? { host: Host; port: Port }
     : never
   : { host: T; port: undefined };
-export type ParseOrigin<T> =
+
+/**
+ * Parse Origin and path
+ *
+ * @example
+ * ```
+ * type T0 = ParseOriginAndPath<"http://example.com:8080/path">;
+ * // => { schema: "http", host: "example.com", port: "8080", path: "/path" }
+ *
+ * type T1 = ParseOriginAndPath<"/path">;
+ * // => { schema: undefined, host: undefined, port: undefined, path: "/path" }
+ * ```
+ */
+export type ParseOriginAndPath<T> =
   T extends `${infer S extends UrlSchema}://${infer Rest}`
     ? // URL Schemaを含むケース
       Rest extends `${infer Prefix}/${infer Suffix}`
@@ -43,7 +109,17 @@ type SplitUrlAndQueryString<S extends string> =
     ? { url: URL; qs: QS }
     : { url: S; qs: never };
 
-export type ParseURL<T extends string> = ParseOrigin<
+/**
+ * Parse URL
+ * Note: currently query string parsing is not working
+ *
+ * @example
+ * ```
+ * type T0 = ParseURL<"http://example.com:8080/path?key=value">;
+ * // => { schema: "http", host: "example.com", port: "8080", path: "/path", query: { key: "value" } }
+ * ```
+ */
+export type ParseURL<T extends string> = ParseOriginAndPath<
   SplitUrlAndQueryString<T>["url"]
 > & {
   query: SplitUrlAndQueryString<T>["qs"] extends string

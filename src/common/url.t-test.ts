@@ -2,7 +2,7 @@ import { Equal, Expect } from "./type-test";
 import {
   MatchedPatterns,
   ParseHostAndPort,
-  ParseOrigin,
+  ParseOriginAndPath,
   ParseURL,
   ParseUrlParams,
   ToUrlParamPattern,
@@ -19,39 +19,6 @@ type ParseUrlParamsTestCases = [
   Expect<Equal<ParseUrlParams<"/:a">, "a">>,
   Expect<Equal<ParseUrlParams<"/:a/:b">, "a" | "b">>,
   Expect<Equal<ParseUrlParams<"/a/:b">, "b">>,
-
-  Expect<Equal<MatchedPatterns<"", "">, "">>,
-  Expect<Equal<MatchedPatterns<"/1", "/:userId">, "/:userId">>,
-  Expect<
-    Equal<MatchedPatterns<"/1", "/:userId" | "/:orgId">, "/:userId" | "/:orgId">
-  >,
-  Expect<
-    Equal<
-      MatchedPatterns<"/users/1", "/users/:userId" | "/:userId">,
-      "/users/:userId" | "/:userId"
-    >
-  >,
-  Expect<
-    Equal<
-      MatchedPatterns<"/users/1", "/users/:userId" | "/org/:orgId">,
-      "/users/:userId"
-    >
-  >,
-
-  Expect<
-    Equal<
-      ParseHostAndPort<"example.com">,
-      { host: "example.com"; port: undefined }
-    >
-  >,
-  Expect<
-    Equal<
-      ParseHostAndPort<"example.com:8080">,
-      { host: "example.com"; port: "8080" }
-    >
-  >,
-  // If invalid port is specified, it should return never
-  Expect<Equal<ParseHostAndPort<"example.com:xxx">, never>>,
 ];
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -83,23 +50,62 @@ type ToUrlPatternTestCases = [
 ];
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-type ParseOriginCases = [
-  Expect<Equal<ParseOrigin<undefined>, never>>,
+type MatchedPatternsTestCases = [
+  Expect<Equal<MatchedPatterns<"", "">, "">>,
+  Expect<Equal<MatchedPatterns<"/1", "/:userId">, "/:userId">>,
+  Expect<
+    Equal<MatchedPatterns<"/1", "/:userId" | "/:orgId">, "/:userId" | "/:orgId">
+  >,
   Expect<
     Equal<
-      ParseOrigin<"">,
+      MatchedPatterns<"/users/1", "/users/:userId" | "/:userId">,
+      "/users/:userId" | "/:userId"
+    >
+  >,
+  Expect<
+    Equal<
+      MatchedPatterns<"/users/1", "/users/:userId" | "/org/:orgId">,
+      "/users/:userId"
+    >
+  >,
+];
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type ParseHostAndPortTestCases = [
+  Expect<
+    Equal<
+      ParseHostAndPort<"example.com">,
+      { host: "example.com"; port: undefined }
+    >
+  >,
+  Expect<
+    Equal<
+      ParseHostAndPort<"example.com:8080">,
+      { host: "example.com"; port: "8080" }
+    >
+  >,
+  // If invalid port is specified, it should return never
+  Expect<Equal<ParseHostAndPort<"example.com:xxx">, never>>,
+];
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type ParseOriginAndPathCases = [
+  Expect<Equal<ParseOriginAndPath<undefined>, never>>,
+  Expect<
+    Equal<
+      ParseOriginAndPath<"">,
       { schema: undefined; host: undefined; port: undefined; path: "" }
     >
   >,
   Expect<
     Equal<
-      ParseOrigin<"https://example.com/">,
+      ParseOriginAndPath<"https://example.com/">,
       { host: "example.com"; port: undefined } & { schema: "https"; path: "/" }
     >
   >,
   Expect<
     Equal<
-      ParseOrigin<"https://example.com/user">,
+      ParseOriginAndPath<"https://example.com/user">,
       { host: "example.com"; port: undefined } & {
         schema: "https";
         path: "/user";
@@ -109,7 +115,7 @@ type ParseOriginCases = [
 
   Expect<
     Equal<
-      ParseOrigin<"https://example.com/users/:userId">,
+      ParseOriginAndPath<"https://example.com/users/:userId">,
       { host: "example.com"; port: undefined } & {
         schema: "https";
         path: "/users/:userId";
@@ -119,14 +125,14 @@ type ParseOriginCases = [
 
   Expect<
     Equal<
-      ParseOrigin<"https://example.com:8080/user">,
+      ParseOriginAndPath<"https://example.com:8080/user">,
       { host: "example.com"; port: "8080" } & { schema: "https"; path: "/user" }
     >
   >,
 
   Expect<
     Equal<
-      ParseOrigin<"/user">,
+      ParseOriginAndPath<"/user">,
       { schema: undefined; host: undefined; port: undefined; path: "/user" }
     >
   >,

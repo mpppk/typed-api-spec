@@ -13,6 +13,9 @@ export type FilterNever<T extends Record<string, unknown>> = {
 
 /**
  * Replace substring
+ * S: source string
+ * From: substring to be replaced
+ * To: substring to replace
  *
  * @example
  * ```
@@ -28,6 +31,8 @@ export type Replace<
 
 /**
  * Split string by delimiter
+ * S: source string
+ * Delimiter: delimiter to split
  *
  * @example
  * ```
@@ -46,6 +51,9 @@ export type Split<
 
 /**
  * Extract string by prefix
+ * T: source string
+ * Prefix: prefix to extract
+ *
  * @example
  * ```
  * type T0 = ExtractByPrefix<"p-a" | "p-b" | "c", "p-">;

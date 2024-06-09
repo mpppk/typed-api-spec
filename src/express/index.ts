@@ -78,6 +78,24 @@ const validatorMiddleware = (pathMap: ZodApiEndpoints) => {
   };
 };
 
+/**
+ * Set validator and add more strict type information to router.
+ *
+ * @param pathMap API endpoints
+ * @param router Express Router
+ *
+ * @example
+ * ```
+ * const router = typed(pathMap, express.Router())
+ * router.get('/path', (req, res) => {
+ *   const r = res.locals.validate(req).query()
+ *   if (!r.success) {
+ *     return res.status(400).json({ message: 'Invalid query' })
+ *   }
+ *   return res.status(200).json({ message: 'success', value: r.data.value })
+ * })
+ * ```
+ */
 export const typed = <const Endpoints extends ZodApiEndpoints>(
   pathMap: Endpoints,
   router: Router,
@@ -86,6 +104,11 @@ export const typed = <const Endpoints extends ZodApiEndpoints>(
   return router;
 };
 
+/**
+ * Create a new validator for the given endpoints.
+ *
+ * @param endpoints API endpoints
+ */
 export const newValidator = <E extends ZodApiEndpoints>(endpoints: E) => {
   return <Path extends keyof E, M extends keyof E[Path] & Method>(
     req: Request,
@@ -115,6 +138,20 @@ export type AsyncRequestHandler<Handler extends RequestHandler> = (
   next: Parameters<NoInfer<Handler>>[2],
 ) => Promise<unknown>;
 
+/**
+ * Wrap async handler to catch error and pass it to next function.
+ *
+ * @example
+ * ```
+ * const router = express.Router();
+ * const handler = async (req, res) => {
+ *   res.status(200).json({ message: 'success' });
+ * }
+ * router.get('/path', wrap(handler));
+ * ```
+ *
+ * @param handler
+ */
 export const wrap = <Handler extends RequestHandler>(
   handler: AsyncRequestHandler<Handler>,
 ): Handler => {
@@ -125,6 +162,22 @@ export const wrap = <Handler extends RequestHandler>(
 
 const wrapHandlers = (handlers: never[]) =>
   handlers.map((h) => wrap(h) as never);
+
+/**
+ * Return Express Router wrapper which accept async handlers.
+ * If async handler throws an error, it will be caught and passed to next function.
+ *
+ * @example
+ * ```
+ * const router = asAsync(express.Router());
+ * router.get('/path', async (req, res) => {
+ *   await sleep(1000);
+ *   res.status(200).json({ message: 'success' });
+ *   return;
+ * });
+ * ```
+ * @param router Express.Router to be wrapped
+ */
 export const asAsync = <T extends ZodApiEndpoints>(
   router: RouterT<T>,
 ): RouterT<T> => {
