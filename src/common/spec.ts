@@ -65,3 +65,8 @@ export type ApiClientResponses<AResponses extends ApiResponses> = {
 };
 export type MergeApiResponses<AR extends ApiResponses> =
   ApiClientResponses<AR>[keyof ApiClientResponses<AR>];
+
+/**
+ * DefineApiEndpoints is a type that is used to define the type of the API endpoint.
+ */
+export type DefineApiEndpoints<E extends ApiEndpoints> = E;
