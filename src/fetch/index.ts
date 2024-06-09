@@ -7,7 +7,7 @@ import {
 } from "../common";
 import {
   MatchedPatterns,
-  OriginPattern,
+  UrlPrefixPattern,
   ParseURL,
   ToUrlParamPattern,
 } from "../common";
@@ -22,7 +22,7 @@ export interface RequestInitT<
   body?: TypedString<Body>;
 }
 
-type FetchT<Origin extends OriginPattern, E extends ApiEndpoints> = <
+type FetchT<Origin extends UrlPrefixPattern, E extends ApiEndpoints> = <
   Input extends
     | `${ToUrlParamPattern<Origin>}${ToUrlParamPattern<keyof E & string>}`
     | `${ToUrlParamPattern<Origin>}${ToUrlParamPattern<keyof E & string>}?${string}`,
@@ -31,7 +31,7 @@ type FetchT<Origin extends OriginPattern, E extends ApiEndpoints> = <
     ToUrlParamPattern<Origin>,
     ""
   >,
-  CandidatePaths extends MatchedPatterns<E, InputPath>,
+  CandidatePaths extends MatchedPatterns<InputPath, keyof E & string>,
   M extends Method = "get",
 >(
   input: Input,

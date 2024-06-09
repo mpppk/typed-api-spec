@@ -12,7 +12,7 @@ export const Method = [
 ] as const;
 export type Method = (typeof Method)[number];
 
-export type ApiEndpoint<Path> = Partial<
+export type ApiEndpoint<Path extends string> = Partial<
   Record<Method, ApiSpec<ParseUrlParams<Path>>>
 >;
 export type ApiEndpoints = {

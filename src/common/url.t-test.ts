@@ -1,8 +1,114 @@
 import { Equal, Expect } from "./type-test";
-import { ParseOrigin, ParseURL } from "./url";
+import {
+  MatchedPatterns,
+  ParseHostAndPort,
+  ParseOrigin,
+  ParseURL,
+  ParseUrlParams,
+  ToUrlParamPattern,
+  ToUrlPattern,
+} from "./url";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-type cases = [
+type ParseUrlParamsCases = [
+  // @ts-expect-error undefined is not a string
+  Expect<Equal<ParseUrlParams<undefined>, never>>,
+  Expect<Equal<ParseUrlParams<"">, never>>,
+  Expect<Equal<ParseUrlParams<"">, never>>,
+  Expect<Equal<ParseUrlParams<":a">, "a">>,
+  Expect<Equal<ParseUrlParams<"/:a">, "a">>,
+  Expect<Equal<ParseUrlParams<"/:a/:b">, "a" | "b">>,
+  Expect<Equal<ParseUrlParams<"/a/:b">, "b">>,
+
+  Expect<Equal<ToUrlParamPattern<"">, "">>,
+  Expect<Equal<ToUrlParamPattern<"/">, "/">>,
+  Expect<Equal<ToUrlParamPattern<":a">, string>>,
+  Expect<Equal<ToUrlParamPattern<"/:a/b">, `/${string}/b`>>,
+  Expect<Equal<ToUrlParamPattern<"/:a/:b">, `/${string}/${string}`>>,
+  Expect<
+    // @ts-expect-error URL is not supported
+    Equal<ToUrlParamPattern<"https://example.com">, `"https://example.com}`>
+  >,
+
+  Expect<Equal<ToUrlPattern<"">, "">>,
+  Expect<Equal<ToUrlPattern<"/">, "/">>,
+  Expect<Equal<ToUrlPattern<"/users/:userId">, `/users/${string}`>>,
+  Expect<
+    Equal<
+      ToUrlPattern<"/users/:userId?key=value">,
+      `/users/${string}?key=value`
+    >
+  >,
+  // @ts-expect-error URL is not supported
+  Expect<Equal<ToUrlPattern<"https://example.com">, "https://example.com">>,
+
+  Expect<Equal<MatchedPatterns<"", "">, "">>,
+  Expect<Equal<MatchedPatterns<"/1", "/:userId">, "/:userId">>,
+  Expect<
+    Equal<MatchedPatterns<"/1", "/:userId" | "/:orgId">, "/:userId" | "/:orgId">
+  >,
+  Expect<
+    Equal<
+      MatchedPatterns<"/users/1", "/users/:userId" | "/:userId">,
+      "/users/:userId" | "/:userId"
+    >
+  >,
+  Expect<
+    Equal<
+      MatchedPatterns<"/users/1", "/users/:userId" | "/org/:orgId">,
+      "/users/:userId"
+    >
+  >,
+
+  Expect<
+    Equal<
+      ParseOrigin<"">,
+      {
+        schema: undefined;
+        host: undefined;
+        port: undefined;
+        path: "";
+      }
+    >
+  >,
+
+  Expect<
+    Equal<
+      ParseHostAndPort<"example.com">,
+      {
+        host: "example.com";
+        port: undefined;
+      }
+    >
+  >,
+  Expect<
+    Equal<
+      ParseHostAndPort<"example.com:8080">,
+      {
+        host: "example.com";
+        port: "8080";
+      }
+    >
+  >,
+  // If invalid port is specified, it should return never
+  Expect<Equal<ParseHostAndPort<"example.com:xxx">, never>>,
+
+  Expect<
+    Equal<
+      ParseOrigin<"https://example.com/users/:userId">,
+      {
+        host: "example.com";
+        port: undefined;
+      } & {
+        schema: "https";
+        path: "/users/:userId";
+      }
+    >
+  >,
+];
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type ParseOriginCases = [
   Expect<Equal<ParseOrigin<undefined>, never>>,
   Expect<
     Equal<
