@@ -1,5 +1,12 @@
 import { Equal, Expect } from "./type-test";
-import { ExtractByPrefix, Replace, Split } from "./type";
+import { ExtractByPrefix, FilterNever, Replace, Split } from "./type";
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type FilterNeverCases = [
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  Expect<Equal<FilterNever<{ a: never }>, {}>>,
+  Expect<Equal<FilterNever<{ a: never; b: string }>, { b: string }>>,
+];
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 type SplitTestCases = [
