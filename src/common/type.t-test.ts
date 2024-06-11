@@ -1,5 +1,12 @@
 import { Equal, Expect } from "./type-test";
-import { ExtractByPrefix, FilterNever, Replace, Split } from "./type";
+import {
+  ExtractByPrefix,
+  FilterNever,
+  Replace,
+  ReplaceAll,
+  Split,
+} from "./type";
+import { NormalizePath } from "./url";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 type FilterNeverCases = [
@@ -30,6 +37,20 @@ type ReplaceTestCases = [
 ];
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
+type ReplaceAllTestCases = [
+  Expect<Equal<ReplaceAll<"a", "a", "-">, "-">>,
+  Expect<Equal<ReplaceAll<"a", "noexist", "-">, "a">>,
+  Expect<Equal<ReplaceAll<"a", "a", "a">, "a">>,
+  Expect<Equal<ReplaceAll<"abcd", "ab", "-">, "-cd">>,
+  Expect<Equal<ReplaceAll<"abcd", "cd", "-">, "ab-">>,
+  Expect<Equal<ReplaceAll<"abcd", "bc", "-">, "a-d">>,
+  Expect<Equal<ReplaceAll<"aab", "a", "-">, "--b">>,
+  Expect<Equal<ReplaceAll<"aba", "a", "-">, "-b-">>,
+  Expect<Equal<ReplaceAll<"aabaa", "aa", "-">, "-b-">>,
+  Expect<Equal<ReplaceAll<"aaaba", "aa", "-">, "-aba">>,
+];
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 type ExtractByPrefixTestCases = [
   Expect<Equal<ExtractByPrefix<"", "">, "">>,
   Expect<Equal<ExtractByPrefix<"a", "">, "a">>,
@@ -40,4 +61,11 @@ type ExtractByPrefixTestCases = [
   Expect<Equal<ExtractByPrefix<"a" | ":b", ":">, "b">>,
   Expect<Equal<ExtractByPrefix<":a" | ":b", ":">, "a" | "b">>,
   Expect<Equal<ExtractByPrefix<":a" | ":b" | ":c", ":">, "a" | "b" | "c">>,
+];
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type NormalizePathTestCases = [
+  Expect<Equal<NormalizePath<"users//">, "users/">>,
+  Expect<Equal<NormalizePath<"//users">, "/users">>,
+  Expect<Equal<NormalizePath<"users//:userId">, "users/:userId">>,
 ];

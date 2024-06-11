@@ -3,6 +3,7 @@ import {
   ApiEndpoints,
   MergeApiResponses,
   Method,
+  NormalizePath,
   Replace,
 } from "../common";
 import {
@@ -30,7 +31,7 @@ type FetchT<Origin extends UrlPrefixPattern, E extends ApiEndpoints> = <
     | `${ToUrlParamPattern<Origin>}${ToUrlParamPattern<keyof E & string>}`
     | `${ToUrlParamPattern<Origin>}${ToUrlParamPattern<keyof E & string>}?${string}`,
   InputPath extends Replace<
-    ParseURL<Input>["path"],
+    NormalizePath<ParseURL<Input>["path"]>,
     ToUrlParamPattern<Origin>,
     ""
   >,

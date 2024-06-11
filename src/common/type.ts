@@ -30,6 +30,28 @@ export type Replace<
 > = S extends `${infer P}${From}${infer R}` ? `${P}${To}${R}` : S;
 
 /**
+ * Replace all substring
+ * S: source string
+ * From: substring to be replaced
+ * To: substring to replace
+ *
+ * @example
+ * ```
+ * type T0 = ReplaceAll<"aabaa", "aa", "-">;
+ * // => "-b-"
+ * ```
+ */
+export type ReplaceAll<
+  S extends string,
+  From extends string,
+  To extends string,
+> = From extends ""
+  ? S
+  : S extends `${infer P}${From}${infer R}`
+    ? `${P}${To}${ReplaceAll<R, From, To>}`
+    : S;
+
+/**
  * Split string by delimiter
  * S: source string
  * Delimiter: delimiter to split
