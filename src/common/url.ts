@@ -126,3 +126,16 @@ export type ParseURL<T extends string> = ParseOriginAndPath<
     ? ParseQueryString<SplitUrlAndQueryString<T>["qs"]>
     : Record<string, never>;
 };
+
+/**
+ * Normalize path
+ *
+ * @example
+ * ```
+ * type T0 = NormalizePath<"users//:userId">;
+ * // => "users/:userId"
+ * ```
+ */
+export type NormalizePath<T extends string> = T extends `${infer P}//${infer Q}`
+  ? NormalizePath<`${P}/${Q}`>
+  : T;
