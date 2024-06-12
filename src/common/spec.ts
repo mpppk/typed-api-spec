@@ -11,6 +11,7 @@ export const Method = [
   "head",
 ] as const;
 export type Method = (typeof Method)[number];
+export type CaseInsensitiveMethod = Method | Uppercase<Method>;
 
 export type ApiEndpoint<Path extends string> = Partial<
   Record<Method, ApiSpec<ParseUrlParams<Path>>>

@@ -31,7 +31,10 @@ const main = async () => {
         unreachable(res);
     }
   }
-
+  {
+    // case-insensitive method example
+    await fetchT(`${origin}/users`, { method: "GET" });
+  }
   {
     // query parameter example
     // TODO: Add common information for query parameter
