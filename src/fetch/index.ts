@@ -1,6 +1,7 @@
 import {
   ApiBodySchema,
   ApiEndpoints,
+  CaseInsensitiveMethod,
   MergeApiResponses,
   Method,
   NormalizePath,
@@ -15,11 +16,11 @@ import {
 import { TypedString } from "../json";
 
 export interface RequestInitT<
-  M extends Method,
+  InputMethod extends CaseInsensitiveMethod,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   Body extends Record<string, any> | undefined,
 > extends RequestInit {
-  method?: M;
+  method?: InputMethod;
   body?: TypedString<Body>;
 }
 
@@ -36,10 +37,11 @@ type FetchT<Origin extends UrlPrefixPattern, E extends ApiEndpoints> = <
     ""
   >,
   CandidatePaths extends MatchedPatterns<InputPath, keyof E & string>,
-  M extends Method = "get",
+  InputMethod extends CaseInsensitiveMethod = "get",
+  M extends Method = Lowercase<InputMethod>,
 >(
   input: Input,
-  init?: RequestInitT<M, ApiBodySchema<E, CandidatePaths, M>>,
+  init?: RequestInitT<InputMethod, ApiBodySchema<E, CandidatePaths, M>>,
   // FIXME: NonNullable
 ) => Promise<MergeApiResponses<NonNullable<E[CandidatePaths][M]>["res"]>>;
 
