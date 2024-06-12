@@ -11,8 +11,8 @@
     "test:lint": "eslint .",
     "test:format": "prettier --check .",
     "test:type-check": "tsc --noEmit",
-    "example:express": "tsx examples/express.ts",
-    "example:fetch": "tsx examples/fetch.ts"
+    "example:express": "tsx examples/express/express.ts",
+    "example:fetch": "tsx examples/express/fetch.ts"
   },
   "author": "mpppk",
   "license": "ISC",

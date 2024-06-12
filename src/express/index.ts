@@ -60,13 +60,16 @@ export type RouterT<
 > = Omit<IRouter, Method> & {
   [M in Method]: <Path extends string & keyof ZodE>(
     path: Path,
-    ...handlers: Array<
+    ...handlers: [
+      // Middlewareは複数のエンドポイントで実装を使い回されることがあるので、型チェックはゆるくする
+      ...Array<RequestHandler>,
+      // Handlerは厳密に型チェックする
       Handler<
         ToApiEndpoints<ZodE>[Path][M],
         SC,
         ValidateLocals<ZodE[Path][M], ParseUrlParams<Path>>
-      >
-    >
+      >,
+    ]
   ) => RouterT<ZodE, SC>;
 };
 

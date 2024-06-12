@@ -1,7 +1,12 @@
 import express from "express";
-import { asAsync, typed } from "../src/express";
+import { asAsync, typed } from "../../src/express";
 import { pathMap } from "./spec";
 
+const emptyMiddleware = (
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction,
+) => next();
 const newApp = () => {
   const app = express();
   app.use(express.json());
@@ -13,7 +18,7 @@ const newApp = () => {
   // const wApp = app as TRouter<typeof pathMap>;
   // ```
   const wApp = asAsync(typed(pathMap, app));
-  wApp.get("/users", (req, res) => {
+  wApp.get("/users", emptyMiddleware, (req, res) => {
     {
       // @ts-expect-error params is not defined because pathMap["/users"]["get"].params is not defined
       res.locals.validate(req).params();

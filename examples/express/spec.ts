@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { ToApiEndpoints, ZodApiEndpoints } from "../src";
+import { ToApiEndpoints, ZodApiEndpoints } from "../../src";
 
 export const pathMap = {
   "/users": {
