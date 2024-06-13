@@ -32,7 +32,7 @@ export type Handler<
   next: NextFunction,
 ) => void;
 
-type ToHandler<
+export type ToHandler<
   ZodE extends ZodApiEndpoints,
   Path extends keyof ZodE & string,
   M extends Method,

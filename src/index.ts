@@ -9,6 +9,8 @@ export {
   ValidateLocals as ExpressValidateLocals,
   RouterT as ExpressRouterT,
   Handler as ExpressHandler,
+  ToHandlers as ExpressToHandlers,
+  ToHandler as ExpressToHandler,
   ParsedQs as ExpressParsedQs,
 } from "./express";
 
