@@ -23,15 +23,32 @@ export interface ParsedQs {
 }
 export type Handler<
   Spec extends ApiSpec | undefined,
-  SC extends keyof NonNullable<ApiSpec>["res"] & StatusCode = 200,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   Locals extends Record<string, any> = Record<string, never>,
 > = (
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   req: Request<ParamsDictionary, any, any, ParsedQs, Locals>,
-  res: ExpressResponse<NonNullable<Spec>["res"], SC, Locals>,
+  res: ExpressResponse<NonNullable<Spec>["res"], 200, Locals>,
   next: NextFunction,
 ) => void;
+
+type ToHandler<
+  ZodE extends ZodApiEndpoints,
+  Path extends keyof ZodE & string,
+  M extends Method,
+> = Handler<
+  ToApiEndpoints<ZodE>[Path][M],
+  ValidateLocals<ZodE[Path][M], ParseUrlParams<Path>>
+>;
+
+export type ToHandlers<
+  ZodE extends ZodApiEndpoints,
+  E extends ToApiEndpoints<ZodE> = ToApiEndpoints<ZodE>,
+> = {
+  [Path in keyof E & string]: {
+    [M in Method]: ToHandler<ZodE, Path, M>;
+  };
+};
 
 export type ExpressResponse<
   Responses extends ApiResponses,
@@ -64,11 +81,7 @@ export type RouterT<
       // Middlewareは複数のエンドポイントで実装を使い回されることがあるので、型チェックはゆるくする
       ...Array<RequestHandler>,
       // Handlerは厳密に型チェックする
-      Handler<
-        ToApiEndpoints<ZodE>[Path][M],
-        SC,
-        ValidateLocals<ZodE[Path][M], ParseUrlParams<Path>>
-      >,
+      ToHandler<ZodE, Path, M>,
     ]
   ) => RouterT<ZodE, SC>;
 };

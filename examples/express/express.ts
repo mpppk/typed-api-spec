@@ -1,5 +1,5 @@
 import express from "express";
-import { asAsync, typed } from "../../src/express";
+import { asAsync, ToHandlers, typed } from "../../src/express";
 import { pathMap } from "./spec";
 
 const emptyMiddleware = (
@@ -7,6 +7,7 @@ const emptyMiddleware = (
   res: express.Response,
   next: express.NextFunction,
 ) => next();
+type Handlers = ToHandlers<typeof pathMap>;
 const newApp = () => {
   const app = express();
   app.use(express.json());
@@ -46,7 +47,8 @@ const newApp = () => {
       res.status(400).json({ errorMessage: r.error.toString() });
     }
   });
-  wApp.get("/users/:userId", (req, res) => {
+
+  const getUserHandler: Handlers["/users/:userId"]["get"] = (req, res) => {
     const params = res.locals.validate(req).params();
 
     if (params.success) {
@@ -56,7 +58,9 @@ const newApp = () => {
       // res.status(400).json() accepts only the response schema defined in pathMap["/users/:userId"]["get"].res["400"]
       res.status(400).json({ errorMessage: params.error.toString() });
     }
-  });
+  };
+  wApp.get("/users/:userId", getUserHandler);
+
   return app;
 };
 
