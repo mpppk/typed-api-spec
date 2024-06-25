@@ -7,7 +7,7 @@ export type JSON$stringifyT = <T>(
   space?: number | string | undefined,
 ) => TypedString<T>;
 
-type JSONT = JSON & {
+type JSONT = Omit<JSON, "stringify"> & {
   stringify: JSON$stringifyT;
 };
 
