@@ -23,6 +23,7 @@ export interface RequestInitT<
 > extends RequestInit {
   method?: InputMethod;
   body?: TypedString<Body>;
+  // FIXME: no optional
   headers?: HeadersObj extends Record<string, string>
     ? HeadersObj | Headers
     : never;
