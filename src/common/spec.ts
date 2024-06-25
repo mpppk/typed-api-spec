@@ -17,7 +17,7 @@ export type ApiEndpoint<Path extends string> = Partial<
   Record<Method, ApiSpec<ParseUrlParams<Path>>>
 >;
 export type ApiEndpoints = {
-  [K in string]: ApiEndpoint<K>;
+  [Path in string]: ApiEndpoint<Path>;
 };
 
 export interface ApiSpec<
@@ -32,24 +32,30 @@ export interface ApiSpec<
   Response extends Partial<Record<StatusCode, object>> = Partial<
     Record<StatusCode, object>
   >,
+  RequestHeaders extends Record<string, string> = Record<string, string>,
+  ResponseHeaders extends Record<string, string> = Record<string, string>,
 > {
   query?: Query;
   params?: Params;
   body?: Body;
   res: Response;
+  reqHeaders?: RequestHeaders;
+  resHeaders?: ResponseHeaders;
 }
 
-export type ApiBodySchema<
+export type ApiP<
   E extends ApiEndpoints,
   Path extends keyof E & string,
   M extends Method,
-> = E[Path] extends undefined
-  ? undefined
-  : E[Path][M] extends undefined
-    ? undefined
-    : NonNullable<E[Path][M]>["body"] extends undefined
-      ? undefined
-      : NonNullable<NonNullable<E[Path][M]>["body"]>;
+  P extends keyof ApiSpec,
+> =
+  E[Path] extends ApiEndpoint<Path>
+    ? E[Path][M] extends ApiSpec<ParseUrlParams<Path>>
+      ? E[Path][M][P] extends Record<string, string>
+        ? E[Path][M][P]
+        : never
+      : never
+    : never;
 
 export type ApiRes<
   AResponses extends ApiResponses,

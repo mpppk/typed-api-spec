@@ -17,6 +17,7 @@ export type ZodValidators<
       : () => SafeParse<z.ZodType<Record<QueryKeys, string>>>;
   query: ZodValidator<AS["query"]>;
   body: ZodValidator<AS["body"]>;
+  headers: ZodValidator<AS["reqHeaders"]>;
 }>;
 type ZodTypeWithKey<Key extends string> = z.ZodType<
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -43,11 +44,15 @@ export interface ZodApiSpec<
   Query extends z.ZodTypeAny = z.ZodTypeAny,
   Body extends z.ZodTypeAny = z.ZodTypeAny,
   Response extends ZodApiResponses = Partial<Record<StatusCode, z.ZodTypeAny>>,
+  RequestHeaders extends z.ZodTypeAny = z.ZodTypeAny,
+  ResponseHeaders extends z.ZodTypeAny = z.ZodTypeAny,
 > {
   query?: Query;
   params?: Params;
   body?: Body;
   res: Response;
+  reqHeaders?: RequestHeaders;
+  resHeaders?: ResponseHeaders;
 }
 export type ZodApiResponses = Partial<Record<StatusCode, z.ZodTypeAny>>;
 export type ZodApiResSchema<
@@ -69,6 +74,8 @@ export type ToApiSpec<ZAS extends ZodApiSpec> = {
   params: InferOrUndefined<ZAS["params"]>;
   body: InferOrUndefined<ZAS["body"]>;
   res: ToApiResponses<ZAS["res"]>;
+  reqHeaders: InferOrUndefined<ZAS["reqHeaders"]>;
+  resHeaders: InferOrUndefined<ZAS["resHeaders"]>;
 };
 export type ToApiResponses<AR extends ZodApiResponses> = {
   [SC in keyof AR & StatusCode]: z.infer<ZodApiResSchema<AR, SC>>;
