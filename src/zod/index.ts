@@ -17,7 +17,8 @@ export type ZodValidators<
       : () => SafeParse<z.ZodType<Record<QueryKeys, string>>>;
   query: ZodValidator<AS["query"]>;
   body: ZodValidator<AS["body"]>;
-  headers: ZodValidator<AS["reqHeaders"]>;
+  reqHeaders: ZodValidator<AS["reqHeaders"]>;
+  resHeaders: ZodValidator<AS["resHeaders"]>;
 }>;
 type ZodTypeWithKey<Key extends string> = z.ZodType<
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
