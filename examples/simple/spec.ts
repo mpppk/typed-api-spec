@@ -7,7 +7,7 @@ export type PathMap = DefineApiEndpoints<{
         200: { userNames: string[] };
         400: { errorMessage: string };
       };
-      reqHeaders: { "Content-Type": "application/json" };
+      headers: { "Content-Type": "application/json" };
       resHeaders: { "Content-Type": "application/json" };
     };
   };

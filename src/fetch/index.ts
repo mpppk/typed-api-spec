@@ -49,7 +49,7 @@ type FetchT<Origin extends UrlPrefixPattern, E extends ApiEndpoints> = <
   init?: RequestInitT<
     InputMethod,
     ApiP<E, CandidatePaths, M, "body">,
-    ApiP<E, CandidatePaths, M, "reqHeaders">
+    ApiP<E, CandidatePaths, M, "headers">
   >,
   // FIXME: NonNullable
 ) => Promise<MergeApiResponses<NonNullable<E[CandidatePaths][M]>["res"]>>;

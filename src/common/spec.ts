@@ -51,7 +51,7 @@ export interface ApiSpec<
   params?: Params;
   body?: Body;
   res: Response;
-  reqHeaders?: RequestHeaders;
+  headers?: RequestHeaders;
   resHeaders?: ResponseHeaders;
 }
 
@@ -62,11 +62,8 @@ type JsonHeader = {
 type WithJsonHeader<H extends Record<string, string> | undefined> =
   H extends Record<string, string> ? H & JsonHeader : JsonHeader;
 
-type AsJsonApiSpec<AS extends ApiSpec> = Omit<
-  AS,
-  "reqHeaders" | "resHeaders"
-> & {
-  reqHeaders: WithJsonHeader<AS["reqHeaders"]>;
+type AsJsonApiSpec<AS extends ApiSpec> = Omit<AS, "headers" | "resHeaders"> & {
+  headers: WithJsonHeader<AS["headers"]>;
   resHeaders: WithJsonHeader<AS["resHeaders"]>;
 };
 

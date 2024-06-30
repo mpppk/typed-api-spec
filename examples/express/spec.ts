@@ -16,7 +16,7 @@ export const pathMap = {
       },
     },
     post: {
-      reqHeaders: JsonHeader,
+      headers: JsonHeader,
       resHeaders: JsonHeader,
       res: {
         200: z.object({ userId: z.string() }),

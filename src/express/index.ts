@@ -144,14 +144,12 @@ export const newValidator = <E extends ZodApiEndpoints>(endpoints: E) => {
         spec?.query?.safeParse(req.query) as E[Path][M] extends ZodApiSpec
           ? ZodValidator<E[Path][M]["query"]>
           : undefined,
-      reqHeaders: () =>
-        spec?.reqHeaders?.safeParse(
-          req.headers,
-        ) as E[Path][M] extends ZodApiSpec
-          ? ZodValidator<E[Path][M]["reqHeaders"]>
+      headers: () =>
+        spec?.headers?.safeParse(req.headers) as E[Path][M] extends ZodApiSpec
+          ? ZodValidator<E[Path][M]["headers"]>
           : undefined,
       resHeaders: () =>
-        spec?.reqHeaders?.safeParse(
+        spec?.resHeaders?.safeParse(
           req.headers,
         ) as E[Path][M] extends ZodApiSpec
           ? ZodValidator<E[Path][M]["resHeaders"]>

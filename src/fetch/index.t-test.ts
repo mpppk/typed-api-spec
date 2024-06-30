@@ -67,7 +67,7 @@ import JSONT from "../json";
     }
 
     {
-      // TODO: reqHeadersを定義している場合でもRequestInitが省略できてしまう
+      // TODO: headersを定義している場合でもRequestInitが省略できてしまう
       await f("/users");
     }
 
