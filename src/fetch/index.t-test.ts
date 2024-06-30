@@ -1,4 +1,4 @@
-import { DefineApiEndpoints } from "../common";
+import { AsJsonApi, DefineApiEndpoints } from "../common";
 import FetchT from "./index";
 import JSONT from "../json";
 
@@ -6,15 +6,11 @@ import JSONT from "../json";
   type Spec = DefineApiEndpoints<{
     "/users": {
       get: {
-        reqHeaders: { "Content-Type": "application/json" };
-        resHeaders: { "Content-Type": "application/json" };
         res: {
           200: { prop: string };
         };
       };
       post: {
-        reqHeaders: { "Content-Type": "application/json" };
-        resHeaders: { "Content-Type": "application/json" };
         body: {
           userName: string;
         };
@@ -25,8 +21,10 @@ import JSONT from "../json";
       };
     };
   }>;
+  type JsonSpec = AsJsonApi<Spec>;
   (async () => {
-    const f = fetch as FetchT<"", Spec>;
+    const f = fetch as FetchT<"", JsonSpec>;
+    const f2 = fetch as FetchT<"", Spec>;
     const JSONT = JSON as JSONT;
     {
       // @ts-expect-error fetch requires input
@@ -61,6 +59,11 @@ import JSONT from "../json";
     {
       // @ts-expect-error API定義と異なるheadersを指定した場合は型エラー
       await f("/users", { headers: {} });
+    }
+
+    {
+      // AsJsonApiを利用していない場合、Content-Typeがapplication/jsonでなくてもエラーにならない
+      await f2("/users", { headers: undefined });
     }
 
     {
