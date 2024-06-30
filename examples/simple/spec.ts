@@ -3,7 +3,7 @@ import { DefineApiEndpoints, FetchT } from "../../src";
 export type PathMap = DefineApiEndpoints<{
   "/users": {
     get: {
-      res: {
+      resBody: {
         200: { userNames: string[] };
         400: { errorMessage: string };
       };

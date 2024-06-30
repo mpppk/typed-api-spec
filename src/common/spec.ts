@@ -5,7 +5,7 @@ import { ClientResponse, StatusCode } from "./hono-types";
  * { // ApiEndpoints
  *   "/users": { // ApiEndpoint
  *     get: { // ApiSpec
- *       res: {
+ *       resBody: {
  *         200: { p: string }
  *       }
  *     }
@@ -41,7 +41,7 @@ export interface ApiSpec<
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   Query extends Record<string, string> = Record<string, any>,
   Body extends object = object,
-  Response extends Partial<Record<StatusCode, object>> = Partial<
+  ResBody extends Partial<Record<StatusCode, object>> = Partial<
     Record<StatusCode, object>
   >,
   RequestHeaders extends Record<string, string> = Record<string, string>,
@@ -50,7 +50,7 @@ export interface ApiSpec<
   query?: Query;
   params?: Params;
   body?: Body;
-  res: Response;
+  resBody: ResBody;
   headers?: RequestHeaders;
   resHeaders?: ResponseHeaders;
 }

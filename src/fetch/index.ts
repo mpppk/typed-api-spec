@@ -52,6 +52,6 @@ type FetchT<Origin extends UrlPrefixPattern, E extends ApiEndpoints> = <
     ApiP<E, CandidatePaths, M, "headers">
   >,
   // FIXME: NonNullable
-) => Promise<MergeApiResponses<NonNullable<E[CandidatePaths][M]>["res"]>>;
+) => Promise<MergeApiResponses<NonNullable<E[CandidatePaths][M]>["resBody"]>>;
 
 export default FetchT;

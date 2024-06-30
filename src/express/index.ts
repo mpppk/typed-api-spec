@@ -28,7 +28,7 @@ export type Handler<
 > = (
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   req: Request<ParamsDictionary, any, any, ParsedQs, Locals>,
-  res: ExpressResponse<NonNullable<Spec>["res"], 200, Locals>,
+  res: ExpressResponse<NonNullable<Spec>["resBody"], 200, Locals>,
   next: NextFunction,
 ) => void;
 
