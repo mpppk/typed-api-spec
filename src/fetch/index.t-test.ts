@@ -6,7 +6,7 @@ import JSONT from "../json";
   type Spec = DefineApiEndpoints<{
     "/users": {
       get: {
-        res: {
+        resBody: {
           200: { prop: string };
         };
       };
@@ -14,7 +14,7 @@ import JSONT from "../json";
         body: {
           userName: string;
         };
-        res: {
+        resBody: {
           200: { postProp: string };
           400: { error: string };
         };
@@ -67,7 +67,7 @@ import JSONT from "../json";
     }
 
     {
-      // TODO: reqHeadersを定義している場合でもRequestInitが省略できてしまう
+      // TODO: headersを定義している場合でもRequestInitが省略できてしまう
       await f("/users");
     }
 

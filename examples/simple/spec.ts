@@ -3,11 +3,11 @@ import { DefineApiEndpoints, FetchT } from "../../src";
 export type PathMap = DefineApiEndpoints<{
   "/users": {
     get: {
-      res: {
+      resBody: {
         200: { userNames: string[] };
         400: { errorMessage: string };
       };
-      reqHeaders: { "Content-Type": "application/json" };
+      headers: { "Content-Type": "application/json" };
       resHeaders: { "Content-Type": "application/json" };
     };
   };

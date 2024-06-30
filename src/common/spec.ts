@@ -5,7 +5,7 @@ import { ClientResponse, StatusCode } from "./hono-types";
  * { // ApiEndpoints
  *   "/users": { // ApiEndpoint
  *     get: { // ApiSpec
- *       res: {
+ *       resBody: {
  *         200: { p: string }
  *       }
  *     }
@@ -41,7 +41,7 @@ export interface ApiSpec<
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   Query extends Record<string, string> = Record<string, any>,
   Body extends object = object,
-  Response extends Partial<Record<StatusCode, object>> = Partial<
+  ResBody extends Partial<Record<StatusCode, object>> = Partial<
     Record<StatusCode, object>
   >,
   RequestHeaders extends Record<string, string> = Record<string, string>,
@@ -50,8 +50,8 @@ export interface ApiSpec<
   query?: Query;
   params?: Params;
   body?: Body;
-  res: Response;
-  reqHeaders?: RequestHeaders;
+  resBody: ResBody;
+  headers?: RequestHeaders;
   resHeaders?: ResponseHeaders;
 }
 
@@ -62,11 +62,8 @@ type JsonHeader = {
 type WithJsonHeader<H extends Record<string, string> | undefined> =
   H extends Record<string, string> ? H & JsonHeader : JsonHeader;
 
-type AsJsonApiSpec<AS extends ApiSpec> = Omit<
-  AS,
-  "reqHeaders" | "resHeaders"
-> & {
-  reqHeaders: WithJsonHeader<AS["reqHeaders"]>;
+type AsJsonApiSpec<AS extends ApiSpec> = Omit<AS, "headers" | "resHeaders"> & {
+  headers: WithJsonHeader<AS["headers"]>;
   resHeaders: WithJsonHeader<AS["resHeaders"]>;
 };
 

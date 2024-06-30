@@ -41,7 +41,7 @@ const newApp = () => {
     const r = res.locals.validate(req).body();
     {
       // Request header also can be validated
-      res.locals.validate(req).reqHeaders();
+      res.locals.validate(req).headers();
     }
     if (r.success) {
       // res.status(200).json() accepts only the response schema defined in pathMap["/users"]["post"].res["200"]

@@ -10,15 +10,15 @@ export const pathMap = {
       query: z.object({
         page: z.string(),
       }),
-      res: {
+      resBody: {
         200: z.object({ userNames: z.string().array() }),
         400: z.object({ errorMessage: z.string() }),
       },
     },
     post: {
-      reqHeaders: JsonHeader,
+      headers: JsonHeader,
       resHeaders: JsonHeader,
-      res: {
+      resBody: {
         200: z.object({ userId: z.string() }),
         400: z.object({ errorMessage: z.string() }),
       },
@@ -30,7 +30,7 @@ export const pathMap = {
   "/users/:userId": {
     get: {
       params: z.object({ userId: z.string() }),
-      res: {
+      resBody: {
         200: z.object({ userName: z.string() }),
         400: z.object({ errorMessage: z.string() }),
       },
