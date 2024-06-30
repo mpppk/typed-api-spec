@@ -1,13 +1,12 @@
 import { PathMap } from "./spec";
-import { JSON$stringifyT } from "../../src";
+import JSONT from "../../src/json";
 import { unreachable } from "../../src/utils";
 import FetchT from "../../src/fetch";
 
 const fetchT = fetch as FetchT<typeof origin, PathMap>;
 const origin = "http://localhost:3000";
-const headers = { "Content-Type": "application/json" };
-// stringify is same as JSON.stringify but with common information
-const stringify = JSON.stringify as JSON$stringifyT;
+const headers = { "Content-Type": "application/json" } as const;
+const JSONT = JSON as JSONT;
 
 const main = async () => {
   {
@@ -60,7 +59,7 @@ const main = async () => {
       headers,
       // body is the request schema defined in pathMap["/users"]["post"].body
       // stringify is same as JSON.stringify but with common information
-      body: stringify({ userName: "user1" }),
+      body: JSONT.stringify({ userName: "user1" }),
     });
     if (res.ok) {
       // r is the response schema defined in pathMap["/users"]["post"].res["20X"]

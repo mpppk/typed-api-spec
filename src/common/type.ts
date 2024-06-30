@@ -86,3 +86,6 @@ export type ExtractByPrefix<
   T extends string,
   Prefix extends string,
 > = T extends `${Prefix}${infer R}` ? R : never;
+
+export type StrictProperty<T, TExpected> =
+  Exclude<keyof T, keyof TExpected> extends never ? T : never;

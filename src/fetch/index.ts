@@ -1,6 +1,6 @@
 import {
-  ApiBodySchema,
   ApiEndpoints,
+  ApiP,
   CaseInsensitiveMethod,
   MergeApiResponses,
   Method,
@@ -19,9 +19,14 @@ export interface RequestInitT<
   InputMethod extends CaseInsensitiveMethod,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   Body extends Record<string, any> | undefined,
+  HeadersObj extends Record<string, string> | undefined,
 > extends RequestInit {
   method?: InputMethod;
   body?: TypedString<Body>;
+  // FIXME: no optional
+  headers?: HeadersObj extends Record<string, string>
+    ? HeadersObj | Headers
+    : never;
 }
 
 /**
@@ -41,7 +46,11 @@ type FetchT<Origin extends UrlPrefixPattern, E extends ApiEndpoints> = <
   M extends Method = Lowercase<InputMethod>,
 >(
   input: Input,
-  init?: RequestInitT<InputMethod, ApiBodySchema<E, CandidatePaths, M>>,
+  init?: RequestInitT<
+    InputMethod,
+    ApiP<E, CandidatePaths, M, "body">,
+    ApiP<E, CandidatePaths, M, "reqHeaders">
+  >,
   // FIXME: NonNullable
 ) => Promise<MergeApiResponses<NonNullable<E[CandidatePaths][M]>["res"]>>;
 

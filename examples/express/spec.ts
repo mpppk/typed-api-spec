@@ -1,6 +1,9 @@
 import { z } from "zod";
 import { ToApiEndpoints, ZodApiEndpoints } from "../../src";
 
+const JsonHeader = z.object({
+  "Content-Type": z.literal("application/json"),
+});
 export const pathMap = {
   "/users": {
     get: {
@@ -13,6 +16,8 @@ export const pathMap = {
       },
     },
     post: {
+      reqHeaders: JsonHeader,
+      resHeaders: JsonHeader,
       res: {
         200: z.object({ userId: z.string() }),
         400: z.object({ errorMessage: z.string() }),

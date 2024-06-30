@@ -39,6 +39,10 @@ const newApp = () => {
   wApp.post("/users", (req, res) => {
     // validate(req).body() is equals to pathMap["/users"]["post"].body.safeParse(req.body)
     const r = res.locals.validate(req).body();
+    {
+      // Request header also can be validated
+      res.locals.validate(req).reqHeaders();
+    }
     if (r.success) {
       // res.status(200).json() accepts only the response schema defined in pathMap["/users"]["post"].res["200"]
       res.status(200).json({ userId: r.data.userName + "#0" });
