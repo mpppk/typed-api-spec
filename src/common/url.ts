@@ -29,11 +29,13 @@ export type UrlPrefixPattern = `${UrlPrefix}${string}`;
  * // => "/users/${string}"
  * ```
  */
-export type ToUrlParamPattern<T> = T extends `${infer O}:${infer R}`
-  ? R extends `${string}/${infer L}`
-    ? `${O}${string}/${ToUrlParamPattern<L>}`
-    : `${O}${string}`
-  : T;
+export type ToUrlParamPattern<T> = T extends `${infer O}://${infer R}`
+  ? `${O}://${ToUrlParamPattern<R>}`
+  : T extends `${infer O}:${infer R}`
+    ? R extends `${string}/${infer L}`
+      ? `${O}${string}/${ToUrlParamPattern<L>}`
+      : `${O}${string}`
+    : T;
 
 /**
  * Convert URL definition with query to acceptable URL pattern
