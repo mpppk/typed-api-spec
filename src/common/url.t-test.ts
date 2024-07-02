@@ -29,8 +29,13 @@ type ToUrlParamPatternTestCases = [
   Expect<Equal<ToUrlParamPattern<"/:a/b">, `/${string}/b`>>,
   Expect<Equal<ToUrlParamPattern<"/:a/:b">, `/${string}/${string}`>>,
   Expect<
-    // @ts-expect-error URL is not supported
-    Equal<ToUrlParamPattern<"https://example.com">, `"https://example.com}`>
+    Equal<ToUrlParamPattern<"https://example.com">, "https://example.com">
+  >,
+  Expect<
+    Equal<
+      ToUrlParamPattern<"https://example.com/:a">,
+      `https://example.com/${string}`
+    >
   >,
 ];
 
@@ -45,7 +50,6 @@ type ToUrlPatternTestCases = [
       `/users/${string}?key=value`
     >
   >,
-  // @ts-expect-error URL is not supported
   Expect<Equal<ToUrlPattern<"https://example.com">, "https://example.com">>,
 ];
 

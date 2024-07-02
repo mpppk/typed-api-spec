@@ -5,12 +5,12 @@ import {
   MergeApiResponses,
   Method,
   NormalizePath,
+  ParseURL,
   Replace,
 } from "../common";
 import {
   MatchedPatterns,
   UrlPrefixPattern,
-  ParseURL,
   ToUrlParamPattern,
 } from "../common";
 import { TypedString } from "../json";
@@ -32,15 +32,13 @@ export interface RequestInitT<
 /**
  * FetchT is a type for window.fetch like function but more strict type information
  */
-type FetchT<Origin extends UrlPrefixPattern, E extends ApiEndpoints> = <
+type FetchT<UrlPrefix extends UrlPrefixPattern, E extends ApiEndpoints> = <
   Input extends
-    | `${ToUrlParamPattern<Origin>}${ToUrlParamPattern<keyof E & string>}`
-    | `${ToUrlParamPattern<Origin>}${ToUrlParamPattern<keyof E & string>}?${string}`,
-  InputPath extends Replace<
-    NormalizePath<ParseURL<Input>["path"]>,
-    ToUrlParamPattern<Origin>,
-    ""
-  >,
+    | `${ToUrlParamPattern<UrlPrefix>}${ToUrlParamPattern<keyof E & string>}`
+    | `${ToUrlParamPattern<UrlPrefix>}${ToUrlParamPattern<keyof E & string>}?${string}`,
+  InputPath extends ParseURL<
+    Replace<NormalizePath<Input>, NormalizePath<UrlPrefix>, "">
+  >["path"],
   CandidatePaths extends MatchedPatterns<InputPath, keyof E & string>,
   InputMethod extends CaseInsensitiveMethod = "get",
   M extends Method = Lowercase<InputMethod>,

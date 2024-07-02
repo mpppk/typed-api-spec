@@ -72,6 +72,12 @@ import JSONT from "../json";
     }
 
     {
+      await f("/users?a=1", {
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    {
       const res = await f("/users", {
         method: "post",
         body: JSONT.stringify({
@@ -101,5 +107,25 @@ import JSONT from "../json";
       // TODO: 今は定義していないメソッドを受け付けてしまうが、いつかなんとかしたい
       await f("/users", { method: "patch" });
     }
+  })();
+}
+
+{
+  type Spec = DefineApiEndpoints<{
+    "/users": {
+      get: {
+        headers: { Cookie: `a=${string}` };
+        resBody: {
+          200: { prop: string };
+        };
+      };
+    };
+  }>;
+  (async () => {
+    const basePath = "https://example.com/api";
+    const f = fetch as FetchT<typeof basePath, Spec>;
+    await f(`${basePath}/users`, {
+      headers: { Cookie: "a=b" },
+    });
   })();
 }
