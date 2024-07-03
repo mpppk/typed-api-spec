@@ -128,4 +128,13 @@ import JSONT from "../json";
       headers: { Cookie: "a=b" },
     });
   })();
+
+  (async () => {
+    // basePathの最後にも/があるのでhttps://example.com/api//usersとなってしまうが、ノーマライズされるので問題ない
+    const basePath = "https://example.com/api/";
+    const f = fetch as FetchT<typeof basePath, Spec>;
+    await f(`${basePath}/users`, {
+      headers: { Cookie: "a=b" },
+    });
+  })();
 }
