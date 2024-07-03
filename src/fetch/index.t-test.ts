@@ -128,19 +128,7 @@ import JSONT from "../json";
       headers: { Cookie: "a=b" },
     });
   })();
-}
 
-{
-  type Spec = DefineApiEndpoints<{
-    "/users": {
-      get: {
-        headers: { Cookie: `a=${string}` };
-        resBody: {
-          200: { prop: string };
-        };
-      };
-    };
-  }>;
   (async () => {
     // basePathの最後にも/があるのでhttps://example.com/api//usersとなってしまうが、ノーマライズされるので問題ない
     const basePath = "https://example.com/api/";
