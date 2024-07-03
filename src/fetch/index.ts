@@ -36,9 +36,9 @@ type FetchT<UrlPrefix extends UrlPrefixPattern, E extends ApiEndpoints> = <
   Input extends
     | `${ToUrlParamPattern<UrlPrefix>}${ToUrlParamPattern<keyof E & string>}`
     | `${ToUrlParamPattern<UrlPrefix>}${ToUrlParamPattern<keyof E & string>}?${string}`,
-  InputPath extends ParseURL<
-    Replace<NormalizePath<Input>, NormalizePath<UrlPrefix>, "">
-  >["path"],
+  InputPath extends NormalizePath<
+    ParseURL<Replace<Input, UrlPrefix, "">>["path"]
+  >,
   CandidatePaths extends MatchedPatterns<InputPath, keyof E & string>,
   InputMethod extends CaseInsensitiveMethod = "get",
   M extends Method = Lowercase<InputMethod>,

@@ -129,3 +129,24 @@ import JSONT from "../json";
     });
   })();
 }
+
+{
+  type Spec = DefineApiEndpoints<{
+    "/users": {
+      get: {
+        headers: { Cookie: `a=${string}` };
+        resBody: {
+          200: { prop: string };
+        };
+      };
+    };
+  }>;
+  (async () => {
+    // basePathの最後にも/があるのでhttps://example.com/api//usersとなってしまうが、ノーマライズされるので問題ない
+    const basePath = "https://example.com/api/";
+    const f = fetch as FetchT<typeof basePath, Spec>;
+    await f(`${basePath}/users`, {
+      headers: { Cookie: "a=b" },
+    });
+  })();
+}
