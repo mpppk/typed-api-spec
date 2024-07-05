@@ -2,17 +2,15 @@ import {
   ApiEndpoints,
   ApiP,
   CaseInsensitiveMethod,
+  MatchedPatterns,
   MergeApiResponses,
   Method,
   NormalizePath,
   ParseURL,
+  PathToUrlParamPattern,
   Replace,
 } from "../common";
-import {
-  MatchedPatterns,
-  UrlPrefixPattern,
-  ToUrlParamPattern,
-} from "../common";
+import { UrlPrefixPattern, ToUrlParamPattern } from "../common";
 import { TypedString } from "../json";
 
 export interface RequestInitT<
@@ -34,12 +32,14 @@ export interface RequestInitT<
  */
 type FetchT<UrlPrefix extends UrlPrefixPattern, E extends ApiEndpoints> = <
   Input extends
-    | `${ToUrlParamPattern<UrlPrefix>}${ToUrlParamPattern<keyof E & string>}`
-    | `${ToUrlParamPattern<UrlPrefix>}${ToUrlParamPattern<keyof E & string>}?${string}`,
-  InputPath extends NormalizePath<
-    ParseURL<Replace<Input, ToUrlParamPattern<UrlPrefix>, "">>["path"]
+    | ToUrlParamPattern<`${UrlPrefix}${keyof E & string}`>
+    | `${ToUrlParamPattern<`${UrlPrefix}${keyof E & string}`>}?${string}`,
+  InputPath extends PathToUrlParamPattern<
+    NormalizePath<
+      ParseURL<Replace<Input, ToUrlParamPattern<UrlPrefix>, "">>["path"]
+    >
   >,
-  CandidatePaths extends MatchedPatterns<InputPath, keyof E & string>,
+  CandidatePaths extends string = MatchedPatterns<InputPath, keyof E & string>,
   InputMethod extends CaseInsensitiveMethod = "get",
   M extends Method = Lowercase<InputMethod>,
 >(
@@ -49,7 +49,6 @@ type FetchT<UrlPrefix extends UrlPrefixPattern, E extends ApiEndpoints> = <
     ApiP<E, CandidatePaths, M, "body">,
     ApiP<E, CandidatePaths, M, "headers">
   >,
-  // FIXME: NonNullable
-) => Promise<MergeApiResponses<NonNullable<E[CandidatePaths][M]>["resBody"]>>;
+) => Promise<MergeApiResponses<ApiP<E, CandidatePaths, M, "resBody">>>;
 
 export default FetchT;

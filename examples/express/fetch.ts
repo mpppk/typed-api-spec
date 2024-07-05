@@ -1,7 +1,7 @@
-import { PathMap } from "./spec";
+import type { PathMap } from "./spec";
 import JSONT from "../../src/json";
 import { unreachable } from "../../src/utils";
-import FetchT from "../../src/fetch";
+import type FetchT from "../../src/fetch";
 
 const fetchT = fetch as FetchT<typeof origin, PathMap>;
 const origin = "http://localhost:3000";
