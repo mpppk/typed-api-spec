@@ -1,4 +1,4 @@
-import { AsJsonApi, DefineApiEndpoints, ParseURL, Replace } from "../common";
+import { AsJsonApi, DefineApiEndpoints } from "../common";
 import FetchT from "./index";
 import JSONT from "../json";
 
