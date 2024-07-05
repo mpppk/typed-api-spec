@@ -74,7 +74,8 @@ export type ApiP<
   P extends keyof ApiSpec,
 > = E[Path] extends ApiEndpoint
   ? E[Path][M] extends ApiSpec<ParseUrlParams<Path>>
-    ? E[Path][M][P] extends Record<string, string>
+    ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      E[Path][M][P] extends Record<string, any>
       ? E[Path][M][P]
       : never
     : never

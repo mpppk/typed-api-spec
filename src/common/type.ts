@@ -89,3 +89,5 @@ export type ExtractByPrefix<
 
 export type StrictProperty<T, TExpected> =
   Exclude<keyof T, keyof TExpected> extends never ? T : never;
+
+export type UndefinedTo<T, U> = T extends undefined ? U : T;

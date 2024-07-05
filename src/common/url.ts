@@ -1,5 +1,5 @@
 import { ParseQueryString } from "./query-string";
-import { ExtractByPrefix, Split } from "./type";
+import { ExtractByPrefix, Split, UndefinedTo } from "./type";
 
 type ExtractParams<T extends string> = ExtractByPrefix<T, ":">;
 
@@ -20,6 +20,8 @@ export type UrlSchema = "http" | "https" | "about" | "blob" | "data" | "file";
 type UrlPrefix = `${UrlSchema}://` | "";
 export type UrlPrefixPattern = `${UrlPrefix}${string}`;
 
+type US<T> = UndefinedTo<T, "">;
+
 /**
  * Convert URL definition to acceptable URL pattern
  *
@@ -29,13 +31,24 @@ export type UrlPrefixPattern = `${UrlPrefix}${string}`;
  * // => "/users/${string}"
  * ```
  */
-export type ToUrlParamPattern<T> = T extends `${infer O}://${infer R}`
-  ? `${O}://${ToUrlParamPattern<R>}`
-  : T extends `${infer O}:${infer R}`
-    ? R extends `${string}/${infer L}`
-      ? `${O}${string}/${ToUrlParamPattern<L>}`
-      : `${O}${string}`
-    : T;
+export type ToUrlParamPattern<
+  T extends string,
+  URL extends ParseURL<T> = ParseURL<T>,
+  Schema extends string = URL["schema"] extends undefined
+    ? ""
+    : `${URL["schema"]}://`,
+  Port extends string = URL["port"] extends undefined ? "" : `:${URL["port"]}`,
+  Path extends string = PathToUrlParamPattern<URL["path"]>,
+> = `${Schema}${US<URL["host"]>}${Port}${Path}`;
+
+export type PathToUrlParamPattern<Path extends string> =
+  Path extends `${infer Prefix}/${infer Suffix}`
+    ? Prefix extends `${infer O}:${string}`
+      ? `${O}${string}/${PathToUrlParamPattern<Suffix>}`
+      : `${Prefix}/${PathToUrlParamPattern<Suffix>}`
+    : Path extends `:${string}`
+      ? string
+      : `${Path}`;
 
 /**
  * Convert URL definition with query to acceptable URL pattern
@@ -46,7 +59,7 @@ export type ToUrlParamPattern<T> = T extends `${infer O}://${infer R}`
  * // => "/users/${string}?key=value"
  * ```
  */
-export type ToUrlPattern<T> = T extends `${infer O}?${infer R}`
+export type ToUrlPattern<T extends string> = T extends `${infer O}?${infer R}`
   ? `${ToUrlParamPattern<O>}?${ToUrlPattern<R>}`
   : ToUrlParamPattern<T>;
 
