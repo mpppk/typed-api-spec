@@ -1,4 +1,4 @@
-import { AsJsonApi, DefineApiEndpoints } from "../common";
+import { AsJsonApi, DefineApiEndpoints, ParseURL, Replace } from "../common";
 import FetchT from "./index";
 import JSONT from "../json";
 
@@ -136,5 +136,31 @@ import JSONT from "../json";
     await f(`${basePath}/users`, {
       headers: { Cookie: "a=b" },
     });
+  })();
+}
+
+{
+  type Spec = DefineApiEndpoints<{
+    "/packages/list": {
+      get: {
+        headers: { Cookie: `a=${string}` };
+        resBody: {
+          200: { prop: string };
+        };
+      };
+    };
+  }>;
+  (async () => {
+    const basePath = "/api/projects/:projectName/workflow";
+    const f = fetch as FetchT<typeof basePath, Spec>;
+    const res = await f(
+      `/api/projects/projectA/workflow/packages/list?state=true`,
+      {
+        headers: { Cookie: "a=b" },
+      },
+    );
+    if (res.ok) {
+      (await res.json()).prop;
+    }
   })();
 }
