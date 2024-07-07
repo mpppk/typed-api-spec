@@ -43,7 +43,7 @@ export interface ApiSpec<
   Body extends object = object,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ResBody extends Partial<Record<StatusCode, any>> = Partial<
-    Record<StatusCode, object>
+    Record<StatusCode, any>
   >,
   RequestHeaders extends Record<string, string> = Record<string, string>,
   ResponseHeaders extends Record<string, string> = Record<string, string>,
