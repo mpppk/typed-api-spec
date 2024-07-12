@@ -1,5 +1,5 @@
 import { z, ZodType } from "zod";
-import { Method, ParseUrlParams, StatusCode } from "../common";
+import { Method, StatusCode } from "../common";
 import { FilterNever } from "../common";
 
 export const anyZ = <T>() => z.any() as ZodType<T>;
@@ -31,12 +31,8 @@ export type InferOrUndefined<T> = T extends z.ZodTypeAny
   : undefined;
 
 // -- spec --
-export type ZodApiEndpoints = {
-  [Path in string]: ZodApiEndpoint<Path>;
-};
-type ZodApiEndpoint<Path extends string> = Partial<
-  Record<Method, ZodApiSpec<ParseUrlParams<Path>>>
->;
+export type ZodApiEndpoints = { [Path in string]: ZodApiEndpoint };
+type ZodApiEndpoint = Partial<Record<Method, ZodApiSpec>>;
 export interface ZodApiSpec<
   ParamKeys extends string = string,
   Params extends ZodTypeWithKey<NoInfer<ParamKeys>> = ZodTypeWithKey<
