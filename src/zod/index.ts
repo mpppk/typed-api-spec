@@ -18,7 +18,7 @@ export type ZodValidators<
   query: ZodValidator<AS["query"]>;
   body: ZodValidator<AS["body"]>;
   headers: ZodValidator<AS["headers"]>;
-  resHeaders: ZodValidator<AS["resHeaders"]>;
+  // resHeaders: ZodValidator<AS["resHeaders"]>;
 }>;
 type ZodTypeWithKey<Key extends string> = z.ZodType<
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -8,7 +8,7 @@ import {
   ToApiEndpoints,
   ApiSpec,
 } from "../index";
-import { ZodValidator, ZodValidators } from "../zod";
+import { ZodValidators } from "../zod";
 import {
   NextFunction,
   ParamsDictionary,
@@ -131,30 +131,28 @@ export const newValidator = <E extends ZodApiEndpoints>(endpoints: E) => {
   ) => {
     const spec: E[Path][M] =
       endpoints[req.route.path][req.method.toLowerCase() as Method];
-    return {
-      params: () =>
-        spec?.params?.safeParse(req.params) as E[Path][M] extends ZodApiSpec
-          ? ZodValidator<E[Path][M]["params"]>
-          : undefined,
-      body: () =>
-        spec?.body?.safeParse(req.body) as E[Path][M] extends ZodApiSpec
-          ? ZodValidator<E[Path][M]["body"]>
-          : undefined,
-      query: () =>
-        spec?.query?.safeParse(req.query) as E[Path][M] extends ZodApiSpec
-          ? ZodValidator<E[Path][M]["query"]>
-          : undefined,
-      headers: () =>
-        spec?.headers?.safeParse(req.headers) as E[Path][M] extends ZodApiSpec
-          ? ZodValidator<E[Path][M]["headers"]>
-          : undefined,
-      resHeaders: () =>
-        spec?.resHeaders?.safeParse(
-          req.headers,
-        ) as E[Path][M] extends ZodApiSpec
-          ? ZodValidator<E[Path][M]["resHeaders"]>
-          : undefined,
-    };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const zodValidators: Record<string, any> = {};
+
+    if (spec?.params !== undefined) {
+      const params = spec.params;
+      zodValidators["params"] = () => params.safeParse(req.params);
+    }
+    if (spec?.query !== undefined) {
+      const query = spec.query;
+      zodValidators["query"] = () => query.safeParse(req.query);
+    }
+    if (spec?.body !== undefined) {
+      const body = spec.body;
+      zodValidators["body"] = () => body.safeParse(req.body);
+    }
+    if (spec?.headers !== undefined) {
+      const headers = spec.headers;
+      zodValidators["headers"] = () => headers.safeParse(req.headers);
+    }
+    return zodValidators as E[Path][M] extends ZodApiSpec
+      ? ZodValidators<E[Path][M], "">
+      : Record<string, unknown>;
   };
 };
 
