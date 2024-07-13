@@ -11,7 +11,6 @@ export {
   Handler as ExpressHandler,
   ToHandlers as ExpressToHandlers,
   ToHandler as ExpressToHandler,
-  ParsedQs as ExpressParsedQs,
 } from "./express";
 
 import FetchT, { RequestInitT } from "./fetch";

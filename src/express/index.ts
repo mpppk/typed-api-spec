@@ -17,10 +17,14 @@ import {
 } from "express-serve-static-core";
 import { StatusCode } from "../common";
 import { ParseUrlParams } from "../common";
+import { ParsedQs } from "qs";
 
-export interface ParsedQs {
-  [key: string]: undefined | string | string[] | ParsedQs | ParsedQs[];
-}
+/**
+ * Express Request Handler, but with more strict type information.
+ * @param req Express Request
+ * @param res Express Response
+ * @param next Express Next function
+ */
 export type Handler<
   Spec extends ApiSpec | undefined,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -32,6 +36,9 @@ export type Handler<
   next: NextFunction,
 ) => void;
 
+/**
+ * Convert ZodApiSpec to Express Request Handler type.
+ */
 export type ToHandler<
   ZodE extends ZodApiEndpoints,
   Path extends keyof ZodE & string,
@@ -41,6 +48,9 @@ export type ToHandler<
   ValidateLocals<ZodE[Path][M], ParseUrlParams<Path>>
 >;
 
+/**
+ * Convert ZodApiEndpoints to Express Request Handler type map.
+ */
 export type ToHandlers<
   ZodE extends ZodApiEndpoints,
   E extends ToApiEndpoints<ZodE> = ToApiEndpoints<ZodE>,
@@ -50,6 +60,9 @@ export type ToHandlers<
   };
 };
 
+/**
+ * Express Response, but with more strict type information.
+ */
 export type ExpressResponse<
   Responses extends ApiResponses,
   SC extends keyof Responses & StatusCode,
@@ -71,6 +84,10 @@ export type ValidateLocals<
       ) => ZodValidators<AS, QueryKeys>;
     }
   : Record<string, never>;
+
+/**
+ * Express Router, but with more strict type information.
+ */
 export type RouterT<
   ZodE extends ZodApiEndpoints,
   SC extends StatusCode = StatusCode,
