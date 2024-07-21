@@ -34,130 +34,140 @@ describe("validatorMiddleware", () => {
   const middleware = validatorMiddleware(pathMap);
   const next = vi.fn();
 
-  it("request to endpoint which is defined in ApiSpec", () => {
-    const req: Partial<Request> = {
-      query: { name: "alice" },
-      body: { name: "alice" },
-      headers: { "content-type": "application/json" },
-      params: { name: "alice" },
-      // "/" endpoint is defined in pathMap
-      path: "/",
-      method: "get",
-    };
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const res = { locals: {} } as any;
-    middleware(req as Request, res, next);
-    expect(next).toHaveBeenCalled();
-    expect(res.locals.validate).toEqual(expect.any(Function));
-    const locals = res.locals as ValidateLocals<
-      (typeof pathMap)["/"]["get"],
-      ParseUrlParams<"/">
-    >;
-    const validate = locals.validate(req as Request);
+  describe("request to endpoint which is defined in ApiSpec", () => {
+    it("should success to validate request", () => {
+      const req: Partial<Request> = {
+        query: { name: "alice" },
+        body: { name: "alice" },
+        headers: { "content-type": "application/json" },
+        params: { name: "alice" },
+        // "/" endpoint is defined in pathMap
+        path: "/",
+        method: "get",
+      };
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const res = { locals: {} } as any;
+      middleware(req as Request, res, next);
+      expect(next).toHaveBeenCalled();
+      expect(res.locals.validate).toEqual(expect.any(Function));
+      const locals = res.locals as ValidateLocals<
+        (typeof pathMap)["/"]["get"],
+        ParseUrlParams<"/">
+      >;
+      const validate = locals.validate(req as Request);
 
-    const query = validate.query();
-    expect(query.success).toBe(true);
-    expect(query.data!.name).toBe("alice");
+      const query = validate.query();
+      expect(query.success).toBe(true);
+      expect(query.data!.name).toBe("alice");
 
-    const body = validate.body();
-    expect(body.success).toBe(true);
-    expect(body.data!.name).toBe("alice");
+      const body = validate.body();
+      expect(body.success).toBe(true);
+      expect(body.data!.name).toBe("alice");
 
-    const headers = validate.headers();
-    expect(headers.success).toBe(true);
-    expect(headers.data!["content-type"]).toBe("application/json");
+      const headers = validate.headers();
+      expect(headers.success).toBe(true);
+      expect(headers.data!["content-type"]).toBe("application/json");
+    });
+
+    it("should fail if request schema is invalid", () => {
+      const req: Partial<Request> = {
+        query: { desc: "test" },
+        body: { desc: "test" },
+        headers: {},
+        params: { desc: "test" },
+        // "/" endpoint is defined in pathMap
+        path: "/",
+        method: "get",
+      };
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const res = { locals: {} } as any;
+      middleware(req as Request, res, next);
+      expect(next).toHaveBeenCalled();
+      expect(res.locals.validate).toEqual(expect.any(Function));
+      const locals = res.locals as ValidateLocals<
+        (typeof pathMap)["/"]["get"],
+        ParseUrlParams<"/">
+      >;
+      const validate = locals.validate(req as Request);
+
+      const query = validate.query();
+      expect(query.success).toBe(false);
+
+      const body = validate.body();
+      expect(body.success).toBe(false);
+
+      const headers = validate.headers();
+      expect(headers.success).toBe(false);
+    });
   });
 
-  it("request to endpoint which is defined in ApiSpec", () => {
-    const req: Partial<Request> = {
-      query: { desc: "test" },
-      body: { desc: "test" },
-      headers: {},
-      params: { desc: "test" },
-      // "/" endpoint is defined in pathMap
-      path: "/",
-      method: "get",
-    };
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const res = { locals: {} } as any;
-    middleware(req as Request, res, next);
-    expect(next).toHaveBeenCalled();
-    expect(res.locals.validate).toEqual(expect.any(Function));
-    const locals = res.locals as ValidateLocals<
-      (typeof pathMap)["/"]["get"],
-      ParseUrlParams<"/">
-    >;
-    const validate = locals.validate(req as Request);
+  describe("request to endpoint which is not defined in ApiSpec", () => {
+    it("have invalid path and valid method", () => {
+      const req: Partial<Request> = {
+        query: { name: "alice" },
+        body: { name: "alice" },
+        headers: { "content-type": "application/json" },
+        params: { name: "alice" },
+        // "/users" endpoint is not defined in pathMap
+        path: "/users",
+        method: "get",
+      };
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const res = { locals: {} } as any;
+      middleware(req as unknown as Request, res, next);
+      expect(next).toHaveBeenCalled();
+      expect(res.locals.validate).toEqual(expect.any(Function));
+      const locals = res.locals as ValidateLocals<
+        undefined,
+        ParseUrlParams<"">
+      >;
+      const validate = locals.validate(req as Request);
 
-    const query = validate.query();
-    expect(query.success).toBe(false);
+      const query = validate.query;
+      expect(query).toBeUndefined();
 
-    const body = validate.body();
-    expect(body.success).toBe(false);
+      const body = validate.body;
+      expect(body).toBeUndefined();
 
-    const headers = validate.headers();
-    expect(headers.success).toBe(false);
-  });
+      const headers = validate.headers;
+      expect(headers).toBeUndefined();
 
-  it("request to endpoint which is not defined in ApiSpec", () => {
-    const req: Partial<Request> = {
-      query: { name: "alice" },
-      body: { name: "alice" },
-      headers: { "content-type": "application/json" },
-      params: { name: "alice" },
-      // "/users" endpoint is not defined in pathMap
-      path: "/users",
-      method: "get",
-    };
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const res = { locals: {} } as any;
-    middleware(req as unknown as Request, res, next);
-    expect(next).toHaveBeenCalled();
-    expect(res.locals.validate).toEqual(expect.any(Function));
-    const locals = res.locals as ValidateLocals<undefined, ParseUrlParams<"">>;
-    const validate = locals.validate(req as Request);
+      const params = validate.params;
+      expect(params).toBeUndefined();
+    });
 
-    const query = validate.query;
-    expect(query).toBeUndefined();
+    it("have valid path and invalid method", () => {
+      const req: Partial<Request> = {
+        query: { name: "alice" },
+        body: { name: "alice" },
+        headers: { "content-type": "application/json" },
+        params: { name: "alice" },
+        // "/" endpoint is defined but patch method is not defined in pathMap
+        path: "/",
+        method: "patch",
+      };
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const res = { locals: {} } as any;
+      middleware(req as unknown as Request, res, next);
+      expect(next).toHaveBeenCalled();
+      expect(res.locals.validate).toEqual(expect.any(Function));
+      const locals = res.locals as ValidateLocals<
+        undefined,
+        ParseUrlParams<"">
+      >;
+      const validate = locals.validate(req as Request);
 
-    const body = validate.body;
-    expect(body).toBeUndefined();
+      const query = validate.query;
+      expect(query).toBeUndefined();
 
-    const headers = validate.headers;
-    expect(headers).toBeUndefined();
+      const body = validate.body;
+      expect(body).toBeUndefined();
 
-    const params = validate.params;
-    expect(params).toBeUndefined();
-  });
+      const headers = validate.headers;
+      expect(headers).toBeUndefined();
 
-  it("request to endpoint which is not defined in ApiSpec", () => {
-    const req: Partial<Request> = {
-      query: { name: "alice" },
-      body: { name: "alice" },
-      headers: { "content-type": "application/json" },
-      params: { name: "alice" },
-      // "/" endpoint is defined but patch method is not defined in pathMap
-      path: "/",
-      method: "patch",
-    };
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const res = { locals: {} } as any;
-    middleware(req as unknown as Request, res, next);
-    expect(next).toHaveBeenCalled();
-    expect(res.locals.validate).toEqual(expect.any(Function));
-    const locals = res.locals as ValidateLocals<undefined, ParseUrlParams<"">>;
-    const validate = locals.validate(req as Request);
-
-    const query = validate.query;
-    expect(query).toBeUndefined();
-
-    const body = validate.body;
-    expect(body).toBeUndefined();
-
-    const headers = validate.headers;
-    expect(headers).toBeUndefined();
-
-    const params = validate.params;
-    expect(params).toBeUndefined();
+      const params = validate.params;
+      expect(params).toBeUndefined();
+    });
   });
 });
