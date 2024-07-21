@@ -1,5 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
-import { ValidateLocals, validatorMiddleware } from "./index";
+import request from "supertest";
+import express from "express";
+import { typed, ValidateLocals, validatorMiddleware } from "./index";
 import { ZodApiEndpoints } from "../zod";
 import { z } from "zod";
 import { Request } from "express";
@@ -26,6 +28,9 @@ describe("validatorMiddleware", () => {
           200: z.object({
             id: z.string(),
             name: z.string(),
+          }),
+          400: z.object({
+            message: z.string(),
           }),
         },
       },
@@ -169,5 +174,85 @@ describe("validatorMiddleware", () => {
       const params = validate.params;
       expect(params).toBeUndefined();
     });
+  });
+});
+
+const newApp = () => {
+  const app = express();
+  app.use(express.json());
+  return app;
+};
+describe("typed", () => {
+  const UserId = z.object({ id: z.string() });
+  const UserName = z.object({ name: z.string() });
+  const User = UserName.merge(UserId);
+  const Err = z.object({ message: z.string() });
+  const BadRequest = { 400: Err };
+  const pathMap = {
+    "/users": {
+      get: {
+        resBody: { 200: z.array(User) },
+      },
+      post: {
+        body: UserName,
+        resBody: { 200: User, ...BadRequest },
+      },
+    },
+    "/users/:id": {
+      get: {
+        params: z.object({ id: z.string() }),
+        headers: z.object({
+          "content-type": z.literal("application/json"),
+        }),
+        query: z.object({
+          detail: z.union([z.literal("true"), z.literal("false")]),
+        }),
+        resBody: { 200: User, ...BadRequest },
+      },
+    },
+  } satisfies ZodApiEndpoints;
+
+  it("ok", async () => {
+    const app = newApp();
+    const wApp = typed(pathMap, app);
+    wApp.get("/users", (req, res) => {
+      return res.json([{ id: "1", name: "alice" }]);
+    });
+    wApp.post("/users", (req, res) => {
+      const body = res.locals.validate(req).body();
+      if (!body.success) {
+        return res.status(400).json({ message: "invalid body" });
+      }
+      return res.json({ id: "1", name: body.data.name });
+    });
+    wApp.get("/users/:id", (req, res) => {
+      const qResult = res.locals.validate(req).query();
+      const pResult = res.locals.validate(req).params();
+      if (!pResult.success) {
+        return res.status(400).json({ message: "invalid query" });
+      }
+      if (qResult.success) {
+        return res.status(200).json({ id: pResult.data.id, name: "alice" });
+      }
+      return res.status(200).json({ id: pResult.data.id, name: "alice" });
+    });
+
+    {
+      const res = await request(app).get("/users");
+      expect(res.status).toBe(200);
+      expect(res.body).toEqual([{ id: "1", name: "alice" }]);
+    }
+
+    {
+      const res = await request(app).post("/users").send({ name: "alice" });
+      expect(res.status).toBe(200);
+      expect(res.body).toEqual({ id: "1", name: "alice" });
+    }
+
+    {
+      const res = await request(app).get("/users/99");
+      expect(res.status).toBe(200);
+      expect(res.body).toEqual({ id: "99", name: "alice" });
+    }
   });
 });

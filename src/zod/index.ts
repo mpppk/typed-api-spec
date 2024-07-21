@@ -86,12 +86,12 @@ export type ToApiResponses<AR extends ZodApiResponses> = {
  */
 export const newZodValidator = <E extends ZodApiEndpoints>(endpoints: E) => {
   return <Path extends keyof E & string, M extends keyof E[Path] & Method>(
-    input: ValidatorsInput<ToApiEndpoints<E>, Path, M>,
+    input: ValidatorsInput,
   ) => {
     const { data: spec, error } = getApiSpec(
       endpoints,
       input.path,
-      input.method,
+      input.method?.toLowerCase(),
     );
     if (error !== undefined) {
       return {} as E[Path][M] extends ZodApiSpec
@@ -100,21 +100,21 @@ export const newZodValidator = <E extends ZodApiEndpoints>(endpoints: E) => {
     }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const zodValidators: Record<string, any> = {};
-
-    if (spec?.params !== undefined) {
-      const params = spec.params;
+    const s = spec as Partial<ZodApiSpec>;
+    if (s.params !== undefined) {
+      const params = s.params;
       zodValidators["params"] = () => params.safeParse(input.params);
     }
-    if (spec?.query !== undefined) {
-      const query = spec.query;
+    if (s.query !== undefined) {
+      const query = s.query;
       zodValidators["query"] = () => query.safeParse(input.query);
     }
-    if (spec?.body !== undefined) {
-      const body = spec.body;
+    if (s.body !== undefined) {
+      const body = s.body;
       zodValidators["body"] = () => body.safeParse(input.body);
     }
-    if (spec?.headers !== undefined) {
-      const headers = spec.headers;
+    if (s.headers !== undefined) {
+      const headers = s.headers;
       zodValidators["headers"] = () => headers.safeParse(input.headers);
     }
     return zodValidators as E[Path][M] extends ZodApiSpec

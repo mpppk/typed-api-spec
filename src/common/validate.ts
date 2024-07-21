@@ -1,19 +1,9 @@
 import { Result } from "../utils";
-import {
-  AnyApiEndpoint,
-  AnyApiEndpoints,
-  ApiEndpoints,
-  isMethod,
-  Method,
-} from "./spec";
+import { AnyApiEndpoint, AnyApiEndpoints, isMethod } from "./spec";
 
-export type ValidatorsInput<
-  E extends ApiEndpoints,
-  Path extends keyof E & string,
-  M extends Method,
-> = {
-  path: Path;
-  method: M;
+export type ValidatorsInput = {
+  path: string;
+  method: string;
   params?: Record<string, string>;
   query?: Record<string, string>;
   body?: Record<string, string>;
