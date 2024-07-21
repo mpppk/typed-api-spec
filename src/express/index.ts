@@ -7,6 +7,7 @@ import {
   ApiRes,
   ToApiEndpoints,
   ApiSpec,
+  newZodValidator,
 } from "../index";
 import { ZodValidators } from "../zod";
 import {
@@ -76,14 +77,14 @@ export type ExpressResponse<
 
 export type ValidateLocals<
   AS extends ZodApiSpec | undefined,
-  QueryKeys extends string,
-> = AS extends ZodApiSpec
-  ? {
-      validate: (
-        req: Request<ParamsDictionary, unknown, unknown, unknown>,
-      ) => ZodValidators<AS, QueryKeys>;
-    }
-  : Record<string, never>;
+  ParamKeys extends string,
+> = {
+  validate: (
+    req: Request<ParamsDictionary, unknown, unknown, unknown>,
+  ) => AS extends ZodApiSpec
+    ? ZodValidators<AS, ParamKeys>
+    : Record<string, never>;
+};
 
 /**
  * Express Router, but with more strict type information.
@@ -103,8 +104,8 @@ export type RouterT<
   ) => RouterT<ZodE, SC>;
 };
 
-const validatorMiddleware = (pathMap: ZodApiEndpoints) => {
-  const validator = newValidator(pathMap);
+export const validatorMiddleware = (pathMap: ZodApiEndpoints) => {
+  const validator = newZodValidator(pathMap);
   return (_req: Request, res: Response, next: NextFunction) => {
     res.locals.validate = validator;
     next();
@@ -135,42 +136,6 @@ export const typed = <const Endpoints extends ZodApiEndpoints>(
 ): RouterT<Endpoints> => {
   router.use(validatorMiddleware(pathMap));
   return router;
-};
-
-/**
- * Create a new validator for the given endpoints.
- *
- * @param endpoints API endpoints
- */
-export const newValidator = <E extends ZodApiEndpoints>(endpoints: E) => {
-  return <Path extends keyof E, M extends keyof E[Path] & Method>(
-    req: Request,
-  ) => {
-    const spec: E[Path][M] =
-      endpoints[req.route.path][req.method.toLowerCase() as Method];
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const zodValidators: Record<string, any> = {};
-
-    if (spec?.params !== undefined) {
-      const params = spec.params;
-      zodValidators["params"] = () => params.safeParse(req.params);
-    }
-    if (spec?.query !== undefined) {
-      const query = spec.query;
-      zodValidators["query"] = () => query.safeParse(req.query);
-    }
-    if (spec?.body !== undefined) {
-      const body = spec.body;
-      zodValidators["body"] = () => body.safeParse(req.body);
-    }
-    if (spec?.headers !== undefined) {
-      const headers = spec.headers;
-      zodValidators["headers"] = () => headers.safeParse(req.headers);
-    }
-    return zodValidators as E[Path][M] extends ZodApiSpec
-      ? ZodValidators<E[Path][M], "">
-      : Record<string, unknown>;
-  };
 };
 
 export type AsyncRequestHandler<Handler extends RequestHandler> = (

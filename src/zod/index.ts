@@ -1,6 +1,7 @@
 import { z, ZodType } from "zod";
 import { Method, StatusCode } from "../common";
 import { FilterNever } from "../common";
+import { getApiSpec, ValidatorsInput } from "../common/validate";
 
 export const anyZ = <T>() => z.any() as ZodType<T>;
 type SafeParse<Z extends z.ZodTypeAny> = ReturnType<Z["safeParse"]>;
@@ -8,13 +9,13 @@ export type ZodValidator<V extends z.ZodTypeAny | undefined> =
   V extends z.ZodTypeAny ? () => ReturnType<V["safeParse"]> : never;
 export type ZodValidators<
   AS extends ZodApiSpec,
-  QueryKeys extends string,
+  ParamKeys extends string,
 > = FilterNever<{
-  params: QueryKeys extends never
+  params: ParamKeys extends never
     ? never
     : AS["params"] extends z.ZodTypeAny
       ? () => SafeParse<AS["params"]>
-      : () => SafeParse<z.ZodType<Record<QueryKeys, string>>>;
+      : () => SafeParse<z.ZodType<Record<ParamKeys, string>>>;
   query: ZodValidator<AS["query"]>;
   body: ZodValidator<AS["body"]>;
   headers: ZodValidator<AS["headers"]>;
@@ -76,4 +77,48 @@ export type ToApiSpec<ZAS extends ZodApiSpec> = {
 };
 export type ToApiResponses<AR extends ZodApiResponses> = {
   [SC in keyof AR & StatusCode]: z.infer<ZodApiResSchema<AR, SC>>;
+};
+
+/**
+ * Create a new validator for the given endpoints.
+ *
+ * @param endpoints API endpoints
+ */
+export const newZodValidator = <E extends ZodApiEndpoints>(endpoints: E) => {
+  return <Path extends keyof E & string, M extends keyof E[Path] & Method>(
+    input: ValidatorsInput<ToApiEndpoints<E>, Path, M>,
+  ) => {
+    const { data: spec, error } = getApiSpec(
+      endpoints,
+      input.path,
+      input.method,
+    );
+    if (error !== undefined) {
+      return {} as E[Path][M] extends ZodApiSpec
+        ? ZodValidators<E[Path][M], "">
+        : Record<string, never>;
+    }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const zodValidators: Record<string, any> = {};
+
+    if (spec?.params !== undefined) {
+      const params = spec.params;
+      zodValidators["params"] = () => params.safeParse(input.params);
+    }
+    if (spec?.query !== undefined) {
+      const query = spec.query;
+      zodValidators["query"] = () => query.safeParse(input.query);
+    }
+    if (spec?.body !== undefined) {
+      const body = spec.body;
+      zodValidators["body"] = () => body.safeParse(input.body);
+    }
+    if (spec?.headers !== undefined) {
+      const headers = spec.headers;
+      zodValidators["headers"] = () => headers.safeParse(input.headers);
+    }
+    return zodValidators as E[Path][M] extends ZodApiSpec
+      ? ZodValidators<E[Path][M], "">
+      : Record<string, never>;
+  };
 };

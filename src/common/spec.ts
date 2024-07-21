@@ -24,13 +24,17 @@ export const Method = [
 ] as const;
 export type Method = (typeof Method)[number];
 export type CaseInsensitiveMethod = Method | Uppercase<Method>;
+export const isMethod = (x: unknown): x is Method =>
+  Method.includes(x as Method);
 
 export type ApiEndpoint = Partial<Record<Method, ApiSpec>>;
+export type AnyApiEndpoint = Partial<Record<Method, AnyApiSpec>>;
 type AsJsonApiEndpoint<AE extends ApiEndpoint> = {
   // FIXME: NonNullableでいいんだっけ?
   [M in keyof AE & Method]: AsJsonApiSpec<NonNullable<AE[M]>>;
 };
 export type ApiEndpoints = { [Path in string]: ApiEndpoint };
+export type AnyApiEndpoints = { [Path in string]: AnyApiEndpoint };
 
 export interface ApiSpec<
   ParamKeys extends string = string,
@@ -56,6 +60,8 @@ export interface ApiSpec<
   headers?: RequestHeaders;
   resHeaders?: ResponseHeaders;
 }
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type AnyApiSpec = ApiSpec<string, any, any, any, any, any, any>;
 
 type JsonHeader = {
   "Content-Type": "application/json";

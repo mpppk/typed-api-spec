@@ -3,7 +3,6 @@ export {
   asAsync as expressAsAsync,
   wrap as expressWrap,
   AsyncRequestHandler as ExpressAsyncRequestHandler,
-  newValidator as expressNewValidator,
   typed as expressTyped,
   ExpressResponse,
   ValidateLocals as ExpressValidateLocals,
