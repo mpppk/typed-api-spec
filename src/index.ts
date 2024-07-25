@@ -3,7 +3,6 @@ export {
   asAsync as expressAsAsync,
   wrap as expressWrap,
   AsyncRequestHandler as ExpressAsyncRequestHandler,
-  newValidator as expressNewValidator,
   typed as expressTyped,
   ExpressResponse,
   ValidateLocals as ExpressValidateLocals,
@@ -11,7 +10,6 @@ export {
   Handler as ExpressHandler,
   ToHandlers as ExpressToHandlers,
   ToHandler as ExpressToHandler,
-  ParsedQs as ExpressParsedQs,
 } from "./express";
 
 import FetchT, { RequestInitT } from "./fetch";

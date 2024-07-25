@@ -7,6 +7,7 @@ import {
   ApiRes,
   ToApiEndpoints,
   ApiSpec,
+  newZodValidator,
 } from "../index";
 import { ZodValidators } from "../zod";
 import {
@@ -17,10 +18,14 @@ import {
 } from "express-serve-static-core";
 import { StatusCode } from "../common";
 import { ParseUrlParams } from "../common";
+import { ParsedQs } from "qs";
 
-export interface ParsedQs {
-  [key: string]: undefined | string | string[] | ParsedQs | ParsedQs[];
-}
+/**
+ * Express Request Handler, but with more strict type information.
+ * @param req Express Request
+ * @param res Express Response
+ * @param next Express Next function
+ */
 export type Handler<
   Spec extends ApiSpec | undefined,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -32,6 +37,9 @@ export type Handler<
   next: NextFunction,
 ) => void;
 
+/**
+ * Convert ZodApiSpec to Express Request Handler type.
+ */
 export type ToHandler<
   ZodE extends ZodApiEndpoints,
   Path extends keyof ZodE & string,
@@ -41,6 +49,9 @@ export type ToHandler<
   ValidateLocals<ZodE[Path][M], ParseUrlParams<Path>>
 >;
 
+/**
+ * Convert ZodApiEndpoints to Express Request Handler type map.
+ */
 export type ToHandlers<
   ZodE extends ZodApiEndpoints,
   E extends ToApiEndpoints<ZodE> = ToApiEndpoints<ZodE>,
@@ -50,6 +61,9 @@ export type ToHandlers<
   };
 };
 
+/**
+ * Express Response, but with more strict type information.
+ */
 export type ExpressResponse<
   Responses extends ApiResponses,
   SC extends keyof Responses & StatusCode,
@@ -63,14 +77,18 @@ export type ExpressResponse<
 
 export type ValidateLocals<
   AS extends ZodApiSpec | undefined,
-  QueryKeys extends string,
-> = AS extends ZodApiSpec
-  ? {
-      validate: (
-        req: Request<ParamsDictionary, unknown, unknown, unknown>,
-      ) => ZodValidators<AS, QueryKeys>;
-    }
-  : Record<string, never>;
+  ParamKeys extends string,
+> = {
+  validate: (
+    req: Request<ParamsDictionary, unknown, unknown, unknown>,
+  ) => AS extends ZodApiSpec
+    ? ZodValidators<AS, ParamKeys>
+    : Record<string, never>;
+};
+
+/**
+ * Express Router, but with more strict type information.
+ */
 export type RouterT<
   ZodE extends ZodApiEndpoints,
   SC extends StatusCode = StatusCode,
@@ -86,10 +104,19 @@ export type RouterT<
   ) => RouterT<ZodE, SC>;
 };
 
-const validatorMiddleware = (pathMap: ZodApiEndpoints) => {
-  const validator = newValidator(pathMap);
+export const validatorMiddleware = (pathMap: ZodApiEndpoints) => {
+  const validator = newZodValidator(pathMap);
   return (_req: Request, res: Response, next: NextFunction) => {
-    res.locals.validate = validator;
+    res.locals.validate = (req: Request) => {
+      return validator({
+        path: req.route?.path?.toString(),
+        method: req.method,
+        headers: req.headers,
+        params: req.params,
+        query: req.query,
+        body: req.body,
+      });
+    };
     next();
   };
 };
@@ -120,42 +147,6 @@ export const typed = <const Endpoints extends ZodApiEndpoints>(
   return router;
 };
 
-/**
- * Create a new validator for the given endpoints.
- *
- * @param endpoints API endpoints
- */
-export const newValidator = <E extends ZodApiEndpoints>(endpoints: E) => {
-  return <Path extends keyof E, M extends keyof E[Path] & Method>(
-    req: Request,
-  ) => {
-    const spec: E[Path][M] =
-      endpoints[req.route.path][req.method.toLowerCase() as Method];
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const zodValidators: Record<string, any> = {};
-
-    if (spec?.params !== undefined) {
-      const params = spec.params;
-      zodValidators["params"] = () => params.safeParse(req.params);
-    }
-    if (spec?.query !== undefined) {
-      const query = spec.query;
-      zodValidators["query"] = () => query.safeParse(req.query);
-    }
-    if (spec?.body !== undefined) {
-      const body = spec.body;
-      zodValidators["body"] = () => body.safeParse(req.body);
-    }
-    if (spec?.headers !== undefined) {
-      const headers = spec.headers;
-      zodValidators["headers"] = () => headers.safeParse(req.headers);
-    }
-    return zodValidators as E[Path][M] extends ZodApiSpec
-      ? ZodValidators<E[Path][M], "">
-      : Record<string, unknown>;
-  };
-};
-
 export type AsyncRequestHandler<Handler extends RequestHandler> = (
   req: Parameters<NoInfer<Handler>>[0],
   res: Parameters<NoInfer<Handler>>[1],
@@ -184,9 +175,6 @@ export const wrap = <Handler extends RequestHandler>(
   }) as Handler;
 };
 
-const wrapHandlers = (handlers: never[]) =>
-  handlers.map((h) => wrap(h) as never);
-
 /**
  * Return Express Router wrapper which accept async handlers.
  * If async handler throws an error, it will be caught and passed to next function.
@@ -202,14 +190,33 @@ const wrapHandlers = (handlers: never[]) =>
  * ```
  * @param router Express.Router to be wrapped
  */
-export const asAsync = <T extends ZodApiEndpoints>(
-  router: RouterT<T>,
-): RouterT<T> => {
-  return Method.reduce((acc, method) => {
-    return {
-      ...acc,
-      [method]: (path: string, ...handlers: never[]) =>
-        router[method](path, ...wrapHandlers(handlers)),
-    };
-  }, {} as RouterT<T>);
+export const asAsync = <Router extends IRouter | RouterT<never>>(
+  router: Router,
+): Router => {
+  return new Proxy(router, {
+    get(target, prop, receiver) {
+      const o = Reflect.get(target, prop, receiver);
+      if (typeof prop !== "string") {
+        return o;
+      }
+      if (![...Method, "all"].includes(prop)) {
+        return o;
+      }
+      if (typeof o !== "function") {
+        return o;
+      }
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return (...args: any[]) => {
+        if (args.length <= 1) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          return o.apply(target, args as any);
+        }
+        const handlers = args
+          .slice(1)
+          .map((h) => (typeof h === "function" ? wrap(h) : h));
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return o.apply(target, [args[0], ...handlers] as any);
+      };
+    },
+  });
 };
