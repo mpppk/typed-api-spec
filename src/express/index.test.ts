@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 import request from "supertest";
 import express from "express";
-import { typed, ValidateLocals, validatorMiddleware } from "./index";
+import { asAsync, typed, ValidateLocals, validatorMiddleware } from "./index";
 import { ZodApiEndpoints } from "../zod";
 import { z } from "zod";
 import { Request } from "express";
@@ -47,7 +47,7 @@ describe("validatorMiddleware", () => {
         headers: { "content-type": "application/json" },
         params: { name: "alice" },
         // "/" endpoint is defined in pathMap
-        path: "/",
+        route: { path: "/" },
         method: "get",
       };
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -81,7 +81,7 @@ describe("validatorMiddleware", () => {
         headers: {},
         params: { desc: "test" },
         // "/" endpoint is defined in pathMap
-        path: "/",
+        route: { path: "/" },
         method: "get",
       };
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -95,6 +95,7 @@ describe("validatorMiddleware", () => {
       >;
       const validate = locals.validate(req as Request);
 
+      console.log("validate", validate);
       const query = validate.query();
       expect(query.success).toBe(false);
 
@@ -114,7 +115,7 @@ describe("validatorMiddleware", () => {
         headers: { "content-type": "application/json" },
         params: { name: "alice" },
         // "/users" endpoint is not defined in pathMap
-        path: "/users",
+        route: { path: "/users" },
         method: "get",
       };
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -148,7 +149,7 @@ describe("validatorMiddleware", () => {
         headers: { "content-type": "application/json" },
         params: { name: "alice" },
         // "/" endpoint is defined but patch method is not defined in pathMap
-        path: "/",
+        route: { path: "/" },
         method: "patch",
       };
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -254,5 +255,56 @@ describe("typed", () => {
       expect(res.status).toBe(200);
       expect(res.body).toEqual({ id: "99", name: "alice" });
     }
+  });
+});
+
+describe("asAsync", () => {
+  describe("async handler", () => {
+    it("ok", async () => {
+      const app = asAsync(newApp());
+      app.get("/path", async (req, res) => {
+        res.status(200).json({ message: "success" });
+      });
+      const res = await request(app).get("/path");
+      expect(res.status).toBe(200);
+      expect(res.body).toEqual({ message: "success" });
+    });
+    it("error", async () => {
+      const app = asAsync(newApp());
+      app.get("/path", async () => {
+        throw new Error("error");
+      });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any,@typescript-eslint/no-unused-vars
+      app.use((err: any, req: any, res: any, _next: any) => {
+        res.status(501).json({ message: "xxx" });
+      });
+      const res = await request(app).get("/path");
+      expect(res.status).toBe(501);
+      expect(res.body).toEqual({ message: "xxx" });
+    });
+  });
+  describe("sync handler", () => {
+    it("ok", async () => {
+      const app = asAsync(newApp());
+      app.get("/path", (req, res) => {
+        res.status(200).json({ message: "success" });
+      });
+      const res = await request(app).get("/path");
+      expect(res.status).toBe(200);
+      expect(res.body).toEqual({ message: "success" });
+    });
+    it("error", async () => {
+      const app = asAsync(newApp());
+      app.get("/path", () => {
+        throw new Error("error");
+      });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any,@typescript-eslint/no-unused-vars
+      app.use((err: any, req: any, res: any, _next: any) => {
+        res.status(501).json({ message: "xxx" });
+      });
+      const res = await request(app).get("/path");
+      expect(res.status).toBe(501);
+      expect(res.body).toEqual({ message: "xxx" });
+    });
   });
 });

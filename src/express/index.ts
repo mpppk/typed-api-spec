@@ -107,7 +107,16 @@ export type RouterT<
 export const validatorMiddleware = (pathMap: ZodApiEndpoints) => {
   const validator = newZodValidator(pathMap);
   return (_req: Request, res: Response, next: NextFunction) => {
-    res.locals.validate = validator;
+    res.locals.validate = (req: Request) => {
+      return validator({
+        path: req.route?.path?.toString(),
+        method: req.method,
+        headers: req.headers,
+        params: req.params,
+        query: req.query,
+        body: req.body,
+      });
+    };
     next();
   };
 };
@@ -166,9 +175,6 @@ export const wrap = <Handler extends RequestHandler>(
   }) as Handler;
 };
 
-const wrapHandlers = (handlers: never[]) =>
-  handlers.map((h) => wrap(h) as never);
-
 /**
  * Return Express Router wrapper which accept async handlers.
  * If async handler throws an error, it will be caught and passed to next function.
@@ -184,14 +190,33 @@ const wrapHandlers = (handlers: never[]) =>
  * ```
  * @param router Express.Router to be wrapped
  */
-export const asAsync = <T extends ZodApiEndpoints>(
-  router: RouterT<T>,
-): RouterT<T> => {
-  return Method.reduce((acc, method) => {
-    return {
-      ...acc,
-      [method]: (path: string, ...handlers: never[]) =>
-        router[method](path, ...wrapHandlers(handlers)),
-    };
-  }, {} as RouterT<T>);
+export const asAsync = <Router extends IRouter | RouterT<never>>(
+  router: Router,
+): Router => {
+  return new Proxy(router, {
+    get(target, prop, receiver) {
+      const o = Reflect.get(target, prop, receiver);
+      if (typeof prop !== "string") {
+        return o;
+      }
+      if (![...Method, "all"].includes(prop)) {
+        return o;
+      }
+      if (typeof o !== "function") {
+        return o;
+      }
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return (...args: any[]) => {
+        if (args.length <= 1) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          return o.apply(target, args as any);
+        }
+        const handlers = args
+          .slice(1)
+          .map((h) => (typeof h === "function" ? wrap(h) : h));
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return o.apply(target, [args[0], ...handlers] as any);
+      };
+    },
+  });
 };

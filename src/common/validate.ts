@@ -1,13 +1,14 @@
 import { Result } from "../utils";
 import { AnyApiEndpoint, AnyApiEndpoints, isMethod } from "./spec";
+import { ParsedQs } from "qs";
 
 export type ValidatorsInput = {
   path: string;
   method: string;
   params?: Record<string, string>;
-  query?: Record<string, string>;
+  query?: ParsedQs;
   body?: Record<string, string>;
-  headers: Record<string, string>;
+  headers: Record<string, string | string[] | undefined>;
 };
 
 type ValidationError = {
