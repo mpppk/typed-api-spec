@@ -1,5 +1,5 @@
 import { z, ZodType } from "zod";
-import { Method, StatusCode } from "../common";
+import { BaseApiSpec, Method, StatusCode } from "../common";
 import { FilterNever } from "../common";
 import { getApiSpec, ValidatorsInput } from "../common/validate";
 
@@ -34,7 +34,7 @@ export type InferOrUndefined<T> = T extends z.ZodTypeAny
 // -- spec --
 export type ZodApiEndpoints = { [Path in string]: ZodApiEndpoint };
 type ZodApiEndpoint = Partial<Record<Method, ZodApiSpec>>;
-export interface ZodApiSpec<
+export type ZodApiSpec<
   ParamKeys extends string = string,
   Params extends ZodTypeWithKey<NoInfer<ParamKeys>> = ZodTypeWithKey<
     NoInfer<ParamKeys>
@@ -44,14 +44,7 @@ export interface ZodApiSpec<
   ResBody extends ZodApiResponses = Partial<Record<StatusCode, z.ZodTypeAny>>,
   RequestHeaders extends z.ZodTypeAny = z.ZodTypeAny,
   ResponseHeaders extends z.ZodTypeAny = z.ZodTypeAny,
-> {
-  query?: Query;
-  params?: Params;
-  body?: Body;
-  resBody: ResBody;
-  headers?: RequestHeaders;
-  resHeaders?: ResponseHeaders;
-}
+> = BaseApiSpec<Params, Query, Body, ResBody, RequestHeaders, ResponseHeaders>;
 export type ZodApiResponses = Partial<Record<StatusCode, z.ZodTypeAny>>;
 export type ZodApiResSchema<
   AResponses extends ZodApiResponses,

@@ -36,7 +36,24 @@ type AsJsonApiEndpoint<AE extends ApiEndpoint> = {
 export type ApiEndpoints = { [Path in string]: ApiEndpoint };
 export type AnyApiEndpoints = { [Path in string]: AnyApiEndpoint };
 
-export interface ApiSpec<
+export interface BaseApiSpec<
+  Params,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  Query,
+  Body,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ResBody,
+  RequestHeaders,
+  ResponseHeaders,
+> {
+  query?: Query;
+  params?: Params;
+  body?: Body;
+  resBody: ResBody;
+  headers?: RequestHeaders;
+  resHeaders?: ResponseHeaders;
+}
+export type ApiSpec<
   ParamKeys extends string = string,
   Params extends Record<ParamKeys, string | number> = Record<
     ParamKeys,
@@ -52,16 +69,9 @@ export interface ApiSpec<
   >,
   RequestHeaders extends Record<string, string> = Record<string, string>,
   ResponseHeaders extends Record<string, string> = Record<string, string>,
-> {
-  query?: Query;
-  params?: Params;
-  body?: Body;
-  resBody: ResBody;
-  headers?: RequestHeaders;
-  resHeaders?: ResponseHeaders;
-}
+> = BaseApiSpec<Params, Query, Body, ResBody, RequestHeaders, ResponseHeaders>;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type AnyApiSpec = ApiSpec<string, any, any, any, any, any, any>;
+export type AnyApiSpec = BaseApiSpec<any, any, any, any, any, any>;
 
 type JsonHeader = {
   "Content-Type": "application/json";
