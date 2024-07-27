@@ -1,12 +1,12 @@
-import { z, ZodType } from "zod";
+import { SafeParseReturnType, z, ZodError, ZodType } from "zod";
 import { BaseApiSpec, Method, StatusCode } from "../common";
 import { FilterNever } from "../common";
 import { getApiSpec, ValidatorsInput } from "../common/validate";
+import { Result } from "../utils";
 
 export const anyZ = <T>() => z.any() as ZodType<T>;
-type SafeParse<Z extends z.ZodTypeAny> = ReturnType<Z["safeParse"]>;
 export type ZodValidator<V extends z.ZodTypeAny | undefined> =
-  V extends z.ZodTypeAny ? () => ReturnType<V["safeParse"]> : never;
+  V extends z.ZodTypeAny ? () => ZodToResult<V> : never;
 export type ZodValidators<
   AS extends ZodApiSpec,
   ParamKeys extends string,
@@ -14,8 +14,8 @@ export type ZodValidators<
   params: ParamKeys extends never
     ? never
     : AS["params"] extends z.ZodTypeAny
-      ? () => SafeParse<AS["params"]>
-      : () => SafeParse<z.ZodType<Record<ParamKeys, string>>>;
+      ? () => ZodToResult<AS["params"]>
+      : () => ZodToResult<z.ZodType<Record<ParamKeys, string>>>;
   query: ZodValidator<AS["query"]>;
   body: ZodValidator<AS["body"]>;
   headers: ZodValidator<AS["headers"]>;
@@ -96,22 +96,37 @@ export const newZodValidator = <E extends ZodApiEndpoints>(endpoints: E) => {
     const s = spec as Partial<ZodApiSpec>;
     if (s.params !== undefined) {
       const params = s.params;
-      zodValidators["params"] = () => params.safeParse(input.params);
+      zodValidators["params"] = () => toResult(params.safeParse(input.params));
     }
     if (s.query !== undefined) {
       const query = s.query;
-      zodValidators["query"] = () => query.safeParse(input.query);
+      zodValidators["query"] = () => toResult(query.safeParse(input.query));
     }
     if (s.body !== undefined) {
       const body = s.body;
-      zodValidators["body"] = () => body.safeParse(input.body);
+      zodValidators["body"] = () => toResult(body.safeParse(input.body));
     }
     if (s.headers !== undefined) {
       const headers = s.headers;
-      zodValidators["headers"] = () => headers.safeParse(input.headers);
+      zodValidators["headers"] = () =>
+        toResult(headers.safeParse(input.headers));
     }
     return zodValidators as E[Path][M] extends ZodApiSpec
       ? ZodValidators<E[Path][M], "">
       : Record<string, never>;
   };
+};
+
+type ZodToResult<Z extends ZodType> = Result<
+  NonNullable<ReturnType<Z["safeParse"]>["data"]>,
+  NonNullable<ReturnType<Z["safeParse"]>["error"]>
+>;
+const toResult = <T, U>(
+  res: SafeParseReturnType<U, T>,
+): Result<T, ZodError<U>> => {
+  if (res.success) {
+    return Result.data(res.data);
+  } else {
+    return Result.error(res.error);
+  }
 };

@@ -3,7 +3,7 @@ import request from "supertest";
 import express from "express";
 import { asAsync, typed, ValidateLocals, validatorMiddleware } from "./index";
 import { ZodApiEndpoints } from "../zod";
-import { z } from "zod";
+import { z, ZodError } from "zod";
 import { Request } from "express";
 import { ParseUrlParams } from "../common";
 
@@ -61,17 +61,23 @@ describe("validatorMiddleware", () => {
       >;
       const validate = locals.validate(req as Request);
 
-      const query = validate.query();
-      expect(query.success).toBe(true);
-      expect(query.data!.name).toBe("alice");
+      {
+        const r = validate.query();
+        expect(r.error).toBeUndefined();
+        expect(r.data?.name).toBe("alice");
+      }
 
-      const body = validate.body();
-      expect(body.success).toBe(true);
-      expect(body.data!.name).toBe("alice");
+      {
+        const r = validate.body();
+        expect(r.error).toBeUndefined();
+        expect(r.data?.name).toBe("alice");
+      }
 
-      const headers = validate.headers();
-      expect(headers.success).toBe(true);
-      expect(headers.data!["content-type"]).toBe("application/json");
+      {
+        const r = validate.headers();
+        expect(r.error).toBeUndefined();
+        expect(r.data?.["content-type"]).toBe("application/json");
+      }
     });
 
     it("should fail if request schema is invalid", () => {
@@ -95,15 +101,51 @@ describe("validatorMiddleware", () => {
       >;
       const validate = locals.validate(req as Request);
 
-      console.log("validate", validate);
-      const query = validate.query();
-      expect(query.success).toBe(false);
+      {
+        const r = validate.query();
+        expect(r.error).toEqual(
+          new ZodError([
+            {
+              code: "invalid_type",
+              expected: "string",
+              received: "undefined",
+              path: ["name"],
+              message: "Required",
+            },
+          ]),
+        );
+        expect(r.data).toBeUndefined();
+      }
 
-      const body = validate.body();
-      expect(body.success).toBe(false);
+      {
+        const r = validate.body();
+        expect(r.error).toEqual(
+          new ZodError([
+            {
+              code: "invalid_type",
+              expected: "string",
+              received: "undefined",
+              path: ["name"],
+              message: "Required",
+            },
+          ]),
+        );
+        expect(r.data).toBeUndefined();
+      }
 
-      const headers = validate.headers();
-      expect(headers.success).toBe(false);
+      const r = validate.headers();
+      expect(r.error).toEqual(
+        new ZodError([
+          {
+            code: "invalid_literal",
+            expected: "application/json",
+            received: undefined,
+            path: ["content-type"],
+            message: `Invalid literal value, expected "application/json"`,
+          },
+        ]),
+      );
+      expect(r.data).toBeUndefined();
     });
   });
 
@@ -220,19 +262,19 @@ describe("typed", () => {
       return res.json([{ id: "1", name: "alice" }]);
     });
     wApp.post("/users", (req, res) => {
-      const body = res.locals.validate(req).body();
-      if (!body.success) {
+      const { data } = res.locals.validate(req).body();
+      if (data === undefined) {
         return res.status(400).json({ message: "invalid body" });
       }
-      return res.json({ id: "1", name: body.data.name });
+      return res.json({ id: "1", name: data.name });
     });
     wApp.get("/users/:id", (req, res) => {
       const qResult = res.locals.validate(req).query();
       const pResult = res.locals.validate(req).params();
-      if (!pResult.success) {
+      if (pResult.data === undefined) {
         return res.status(400).json({ message: "invalid query" });
       }
-      if (qResult.success) {
+      if (qResult.data !== undefined) {
         return res.status(200).json({ id: pResult.data.id, name: "alice" });
       }
       return res.status(200).json({ id: pResult.data.id, name: "alice" });
