@@ -2,6 +2,33 @@ import { Result } from "../utils";
 import { AnyApiEndpoint, AnyApiEndpoints, isMethod } from "./spec";
 import { ParsedQs } from "qs";
 
+export type Validators<
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ParamsValidator extends AnyValidator | never,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  QueryValidator extends AnyValidator | never,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  BodyValidator extends AnyValidator | never,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  HeadersValidator extends AnyValidator | never,
+> = {
+  // FIXME: FilterNeverにしたい
+  params: ParamsValidator;
+  query: QueryValidator;
+  body: BodyValidator;
+  headers: HeadersValidator;
+};
+export type AnyValidators = Validators<
+  AnyValidator | never,
+  AnyValidator | never,
+  AnyValidator | never,
+  AnyValidator | never
+>;
+
+export type Validator<Data, Error> = () => Result<Data, Error>;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type AnyValidator = Validator<any, any>;
+
 export type ValidatorsInput = {
   path: string;
   method: string;

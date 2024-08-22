@@ -1,7 +1,12 @@
 import { describe, it, expect, vi } from "vitest";
 import request from "supertest";
 import express from "express";
-import { asAsync, typed, ValidateLocals, validatorMiddleware } from "./index";
+import {
+  asAsync,
+  typed,
+  ZodValidateLocals,
+  validatorMiddleware,
+} from "./index";
 import { ZodApiEndpoints } from "../zod";
 import { z, ZodError } from "zod";
 import { Request } from "express";
@@ -55,7 +60,7 @@ describe("validatorMiddleware", () => {
       middleware(req as Request, res, next);
       expect(next).toHaveBeenCalled();
       expect(res.locals.validate).toEqual(expect.any(Function));
-      const locals = res.locals as ValidateLocals<
+      const locals = res.locals as ZodValidateLocals<
         (typeof pathMap)["/"]["get"],
         ParseUrlParams<"/">
       >;
@@ -95,7 +100,7 @@ describe("validatorMiddleware", () => {
       middleware(req as Request, res, next);
       expect(next).toHaveBeenCalled();
       expect(res.locals.validate).toEqual(expect.any(Function));
-      const locals = res.locals as ValidateLocals<
+      const locals = res.locals as ZodValidateLocals<
         (typeof pathMap)["/"]["get"],
         ParseUrlParams<"/">
       >;
@@ -165,10 +170,8 @@ describe("validatorMiddleware", () => {
       middleware(req as unknown as Request, res, next);
       expect(next).toHaveBeenCalled();
       expect(res.locals.validate).toEqual(expect.any(Function));
-      const locals = res.locals as ValidateLocals<
-        undefined,
-        ParseUrlParams<"">
-      >;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const locals = res.locals as ZodValidateLocals<any, ParseUrlParams<"">>;
       const validate = locals.validate(req as Request);
 
       const query = validate.query;
@@ -199,10 +202,8 @@ describe("validatorMiddleware", () => {
       middleware(req as unknown as Request, res, next);
       expect(next).toHaveBeenCalled();
       expect(res.locals.validate).toEqual(expect.any(Function));
-      const locals = res.locals as ValidateLocals<
-        undefined,
-        ParseUrlParams<"">
-      >;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const locals = res.locals as ZodValidateLocals<any, ParseUrlParams<"">>;
       const validate = locals.validate(req as Request);
 
       const query = validate.query;

@@ -5,7 +5,7 @@ export {
   AsyncRequestHandler as ExpressAsyncRequestHandler,
   typed as expressTyped,
   ExpressResponse,
-  ValidateLocals as ExpressValidateLocals,
+  ZodValidateLocals as ExpressValidateLocals,
   RouterT as ExpressRouterT,
   Handler as ExpressHandler,
   ToHandlers as ExpressToHandlers,

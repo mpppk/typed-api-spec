@@ -19,6 +19,7 @@ import {
 import { StatusCode } from "../common";
 import { ParseUrlParams } from "../common";
 import { ParsedQs } from "qs";
+import { AnyValidators } from "../common/validate";
 
 /**
  * Express Request Handler, but with more strict type information.
@@ -46,7 +47,9 @@ export type ToHandler<
   M extends Method,
 > = Handler<
   ToApiEndpoints<ZodE>[Path][M],
-  ValidateLocals<ZodE[Path][M], ParseUrlParams<Path>>
+  ZodE[Path][M] extends ZodApiSpec
+    ? ZodValidateLocals<ZodE[Path][M], ParseUrlParams<Path>>
+    : Record<string, never>
 >;
 
 /**
@@ -75,16 +78,13 @@ export type ExpressResponse<
   ) => Response<ApiRes<Responses, SC>, LocalsObj, SC>;
 };
 
-export type ValidateLocals<
-  AS extends ZodApiSpec | undefined,
-  ParamKeys extends string,
-> = {
-  validate: (
-    req: Request<ParamsDictionary, unknown, unknown, unknown>,
-  ) => AS extends ZodApiSpec
-    ? ZodValidators<AS, ParamKeys>
-    : Record<string, never>;
+export type ValidateLocals<Vs extends AnyValidators | Record<string, never>> = {
+  validate: (req: Request<ParamsDictionary, unknown, unknown, unknown>) => Vs;
 };
+export type ZodValidateLocals<
+  AS extends ZodApiSpec,
+  ParamKeys extends string,
+> = ValidateLocals<ZodValidators<AS, ParamKeys>>;
 
 /**
  * Express Router, but with more strict type information.

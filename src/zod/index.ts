@@ -1,26 +1,34 @@
 import { SafeParseReturnType, z, ZodError, ZodType } from "zod";
 import { BaseApiSpec, Method, StatusCode } from "../common";
-import { FilterNever } from "../common";
-import { getApiSpec, ValidatorsInput } from "../common/validate";
+import {
+  getApiSpec,
+  Validator,
+  Validators,
+  ValidatorsInput,
+} from "../common/validate";
 import { Result } from "../utils";
 
 export const anyZ = <T>() => z.any() as ZodType<T>;
 export type ZodValidator<V extends z.ZodTypeAny | undefined> =
-  V extends z.ZodTypeAny ? () => ZodToResult<V> : never;
+  V extends z.ZodTypeAny
+    ? Validator<
+        NonNullable<ReturnType<V["safeParse"]>["data"]>,
+        NonNullable<ReturnType<V["safeParse"]>["error"]>
+      >
+    : never;
 export type ZodValidators<
   AS extends ZodApiSpec,
   ParamKeys extends string,
-> = FilterNever<{
-  params: ParamKeys extends never
+> = Validators<
+  ParamKeys extends never
     ? never
     : AS["params"] extends z.ZodTypeAny
-      ? () => ZodToResult<AS["params"]>
-      : () => ZodToResult<z.ZodType<Record<ParamKeys, string>>>;
-  query: ZodValidator<AS["query"]>;
-  body: ZodValidator<AS["body"]>;
-  headers: ZodValidator<AS["headers"]>;
-  // resHeaders: ZodValidator<AS["resHeaders"]>;
-}>;
+      ? ZodValidator<AS["params"]>
+      : ZodValidator<z.ZodType<Record<ParamKeys, string>>>,
+  ZodValidator<AS["query"]>,
+  ZodValidator<AS["body"]>,
+  ZodValidator<AS["headers"]>
+>;
 type ZodTypeWithKey<Key extends string> = z.ZodType<
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   Record<Key, any>,
@@ -117,10 +125,6 @@ export const newZodValidator = <E extends ZodApiEndpoints>(endpoints: E) => {
   };
 };
 
-type ZodToResult<Z extends ZodType> = Result<
-  NonNullable<ReturnType<Z["safeParse"]>["data"]>,
-  NonNullable<ReturnType<Z["safeParse"]>["error"]>
->;
 const toResult = <T, U>(
   res: SafeParseReturnType<U, T>,
 ): Result<T, ZodError<U>> => {
