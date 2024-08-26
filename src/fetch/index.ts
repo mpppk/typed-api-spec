@@ -21,13 +21,12 @@ export type RequestInitT<
   HeadersObj extends Record<string, string> | undefined,
 > = Omit<RequestInit, "method" | "body" | "headers"> & {
   method?: InputMethod;
-  // FIXME: no optional
-  headers?: HeadersObj extends Record<string, string>
-    ? HeadersObj | Headers
-    : never;
 } & FilterNever<{
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     body: Body extends Record<string, any> ? TypedString<Body> : never;
+    headers: HeadersObj extends Record<string, string>
+      ? HeadersObj | Headers
+      : never;
   }>;
 
 /**

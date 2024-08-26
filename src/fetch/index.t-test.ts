@@ -63,7 +63,7 @@ import JSONT from "../json";
 
     {
       // AsJsonApiを利用していない場合、Content-Typeがapplication/jsonでなくてもエラーにならない
-      await f2("/users", { headers: undefined });
+      await f2("/users", {});
     }
 
     {
@@ -85,6 +85,7 @@ import JSONT from "../json";
           // TODO: 余剰プロパティチェックを今は受け付けてしまうがなんとかしたい
           unknownProp: "a",
         }),
+        headers: { "Content-Type": "application/json" },
       });
       if (res.ok) {
         (await res.json()).postProp;
