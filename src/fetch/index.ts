@@ -2,6 +2,7 @@ import {
   ApiEndpoints,
   ApiP,
   CaseInsensitiveMethod,
+  FilterNever,
   MatchedPatterns,
   MergeApiResponses,
   Method,
@@ -13,19 +14,21 @@ import {
 import { UrlPrefixPattern, ToUrlParamPattern } from "../common";
 import { TypedString } from "../json";
 
-export interface RequestInitT<
+export type RequestInitT<
   InputMethod extends CaseInsensitiveMethod,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  Body extends Record<string, any> | undefined,
+  Body extends Record<string, any> | never,
   HeadersObj extends Record<string, string> | undefined,
-> extends RequestInit {
+> = Omit<RequestInit, "method" | "body" | "headers"> & {
   method?: InputMethod;
-  body?: TypedString<Body>;
   // FIXME: no optional
   headers?: HeadersObj extends Record<string, string>
     ? HeadersObj | Headers
     : never;
-}
+} & FilterNever<{
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    body: Body extends Record<string, any> ? TypedString<Body> : never;
+  }>;
 
 /**
  * FetchT is a type for window.fetch like function but more strict type information

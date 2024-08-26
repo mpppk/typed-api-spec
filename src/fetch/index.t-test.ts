@@ -94,16 +94,6 @@ import JSONT from "../json";
     }
 
     {
-      // TODO: bodyを省略できてしまうがなんとかしたい
-      const res = await f("/users", { method: "post" });
-      if (res.ok) {
-        (await res.json()).postProp;
-      } else {
-        (await res.json()).error;
-      }
-    }
-
-    {
       // TODO: 今は定義していないメソッドを受け付けてしまうが、いつかなんとかしたい
       await f("/users", { method: "patch" });
     }
