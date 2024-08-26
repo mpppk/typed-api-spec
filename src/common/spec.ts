@@ -99,6 +99,21 @@ export type ApiP<
     : never
   : never;
 
+export type ApiHasP<
+  E extends ApiEndpoints,
+  Path extends keyof E & string,
+  M extends Method,
+> = E[Path] extends ApiEndpoint
+  ? E[Path][M] extends ApiSpec<ParseUrlParams<Path>>
+    ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      E[Path][M]["body"] extends Record<string, any>
+      ? true
+      : E[Path][M]["headers"] extends Record<string, string>
+        ? true
+        : false
+    : never
+  : never;
+
 export type ApiRes<
   AResponses extends ApiResponses,
   SC extends keyof AResponses & StatusCode,

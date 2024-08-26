@@ -1,5 +1,6 @@
 import {
   ApiEndpoints,
+  ApiHasP,
   ApiP,
   CaseInsensitiveMethod,
   FilterNever,
@@ -46,11 +47,19 @@ type FetchT<UrlPrefix extends UrlPrefixPattern, E extends ApiEndpoints> = <
   M extends Method = Lowercase<InputMethod>,
 >(
   input: Input,
-  init?: RequestInitT<
-    InputMethod,
-    ApiP<E, CandidatePaths, M, "body">,
-    ApiP<E, CandidatePaths, M, "headers">
-  >,
+  init: ApiHasP<E, CandidatePaths, M> extends true
+    ? RequestInitT<
+        InputMethod,
+        ApiP<E, CandidatePaths, M, "body">,
+        ApiP<E, CandidatePaths, M, "headers">
+      >
+    :
+        | RequestInitT<
+            InputMethod,
+            ApiP<E, CandidatePaths, M, "body">,
+            ApiP<E, CandidatePaths, M, "headers">
+          >
+        | undefined,
 ) => Promise<MergeApiResponses<ApiP<E, CandidatePaths, M, "resBody">>>;
 
 export default FetchT;

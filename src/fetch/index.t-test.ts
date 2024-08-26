@@ -10,6 +10,26 @@ import JSONT from "../json";
           200: { prop: string };
         };
       };
+    };
+  }>;
+  (async () => {
+    const f = fetch as FetchT<"", Spec>;
+    {
+      // TODO: 今はinitを省略する場合undefinedを明示的に渡す必要があるが、なんとかしたい
+      // methodを省略した場合はgetとして扱う
+      const res = await f("/users", undefined);
+      (await res.json()).prop;
+    }
+  })();
+}
+{
+  type Spec = DefineApiEndpoints<{
+    "/users": {
+      get: {
+        resBody: {
+          200: { prop: string };
+        };
+      };
       post: {
         body: {
           userName: string;
@@ -42,7 +62,9 @@ import JSONT from "../json";
 
     {
       // methodを省略した場合はgetとして扱う
-      const res = await f("/users");
+      const res = await f("/users", {
+        headers: { "Content-Type": "application/json" },
+      });
       (await res.json()).prop;
     }
 
@@ -64,11 +86,6 @@ import JSONT from "../json";
     {
       // AsJsonApiを利用していない場合、Content-Typeがapplication/jsonでなくてもエラーにならない
       await f2("/users", {});
-    }
-
-    {
-      // TODO: headersを定義している場合でもRequestInitが省略できてしまう
-      await f("/users");
     }
 
     {
