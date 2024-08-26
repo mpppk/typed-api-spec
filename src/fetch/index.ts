@@ -1,7 +1,9 @@
 import {
   ApiEndpoints,
+  ApiHasP,
   ApiP,
   CaseInsensitiveMethod,
+  FilterNever,
   MatchedPatterns,
   MergeApiResponses,
   Method,
@@ -13,19 +15,20 @@ import {
 import { UrlPrefixPattern, ToUrlParamPattern } from "../common";
 import { TypedString } from "../json";
 
-export interface RequestInitT<
+export type RequestInitT<
   InputMethod extends CaseInsensitiveMethod,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  Body extends Record<string, any> | undefined,
+  Body extends Record<string, any> | never,
   HeadersObj extends Record<string, string> | undefined,
-> extends RequestInit {
+> = Omit<RequestInit, "method" | "body" | "headers"> & {
   method?: InputMethod;
-  body?: TypedString<Body>;
-  // FIXME: no optional
-  headers?: HeadersObj extends Record<string, string>
-    ? HeadersObj | Headers
-    : never;
-}
+} & FilterNever<{
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    body: Body extends Record<string, any> ? TypedString<Body> : never;
+    headers: HeadersObj extends Record<string, string>
+      ? HeadersObj | Headers
+      : never;
+  }>;
 
 /**
  * FetchT is a type for window.fetch like function but more strict type information
@@ -44,11 +47,19 @@ type FetchT<UrlPrefix extends UrlPrefixPattern, E extends ApiEndpoints> = <
   M extends Method = Lowercase<InputMethod>,
 >(
   input: Input,
-  init?: RequestInitT<
-    InputMethod,
-    ApiP<E, CandidatePaths, M, "body">,
-    ApiP<E, CandidatePaths, M, "headers">
-  >,
+  init: ApiHasP<E, CandidatePaths, M> extends true
+    ? RequestInitT<
+        InputMethod,
+        ApiP<E, CandidatePaths, M, "body">,
+        ApiP<E, CandidatePaths, M, "headers">
+      >
+    :
+        | RequestInitT<
+            InputMethod,
+            ApiP<E, CandidatePaths, M, "body">,
+            ApiP<E, CandidatePaths, M, "headers">
+          >
+        | undefined,
 ) => Promise<MergeApiResponses<ApiP<E, CandidatePaths, M, "resBody">>>;
 
 export default FetchT;

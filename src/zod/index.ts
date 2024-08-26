@@ -1,26 +1,34 @@
-import { z, ZodType } from "zod";
-import { Method, StatusCode } from "../common";
-import { FilterNever } from "../common";
-import { getApiSpec, ValidatorsInput } from "../common/validate";
+import { SafeParseReturnType, z, ZodError, ZodType } from "zod";
+import { BaseApiSpec, Method, StatusCode } from "../common";
+import {
+  getApiSpec,
+  Validator,
+  Validators,
+  ValidatorsInput,
+} from "../common/validate";
+import { Result } from "../utils";
 
 export const anyZ = <T>() => z.any() as ZodType<T>;
-type SafeParse<Z extends z.ZodTypeAny> = ReturnType<Z["safeParse"]>;
 export type ZodValidator<V extends z.ZodTypeAny | undefined> =
-  V extends z.ZodTypeAny ? () => ReturnType<V["safeParse"]> : never;
+  V extends z.ZodTypeAny
+    ? Validator<
+        NonNullable<ReturnType<V["safeParse"]>["data"]>,
+        NonNullable<ReturnType<V["safeParse"]>["error"]>
+      >
+    : never;
 export type ZodValidators<
   AS extends ZodApiSpec,
   ParamKeys extends string,
-> = FilterNever<{
-  params: ParamKeys extends never
+> = Validators<
+  ParamKeys extends never
     ? never
     : AS["params"] extends z.ZodTypeAny
-      ? () => SafeParse<AS["params"]>
-      : () => SafeParse<z.ZodType<Record<ParamKeys, string>>>;
-  query: ZodValidator<AS["query"]>;
-  body: ZodValidator<AS["body"]>;
-  headers: ZodValidator<AS["headers"]>;
-  // resHeaders: ZodValidator<AS["resHeaders"]>;
-}>;
+      ? ZodValidator<AS["params"]>
+      : ZodValidator<z.ZodType<Record<ParamKeys, string>>>,
+  ZodValidator<AS["query"]>,
+  ZodValidator<AS["body"]>,
+  ZodValidator<AS["headers"]>
+>;
 type ZodTypeWithKey<Key extends string> = z.ZodType<
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   Record<Key, any>,
@@ -34,7 +42,7 @@ export type InferOrUndefined<T> = T extends z.ZodTypeAny
 // -- spec --
 export type ZodApiEndpoints = { [Path in string]: ZodApiEndpoint };
 type ZodApiEndpoint = Partial<Record<Method, ZodApiSpec>>;
-export interface ZodApiSpec<
+export type ZodApiSpec<
   ParamKeys extends string = string,
   Params extends ZodTypeWithKey<NoInfer<ParamKeys>> = ZodTypeWithKey<
     NoInfer<ParamKeys>
@@ -44,14 +52,7 @@ export interface ZodApiSpec<
   ResBody extends ZodApiResponses = Partial<Record<StatusCode, z.ZodTypeAny>>,
   RequestHeaders extends z.ZodTypeAny = z.ZodTypeAny,
   ResponseHeaders extends z.ZodTypeAny = z.ZodTypeAny,
-> {
-  query?: Query;
-  params?: Params;
-  body?: Body;
-  resBody: ResBody;
-  headers?: RequestHeaders;
-  resHeaders?: ResponseHeaders;
-}
+> = BaseApiSpec<Params, Query, Body, ResBody, RequestHeaders, ResponseHeaders>;
 export type ZodApiResponses = Partial<Record<StatusCode, z.ZodTypeAny>>;
 export type ZodApiResSchema<
   AResponses extends ZodApiResponses,
@@ -103,22 +104,33 @@ export const newZodValidator = <E extends ZodApiEndpoints>(endpoints: E) => {
     const s = spec as Partial<ZodApiSpec>;
     if (s.params !== undefined) {
       const params = s.params;
-      zodValidators["params"] = () => params.safeParse(input.params);
+      zodValidators["params"] = () => toResult(params.safeParse(input.params));
     }
     if (s.query !== undefined) {
       const query = s.query;
-      zodValidators["query"] = () => query.safeParse(input.query);
+      zodValidators["query"] = () => toResult(query.safeParse(input.query));
     }
     if (s.body !== undefined) {
       const body = s.body;
-      zodValidators["body"] = () => body.safeParse(input.body);
+      zodValidators["body"] = () => toResult(body.safeParse(input.body));
     }
     if (s.headers !== undefined) {
       const headers = s.headers;
-      zodValidators["headers"] = () => headers.safeParse(input.headers);
+      zodValidators["headers"] = () =>
+        toResult(headers.safeParse(input.headers));
     }
     return zodValidators as E[Path][M] extends ZodApiSpec
       ? ZodValidators<E[Path][M], "">
       : Record<string, never>;
   };
+};
+
+const toResult = <T, U>(
+  res: SafeParseReturnType<U, T>,
+): Result<T, ZodError<U>> => {
+  if (res.success) {
+    return Result.data(res.data);
+  } else {
+    return Result.error(res.error);
+  }
 };

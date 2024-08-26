@@ -27,40 +27,40 @@ const newApp = () => {
 
     // validate method is available in res.locals
     // validate(req).query() is equals to pathMap["/users"]["get"].query.safeParse(req.query)
-    const r = res.locals.validate(req).query();
-    if (r.success) {
+    const { data, error } = res.locals.validate(req).query();
+    if (data !== undefined) {
       // res.status(200).json() accepts only the response schema defined in pathMap["/users"]["get"].res["200"]
-      res.status(200).json({ userNames: [`page${r.data.page}#user1`] });
+      res.status(200).json({ userNames: [`page${data.page}#user1`] });
     } else {
       // res.status(400).json() accepts only the response schema defined in pathMap["/users"]["get"].res["400"]
-      res.status(400).json({ errorMessage: r.error.toString() });
+      res.status(400).json({ errorMessage: error.toString() });
     }
   });
   wApp.post("/users", (req, res) => {
     // validate(req).body() is equals to pathMap["/users"]["post"].body.safeParse(req.body)
-    const r = res.locals.validate(req).body();
+    const { data, error } = res.locals.validate(req).body();
     {
       // Request header also can be validated
       res.locals.validate(req).headers();
     }
-    if (r.success) {
+    if (data !== undefined) {
       // res.status(200).json() accepts only the response schema defined in pathMap["/users"]["post"].res["200"]
-      res.status(200).json({ userId: r.data.userName + "#0" });
+      res.status(200).json({ userId: data.userName + "#0" });
     } else {
       // res.status(400).json() accepts only the response schema defined in pathMap["/users"]["post"].res["400"]
-      res.status(400).json({ errorMessage: r.error.toString() });
+      res.status(400).json({ errorMessage: error.toString() });
     }
   });
 
   const getUserHandler: Handlers["/users/:userId"]["get"] = (req, res) => {
-    const params = res.locals.validate(req).params();
+    const { data: params, error } = res.locals.validate(req).params();
 
-    if (params.success) {
+    if (params !== undefined) {
       // res.status(200).json() accepts only the response schema defined in pathMap["/users/:userId"]["get"].res["200"]
-      res.status(200).json({ userName: "user#" + params.data.userId });
+      res.status(200).json({ userName: "user#" + params.userId });
     } else {
       // res.status(400).json() accepts only the response schema defined in pathMap["/users/:userId"]["get"].res["400"]
-      res.status(400).json({ errorMessage: params.error.toString() });
+      res.status(400).json({ errorMessage: error.toString() });
     }
   };
   wApp.get("/users/:userId", getUserHandler);
