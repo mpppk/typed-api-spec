@@ -185,3 +185,28 @@ import JSONT from "../json";
     }
   })();
 }
+
+{
+  type Spec = DefineApiEndpoints<{
+    "/vectorize/indexes/:indexName": {
+      get: {
+        resBody: {
+          200: { prop: string };
+        };
+      };
+    };
+  }>;
+  (async () => {
+    const CLOUDFLARE_API_HOST = "https://api.cloudflare.com/client/v4";
+    const getCloudflareAccountEndpoint = (accountId: string) =>
+      `${CLOUDFLARE_API_HOST}/accounts/${accountId}` as const;
+    const basePath = getCloudflareAccountEndpoint("accountId");
+    const f = fetch as FetchT<typeof basePath, Spec>;
+    {
+      const res = await f(`${basePath}/vectorize/indexes/indexA`, {});
+      if (res.ok) {
+        (await res.json()).prop;
+      }
+    }
+  })();
+}
