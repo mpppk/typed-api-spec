@@ -1,5 +1,5 @@
 import { ParseQueryString } from "./query-string";
-import { ExtractByPrefix, Split, UndefinedTo } from "./type";
+import { ExtractByPrefix, SameSlashNum, Split, UndefinedTo } from "./type";
 
 type ExtractParams<T extends string> = ExtractByPrefix<T, ":">;
 
@@ -75,7 +75,11 @@ export type ToUrlPattern<T extends string> = T extends `${infer O}?${infer R}`
  * ```
  */
 export type MatchedPatterns<T extends string, Patterns extends string> = keyof {
-  [P in Patterns as T extends ToUrlPattern<P> ? P : never]: true;
+  [P in Patterns as T extends ToUrlPattern<P>
+    ? SameSlashNum<P, T> extends true
+      ? P
+      : never
+    : never]: true;
 };
 
 /**

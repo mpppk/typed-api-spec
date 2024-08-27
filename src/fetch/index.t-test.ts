@@ -1,6 +1,7 @@
 import { AsJsonApi, DefineApiEndpoints } from "../common";
 import FetchT from "./index";
 import JSONT from "../json";
+const JSONT = JSON as JSONT;
 
 {
   type Spec = DefineApiEndpoints<{
@@ -175,13 +176,12 @@ import JSONT from "../json";
       if (res.ok) {
         (await res.json()).prop;
       }
-
-      {
-        // @ts-expect-error queryが定義されているSpecに対してクエリパラメータを指定しなかった場合は型エラー
-        f(`/api/projects/projectA/workflow/packages/list`, {
-          headers: { Cookie: "a=b" },
-        });
-      }
+    }
+    {
+      // @ts-expect-error queryが定義されているSpecに対してクエリパラメータを指定しなかった場合は型エラー
+      f(`/api/projects/projectA/workflow/packages/list`, {
+        headers: { Cookie: "a=b" },
+      });
     }
   })();
 }
@@ -189,7 +189,15 @@ import JSONT from "../json";
 {
   type Spec = DefineApiEndpoints<{
     "/vectorize/indexes/:indexName": {
-      get: {
+      post: {
+        resBody: {
+          200: { prop2: string };
+        };
+      };
+    };
+    "/vectorize/indexes/:indexName/get-by-ids": {
+      post: {
+        body: { ids: string[] };
         resBody: {
           200: { prop: string };
         };
@@ -203,7 +211,10 @@ import JSONT from "../json";
     const basePath = getCloudflareAccountEndpoint("accountId");
     const f = fetch as FetchT<typeof basePath, Spec>;
     {
-      const res = await f(`${basePath}/vectorize/indexes/indexA`, {});
+      const res = await f(`${basePath}/vectorize/indexes/indexA/get-by-ids`, {
+        method: "POST",
+        body: JSONT.stringify({ ids: ["1", "2", "3"] }),
+      });
       if (res.ok) {
         (await res.json()).prop;
       }
