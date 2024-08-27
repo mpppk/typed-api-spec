@@ -84,14 +84,15 @@ import JSONT from "../json";
     }
 
     {
-      // AsJsonApiを利用していない場合、Content-Typeがapplication/jsonでなくてもエラーにならない
-      await f2("/users", {});
-    }
-
-    {
+      // @ts-expect-error queryが定義されていないSpecに対してクエリパラメータを指定した場合は型エラー
       await f("/users?a=1", {
         headers: { "Content-Type": "application/json" },
       });
+    }
+
+    {
+      // AsJsonApiを利用していない場合、Content-Typeがapplication/jsonでなくてもエラーにならない
+      await f2("/users", {});
     }
 
     {
@@ -155,20 +156,32 @@ import JSONT from "../json";
         resBody: {
           200: { prop: string };
         };
+        query: {
+          state: boolean;
+        };
       };
     };
   }>;
   (async () => {
     const basePath = "/api/projects/:projectName/workflow";
     const f = fetch as FetchT<typeof basePath, Spec>;
-    const res = await f(
-      `/api/projects/projectA/workflow/packages/list?state=true`,
+    {
+      const res = await f(
+        `/api/projects/projectA/workflow/packages/list?state=true`,
+        {
+          headers: { Cookie: "a=b" },
+        },
+      );
+      if (res.ok) {
+        (await res.json()).prop;
+      }
+
       {
-        headers: { Cookie: "a=b" },
-      },
-    );
-    if (res.ok) {
-      (await res.json()).prop;
+        // @ts-expect-error queryが定義されているSpecに対してクエリパラメータを指定しなかった場合は型エラー
+        f(`/api/projects/projectA/workflow/packages/list`, {
+          headers: { Cookie: "a=b" },
+        });
+      }
     }
   })();
 }
