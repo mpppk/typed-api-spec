@@ -63,13 +63,22 @@ type MatchedPatternsTestCases = [
   Expect<
     Equal<
       MatchedPatterns<"/users/1", "/users/:userId" | "/:userId">,
-      "/users/:userId" | "/:userId"
+      "/users/:userId"
     >
   >,
   Expect<
     Equal<
       MatchedPatterns<"/users/1", "/users/:userId" | "/org/:orgId">,
       "/users/:userId"
+    >
+  >,
+  Expect<
+    Equal<
+      MatchedPatterns<
+        "/users/1/profile",
+        "/users/:userId" | "/users/:userId/profile"
+      >,
+      "/users/:userId/profile"
     >
   >,
 ];
