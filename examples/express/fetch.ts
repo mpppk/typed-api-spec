@@ -10,7 +10,7 @@ const JSONT = JSON as JSONT;
 
 const main = async () => {
   {
-    const path = `${origin}/users`;
+    const path = `${origin}/users?page=1`;
     const method = "get";
     const res = await fetchT(path, { method });
     switch (res.status) {
@@ -32,7 +32,7 @@ const main = async () => {
   }
   {
     // case-insensitive method example
-    await fetchT(`${origin}/users`, { method: "GET" });
+    await fetchT(`${origin}/users?page=1`, { method: "GET" });
   }
   {
     // query parameter example

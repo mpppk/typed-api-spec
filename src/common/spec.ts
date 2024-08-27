@@ -95,9 +95,9 @@ export type ApiP<
     ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
       E[Path][M][P] extends Record<string, any>
       ? E[Path][M][P]
-      : never
-    : never
-  : never;
+      : undefined
+    : undefined
+  : undefined;
 
 export type ApiHasP<
   E extends ApiEndpoints,
