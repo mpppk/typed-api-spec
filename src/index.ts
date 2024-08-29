@@ -3,15 +3,15 @@ export {
   asAsync as expressAsAsync,
   wrap as expressWrap,
   AsyncRequestHandler as ExpressAsyncRequestHandler,
-  typed as expressTyped,
   ExpressResponse,
   RouterT as ExpressRouterT,
   Handler as ExpressHandler,
 } from "./express";
 
 export {
-  ZodToHandlers as ExpressToHandlers,
-  ZodToHandler as ExpressToHandler,
+  ToHandlers as ExpressToZodHandlers,
+  ToHandler as ExpressToZodHandler,
+  typed as expressZodTyped,
 } from "./express/zod";
 
 import FetchT, { RequestInitT } from "./fetch";

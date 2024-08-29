@@ -1,14 +1,14 @@
 import express from "express";
-import { asAsync, typed } from "../../src/express";
+import { asAsync } from "../../src/express";
 import { pathMap } from "./spec";
-import { ZodToHandlers } from "../../src/express/zod";
+import { ToHandlers, typed } from "../../src/express/zod";
 
 const emptyMiddleware = (
   req: express.Request,
   res: express.Response,
   next: express.NextFunction,
 ) => next();
-type Handlers = ZodToHandlers<typeof pathMap>;
+type Handlers = ToHandlers<typeof pathMap>;
 const newApp = () => {
   const app = express();
   app.use(express.json());

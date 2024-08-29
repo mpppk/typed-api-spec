@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 import request from "supertest";
 import express from "express";
-import { asAsync, typed, ValidateLocals, validatorMiddleware } from "./index";
+import { asAsync, ValidateLocals, validatorMiddleware } from "./index";
 import {
   newZodValidator,
   ZodApiEndpoints,
@@ -11,7 +11,7 @@ import {
 import { z, ZodError } from "zod";
 import { Request } from "express";
 import { ParseUrlParams } from "../common";
-import { ZodToHandlers } from "./zod";
+import { ToHandlers, typed } from "./zod";
 
 type ZodValidateLocals<
   AS extends ZodApiSpec,
@@ -387,7 +387,7 @@ describe("Handler", () => {
     } satisfies ZodApiEndpoints;
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const getHandler: ZodToHandlers<typeof pathMap>["/users"]["get"] = (
+    const getHandler: ToHandlers<typeof pathMap>["/users"]["get"] = (
       req,
       res,
     ) => {
@@ -405,7 +405,7 @@ describe("Handler", () => {
     };
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const postHandler: ZodToHandlers<typeof pathMap>["/users"]["post"] = (
+    const postHandler: ToHandlers<typeof pathMap>["/users"]["post"] = (
       req,
       res,
     ) => {

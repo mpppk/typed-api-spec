@@ -1,14 +1,5 @@
-import { IRouter, RequestHandler, Router } from "express";
-import {
-  ZodApiEndpoints,
-  Method,
-  ApiResponses,
-  ApiRes,
-  ApiSpec,
-  newZodValidator,
-  ApiEndpoints,
-  ToApiEndpoints,
-} from "../index";
+import { IRouter, RequestHandler } from "express";
+import { Method, ApiResponses, ApiRes, ApiSpec, ApiEndpoints } from "../index";
 import {
   NextFunction,
   ParamsDictionary,
@@ -22,7 +13,6 @@ import {
   ValidatorsInput,
   ValidatorsMap,
 } from "../common/validate";
-import { ToZodValidatorsMap } from "./zod";
 
 /**
  * Express Request Handler, but with more strict type information.
@@ -112,32 +102,6 @@ export const validatorMiddleware = <
     };
     next();
   };
-};
-
-/**
- * Set validator and add more strict type information to router.
- *
- * @param pathMap API endpoints
- * @param router Express Router
- *
- * @example
- * ```
- * const router = typed(pathMap, express.Router())
- * router.get('/path', (req, res) => {
- *   const r = res.locals.validate(req).query()
- *   if (!r.success) {
- *     return res.status(400).json({ message: 'Invalid query' })
- *   }
- *   return res.status(200).json({ message: 'success', value: r.data.value })
- * })
- * ```
- */
-export const typed = <const Endpoints extends ZodApiEndpoints>(
-  pathMap: Endpoints,
-  router: Router,
-): RouterT<ToApiEndpoints<Endpoints>, ToZodValidatorsMap<Endpoints>> => {
-  router.use(validatorMiddleware(newZodValidator(pathMap)));
-  return router;
 };
 
 export type AsyncRequestHandler<Handler extends RequestHandler> = (
