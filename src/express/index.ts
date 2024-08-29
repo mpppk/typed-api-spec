@@ -1,15 +1,12 @@
 import { IRouter, RequestHandler, Router } from "express";
 import {
   ZodApiEndpoints,
-  ZodApiSpec,
   Method,
   ApiResponses,
   ApiRes,
-  ToApiEndpoints,
   ApiSpec,
   newZodValidator,
 } from "../index";
-import { ZodValidators } from "../zod";
 import {
   NextFunction,
   ParamsDictionary,
@@ -18,7 +15,8 @@ import {
 } from "express-serve-static-core";
 import { StatusCode } from "../common";
 import { ParsedQs } from "qs";
-import { AnyValidators } from "../common/validate";
+import { AnyValidators, ValidatorsInput } from "../common/validate";
+import { ToHandler } from "./zod";
 
 /**
  * Express Request Handler, but with more strict type information.
@@ -38,37 +36,6 @@ export type Handler<
 ) => void;
 
 /**
- * Convert ZodApiSpec to Express Request Handler type.
- */
-export type ToHandler<
-  ZodE extends ZodApiEndpoints,
-  Path extends keyof ZodE & string,
-  M extends Method,
-> = Handler<
-  ToApiEndpoints<ZodE>[Path][M],
-  ZodE[Path][M] extends ZodApiSpec
-    ? ZodValidateLocals<
-        ZodE[Path][M],
-        // FIXME
-        // ParseUrlParams<Path> extends never ? string : ParseUrlParams<Path>
-        string
-      >
-    : Record<string, never>
->;
-
-/**
- * Convert ZodApiEndpoints to Express Request Handler type map.
- */
-export type ToHandlers<
-  ZodE extends ZodApiEndpoints,
-  E extends ToApiEndpoints<ZodE> = ToApiEndpoints<ZodE>,
-> = {
-  [Path in keyof E & string]: {
-    [M in Method]: ToHandler<ZodE, Path, M>;
-  };
-};
-
-/**
  * Express Response, but with more strict type information.
  */
 export type ExpressResponse<
@@ -85,10 +52,6 @@ export type ExpressResponse<
 export type ValidateLocals<Vs extends AnyValidators | Record<string, never>> = {
   validate: (req: Request<ParamsDictionary, unknown, unknown, unknown>) => Vs;
 };
-export type ZodValidateLocals<
-  AS extends ZodApiSpec,
-  ParamKeys extends string,
-> = ValidateLocals<ZodValidators<AS, ParamKeys>>;
 
 /**
  * Express Router, but with more strict type information.
@@ -108,8 +71,11 @@ export type RouterT<
   ) => RouterT<ZodE, SC>;
 };
 
-export const validatorMiddleware = (pathMap: ZodApiEndpoints) => {
-  const validator = newZodValidator(pathMap);
+export const validatorMiddleware = <
+  V extends (input: ValidatorsInput) => AnyValidators,
+>(
+  validator: V,
+) => {
   return (_req: Request, res: Response, next: NextFunction) => {
     res.locals.validate = (req: Request) => {
       return validator({
@@ -147,7 +113,7 @@ export const typed = <const Endpoints extends ZodApiEndpoints>(
   pathMap: Endpoints,
   router: Router,
 ): RouterT<Endpoints> => {
-  router.use(validatorMiddleware(pathMap));
+  router.use(validatorMiddleware(newZodValidator(pathMap)));
   return router;
 };
 

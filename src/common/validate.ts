@@ -18,11 +18,8 @@ export type Validators<
   body: BodyValidator;
   headers: HeadersValidator;
 };
-export type AnyValidators = Validators<
-  AnyValidator | undefined,
-  AnyValidator | undefined,
-  AnyValidator | undefined,
-  AnyValidator | undefined
+export type AnyValidators = Partial<
+  Validators<AnyValidator, AnyValidator, AnyValidator, AnyValidator>
 >;
 
 export type Validator<Data, Error> = () => Result<Data, Error>;
