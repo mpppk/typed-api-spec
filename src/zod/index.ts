@@ -15,16 +15,14 @@ export type ZodValidator<V extends z.ZodTypeAny | undefined> =
         NonNullable<ReturnType<V["safeParse"]>["data"]>,
         NonNullable<ReturnType<V["safeParse"]>["error"]>
       >
-    : never;
+    : undefined;
 export type ZodValidators<
   AS extends ZodApiSpec,
+  // FIXME
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   ParamKeys extends string,
 > = Validators<
-  ParamKeys extends never
-    ? never
-    : AS["params"] extends z.ZodTypeAny
-      ? ZodValidator<AS["params"]>
-      : ZodValidator<z.ZodType<Record<ParamKeys, string>>>,
+  ZodValidator<AS["params"]>,
   ZodValidator<AS["query"]>,
   ZodValidator<AS["body"]>,
   ZodValidator<AS["headers"]>

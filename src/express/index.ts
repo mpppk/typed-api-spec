@@ -17,7 +17,6 @@ import {
   Response,
 } from "express-serve-static-core";
 import { StatusCode } from "../common";
-import { ParseUrlParams } from "../common";
 import { ParsedQs } from "qs";
 import { AnyValidators } from "../common/validate";
 
@@ -48,7 +47,12 @@ export type ToHandler<
 > = Handler<
   ToApiEndpoints<ZodE>[Path][M],
   ZodE[Path][M] extends ZodApiSpec
-    ? ZodValidateLocals<ZodE[Path][M], ParseUrlParams<Path>>
+    ? ZodValidateLocals<
+        ZodE[Path][M],
+        // FIXME
+        // ParseUrlParams<Path> extends never ? string : ParseUrlParams<Path>
+        string
+      >
     : Record<string, never>
 >;
 
