@@ -1,17 +1,22 @@
 import { describe, it, expect, vi } from "vitest";
 import request from "supertest";
 import express from "express";
+import { asAsync, ValidateLocals, validatorMiddleware } from "./index";
 import {
-  asAsync,
-  typed,
-  ZodValidateLocals,
-  validatorMiddleware,
-  ToHandlers,
-} from "./index";
-import { ZodApiEndpoints } from "../zod";
+  newZodValidator,
+  ZodApiEndpoints,
+  ZodApiSpec,
+  ZodValidators,
+} from "../zod";
 import { z, ZodError } from "zod";
 import { Request } from "express";
 import { ParseUrlParams } from "../common";
+import { ToHandlers, typed } from "./zod";
+
+type ZodValidateLocals<
+  AS extends ZodApiSpec,
+  ParamKeys extends string,
+> = ValidateLocals<ZodValidators<AS, ParamKeys>>;
 
 describe("validatorMiddleware", () => {
   const pathMap = {
@@ -42,7 +47,7 @@ describe("validatorMiddleware", () => {
       },
     },
   } satisfies ZodApiEndpoints;
-  const middleware = validatorMiddleware(pathMap);
+  const middleware = validatorMiddleware(newZodValidator(pathMap));
   const next = vi.fn();
 
   describe("request to endpoint which is defined in ApiSpec", () => {
@@ -409,40 +414,6 @@ describe("Handler", () => {
         return res.status(400).json({ message: "invalid query" });
       }
       return res.json([{ id: "1", name: body.name }]);
-    };
-  });
-  it("packages/list", async () => {
-    const pathMap = {
-      "/users": {
-        get: {
-          body: z.object({
-            state1: z.string(),
-          }),
-          query: z.object({
-            state2: z.union([z.literal("reviewing"), z.literal("accepted")]),
-          }),
-          resBody: {
-            200: z.object({ state1: z.string(), state2: z.string() }),
-            400: z.object({ message: z.string() }),
-          },
-        },
-      },
-    } satisfies ZodApiEndpoints;
-
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const getHandler: ToHandlers<typeof pathMap>["/users"]["get"] = (
-      req,
-      res,
-    ) => {
-      const { data: query, error: queryErr } = res.locals.validate(req).query();
-      if (queryErr) {
-        return res.status(400).json({ message: "invalid query" });
-      }
-      const { data: body, error: bodyError } = res.locals.validate(req).body();
-      if (bodyError) {
-        return res.status(400).json({ message: "invalid params" });
-      }
-      return res.json({ state1: body.state1, state2: query.state2 });
     };
   });
 });

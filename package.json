@@ -56,6 +56,11 @@
       "import": "./dist/express/index.mjs",
       "types": "./dist/express/index.d.ts"
     },
+    "./express/zod": {
+      "require": "./dist/express/zod.js",
+      "import": "./dist/express/zod.mjs",
+      "types": "./dist/express/zod.d.ts"
+    },
     "./fetch": {
       "require": "./dist/fetch/index.js",
       "import": "./dist/fetch/index.mjs",

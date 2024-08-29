@@ -1,15 +1,5 @@
-import { IRouter, RequestHandler, Router } from "express";
-import {
-  ZodApiEndpoints,
-  ZodApiSpec,
-  Method,
-  ApiResponses,
-  ApiRes,
-  ToApiEndpoints,
-  ApiSpec,
-  newZodValidator,
-} from "../index";
-import { ZodValidators } from "../zod";
+import { IRouter, RequestHandler } from "express";
+import { Method, ApiResponses, ApiRes, ApiSpec, ApiEndpoints } from "../index";
 import {
   NextFunction,
   ParamsDictionary,
@@ -18,7 +8,11 @@ import {
 } from "express-serve-static-core";
 import { StatusCode } from "../common";
 import { ParsedQs } from "qs";
-import { AnyValidators } from "../common/validate";
+import {
+  AnyValidators,
+  ValidatorsInput,
+  ValidatorsMap,
+} from "../common/validate";
 
 /**
  * Express Request Handler, but with more strict type information.
@@ -37,34 +31,19 @@ export type Handler<
   next: NextFunction,
 ) => void;
 
-/**
- * Convert ZodApiSpec to Express Request Handler type.
- */
 export type ToHandler<
-  ZodE extends ZodApiEndpoints,
-  Path extends keyof ZodE & string,
-  M extends Method,
+  Spec extends ApiSpec | undefined,
+  Validators extends AnyValidators | undefined,
 > = Handler<
-  ToApiEndpoints<ZodE>[Path][M],
-  ZodE[Path][M] extends ZodApiSpec
-    ? ZodValidateLocals<
-        ZodE[Path][M],
-        // FIXME
-        // ParseUrlParams<Path> extends never ? string : ParseUrlParams<Path>
-        string
-      >
-    : Record<string, never>
+  Spec,
+  ValidateLocals<
+    Validators extends AnyValidators ? Validators : Record<string, never>
+  >
 >;
 
-/**
- * Convert ZodApiEndpoints to Express Request Handler type map.
- */
-export type ToHandlers<
-  ZodE extends ZodApiEndpoints,
-  E extends ToApiEndpoints<ZodE> = ToApiEndpoints<ZodE>,
-> = {
+export type ToHandlers<E extends ApiEndpoints, V extends ValidatorsMap> = {
   [Path in keyof E & string]: {
-    [M in Method]: ToHandler<ZodE, Path, M>;
+    [M in Method]: ToHandler<E[Path][M], V[Path][M]>;
   };
 };
 
@@ -85,31 +64,31 @@ export type ExpressResponse<
 export type ValidateLocals<Vs extends AnyValidators | Record<string, never>> = {
   validate: (req: Request<ParamsDictionary, unknown, unknown, unknown>) => Vs;
 };
-export type ZodValidateLocals<
-  AS extends ZodApiSpec,
-  ParamKeys extends string,
-> = ValidateLocals<ZodValidators<AS, ParamKeys>>;
 
 /**
  * Express Router, but with more strict type information.
  */
 export type RouterT<
-  ZodE extends ZodApiEndpoints,
+  E extends ApiEndpoints,
+  V extends ValidatorsMap,
   SC extends StatusCode = StatusCode,
 > = Omit<IRouter, Method> & {
-  [M in Method]: <Path extends string & keyof ZodE>(
+  [M in Method]: <Path extends string & keyof E>(
     path: Path,
     ...handlers: [
       // Middlewareは複数のエンドポイントで実装を使い回されることがあるので、型チェックはゆるくする
       ...Array<RequestHandler>,
       // Handlerは厳密に型チェックする
-      ToHandler<ZodE, Path, M>,
+      ToHandler<E[Path][M], V[Path][M]>,
     ]
-  ) => RouterT<ZodE, SC>;
+  ) => RouterT<E, V, SC>;
 };
 
-export const validatorMiddleware = (pathMap: ZodApiEndpoints) => {
-  const validator = newZodValidator(pathMap);
+export const validatorMiddleware = <
+  V extends (input: ValidatorsInput) => AnyValidators,
+>(
+  validator: V,
+) => {
   return (_req: Request, res: Response, next: NextFunction) => {
     res.locals.validate = (req: Request) => {
       return validator({
@@ -123,32 +102,6 @@ export const validatorMiddleware = (pathMap: ZodApiEndpoints) => {
     };
     next();
   };
-};
-
-/**
- * Set validator and add more strict type information to router.
- *
- * @param pathMap API endpoints
- * @param router Express Router
- *
- * @example
- * ```
- * const router = typed(pathMap, express.Router())
- * router.get('/path', (req, res) => {
- *   const r = res.locals.validate(req).query()
- *   if (!r.success) {
- *     return res.status(400).json({ message: 'Invalid query' })
- *   }
- *   return res.status(200).json({ message: 'success', value: r.data.value })
- * })
- * ```
- */
-export const typed = <const Endpoints extends ZodApiEndpoints>(
-  pathMap: Endpoints,
-  router: Router,
-): RouterT<Endpoints> => {
-  router.use(validatorMiddleware(pathMap));
-  return router;
 };
 
 export type AsyncRequestHandler<Handler extends RequestHandler> = (
@@ -194,7 +147,8 @@ export const wrap = <Handler extends RequestHandler>(
  * ```
  * @param router Express.Router to be wrapped
  */
-export const asAsync = <Router extends IRouter | RouterT<never>>(
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const asAsync = <Router extends IRouter | RouterT<any, any>>(
   router: Router,
 ): Router => {
   return new Proxy(router, {
