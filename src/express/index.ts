@@ -67,6 +67,12 @@ export type RouterT<
       ...Array<RequestHandler>,
       // Handlerは厳密に型チェックする
       ToHandler<ZodE, Path, M>,
+      // ToHandler<
+      //   ZodE[Path][M] extends ZodApiSpec ? ToApiSpec<ZodE[Path][M]> : undefined,
+      //   ZodE[Path][M] extends ZodApiSpec
+      //     ? ZodValidators<ZodE[Path][M], string>
+      //     : Record<string, never>
+      // >,
     ]
   ) => RouterT<ZodE, SC>;
 };

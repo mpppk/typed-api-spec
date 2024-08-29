@@ -17,14 +17,14 @@ export type ToHandler<
 > = Handler<
   ToApiEndpoints<ZodE>[Path][M],
   ZodE[Path][M] extends ZodApiSpec
-    ? ZodValidateLocals<
-        ZodE[Path][M],
-        // FIXME
-        // ParseUrlParams<Path> extends never ? string : ParseUrlParams<Path>
-        string
-      >
+    ? ValidateLocals<ZodValidators<ZodE[Path][M], string>>
     : Record<string, never>
 >;
+
+// export type ToHandler<
+//   Spec extends ApiSpec | undefined,
+//   Validators extends AnyValidators,
+// > = Handler<Spec, ValidateLocals<Validators>>;
 
 /**
  * Convert ZodApiEndpoints to Express Request Handler type map.
@@ -38,7 +38,16 @@ export type ToHandlers<
   };
 };
 
-export type ZodValidateLocals<
-  AS extends ZodApiSpec,
-  ParamKeys extends string,
-> = ValidateLocals<ZodValidators<AS, ParamKeys>>;
+// export type ToHandlers<
+//   ZodE extends ZodApiEndpoints,
+//   E extends ToApiEndpoints<ZodE> = ToApiEndpoints<ZodE>,
+// > = {
+//   [Path in keyof E & string]: {
+//     [M in Method]: ToHandler<
+//       ZodE[Path][M] extends ZodApiSpec ? ToApiSpec<ZodE[Path][M]> : undefined,
+//       ZodE[Path][M] extends ZodApiSpec
+//         ? ZodValidators<ZodE[Path][M], string>
+//         : Record<string, never>
+//     >;
+//   };
+// };

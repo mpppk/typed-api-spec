@@ -10,7 +10,6 @@ export {
 } from "./express";
 
 export {
-  ZodValidateLocals as ExpressValidateLocals,
   ToHandlers as ExpressToHandlers,
   ToHandler as ExpressToHandler,
 } from "./express/zod";
