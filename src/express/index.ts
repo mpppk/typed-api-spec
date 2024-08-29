@@ -16,7 +16,7 @@ import {
 import { StatusCode } from "../common";
 import { ParsedQs } from "qs";
 import { AnyValidators, ValidatorsInput } from "../common/validate";
-import { ToHandler } from "./zod";
+import { ZodToHandler } from "./zod";
 
 /**
  * Express Request Handler, but with more strict type information.
@@ -34,6 +34,11 @@ export type Handler<
   res: ExpressResponse<NonNullable<Spec>["resBody"], 200, Locals>,
   next: NextFunction,
 ) => void;
+
+export type ToHandler<
+  Spec extends ApiSpec | undefined,
+  Validators extends AnyValidators,
+> = Handler<Spec, ValidateLocals<Validators>>;
 
 /**
  * Express Response, but with more strict type information.
@@ -66,13 +71,7 @@ export type RouterT<
       // Middlewareは複数のエンドポイントで実装を使い回されることがあるので、型チェックはゆるくする
       ...Array<RequestHandler>,
       // Handlerは厳密に型チェックする
-      ToHandler<ZodE, Path, M>,
-      // ToHandler<
-      //   ZodE[Path][M] extends ZodApiSpec ? ToApiSpec<ZodE[Path][M]> : undefined,
-      //   ZodE[Path][M] extends ZodApiSpec
-      //     ? ZodValidators<ZodE[Path][M], string>
-      //     : Record<string, never>
-      // >,
+      ZodToHandler<ZodE, Path, M>,
     ]
   ) => RouterT<ZodE, SC>;
 };

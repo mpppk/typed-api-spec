@@ -10,8 +10,8 @@ export {
 } from "./express";
 
 export {
-  ToHandlers as ExpressToHandlers,
-  ToHandler as ExpressToHandler,
+  ZodToHandlers as ExpressToHandlers,
+  ZodToHandler as ExpressToHandler,
 } from "./express/zod";
 
 import FetchT, { RequestInitT } from "./fetch";
