@@ -4,13 +4,13 @@ import { ParsedQs } from "qs";
 
 export type Validators<
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ParamsValidator extends AnyValidator | never,
+  ParamsValidator extends AnyValidator | undefined,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  QueryValidator extends AnyValidator | never,
+  QueryValidator extends AnyValidator | undefined,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  BodyValidator extends AnyValidator | never,
+  BodyValidator extends AnyValidator | undefined,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  HeadersValidator extends AnyValidator | never,
+  HeadersValidator extends AnyValidator | undefined,
 > = {
   // FIXME: FilterNeverにしたい
   params: ParamsValidator;
@@ -19,10 +19,10 @@ export type Validators<
   headers: HeadersValidator;
 };
 export type AnyValidators = Validators<
-  AnyValidator | never,
-  AnyValidator | never,
-  AnyValidator | never,
-  AnyValidator | never
+  AnyValidator | undefined,
+  AnyValidator | undefined,
+  AnyValidator | undefined,
+  AnyValidator | undefined
 >;
 
 export type Validator<Data, Error> = () => Result<Data, Error>;
