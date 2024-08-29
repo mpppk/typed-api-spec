@@ -1,5 +1,5 @@
 import { Result } from "../utils";
-import { AnyApiEndpoint, AnyApiEndpoints, isMethod } from "./spec";
+import { AnyApiEndpoint, AnyApiEndpoints, isMethod, Method } from "./spec";
 import { ParsedQs } from "qs";
 
 export type Validators<
@@ -21,6 +21,9 @@ export type Validators<
 export type AnyValidators = Partial<
   Validators<AnyValidator, AnyValidator, AnyValidator, AnyValidator>
 >;
+export type ValidatorsMap = {
+  [Path in string]: Partial<Record<Method, AnyValidators>>;
+};
 
 export type Validator<Data, Error> = () => Result<Data, Error>;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

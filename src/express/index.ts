@@ -6,6 +6,7 @@ import {
   ApiRes,
   ApiSpec,
   newZodValidator,
+  ApiEndpoints,
 } from "../index";
 import {
   NextFunction,
@@ -15,7 +16,11 @@ import {
 } from "express-serve-static-core";
 import { StatusCode } from "../common";
 import { ParsedQs } from "qs";
-import { AnyValidators, ValidatorsInput } from "../common/validate";
+import {
+  AnyValidators,
+  ValidatorsInput,
+  ValidatorsMap,
+} from "../common/validate";
 import { ZodToHandler } from "./zod";
 
 /**
@@ -39,6 +44,15 @@ export type ToHandler<
   Spec extends ApiSpec | undefined,
   Validators extends AnyValidators,
 > = Handler<Spec, ValidateLocals<Validators>>;
+
+export type ToHandlers<E extends ApiEndpoints, V extends ValidatorsMap> = {
+  [Path in keyof E & string]: {
+    [M in Method]: ToHandler<
+      E[Path][M],
+      V[Path][M] extends AnyValidators ? V[Path][M] : Record<string, never>
+    >;
+  };
+};
 
 /**
  * Express Response, but with more strict type information.

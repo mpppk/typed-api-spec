@@ -5,7 +5,7 @@ import {
   ZodValidators,
 } from "../zod";
 import { Method } from "../common";
-import { ToHandler } from "./index";
+import { ToHandler, ToHandlers } from "./index";
 
 /**
  * Convert ZodApiSpec to Express Request Handler type.
@@ -25,8 +25,11 @@ export type ToZodValidators<Spec extends ZodApiSpec | undefined> =
 export type ZodToHandlers<
   ZodE extends ZodApiEndpoints,
   E extends ToApiEndpoints<ZodE> = ToApiEndpoints<ZodE>,
-> = {
-  [Path in keyof E & string]: {
-    [M in Method]: ZodToHandler<ZodE, Path, M>;
+  V extends ToZodValidatorsMap<ZodE> = ToZodValidatorsMap<ZodE>,
+> = ToHandlers<E, V>;
+
+export type ToZodValidatorsMap<ZodE extends ZodApiEndpoints> = {
+  [Path in keyof ZodE & string]: {
+    [M in Method]: ToZodValidators<ZodE[Path][M]>;
   };
 };
