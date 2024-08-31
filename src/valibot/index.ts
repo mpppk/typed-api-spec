@@ -15,10 +15,12 @@ import {
   SafeParseResult,
 } from "valibot";
 
-export type ValibotValidator<V extends v.AnySchema | undefined> =
-  V extends v.AnySchema
-    ? Validator<v.InferOutput<V>, v.InferIssue<v.InferOutput<V>>>
-    : undefined;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type AnyV = BaseSchema<any, any, any>;
+
+export type ValibotValidator<V extends AnyV | undefined> = V extends AnyV
+  ? Validator<v.InferOutput<V>, v.InferIssue<V>>
+  : undefined;
 export type ValibotValidators<
   AS extends ValibotApiSpec,
   // FIXME
@@ -30,23 +32,21 @@ export type ValibotValidators<
   ValibotValidator<AS["body"]>,
   ValibotValidator<AS["headers"]>
 >;
-export type InferOrUndefined<T> = T extends v.AnySchema
-  ? v.InferOutput<T>
-  : undefined;
+export type InferOrUndefined<T> = T extends AnyV ? v.InferOutput<T> : undefined;
 
 export type ValibotApiEndpoints = { [Path in string]: ValibotApiEndpoint };
 type ValibotApiEndpoint = Partial<Record<Method, ValibotApiSpec>>;
 export type ValibotApiSpec<
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   ParamKeys extends string = string,
-  Params extends v.AnySchema = v.AnySchema,
-  Query extends v.AnySchema = v.AnySchema,
-  Body extends v.AnySchema = v.AnySchema,
-  ResBody extends Partial<Record<StatusCode, v.AnySchema>> = Partial<
-    Record<StatusCode, v.AnySchema>
+  Params extends AnyV = AnyV,
+  Query extends AnyV = AnyV,
+  Body extends AnyV = AnyV,
+  ResBody extends Partial<Record<StatusCode, AnyV>> = Partial<
+    Record<StatusCode, AnyV>
   >,
-  RequestHeaders extends v.AnySchema = v.AnySchema,
-  ResponseHeaders extends v.AnySchema = v.AnySchema,
+  RequestHeaders extends AnyV = AnyV,
+  ResponseHeaders extends AnyV = AnyV,
 > = BaseApiSpec<Params, Query, Body, ResBody, RequestHeaders, ResponseHeaders>;
 export type ToApiEndpoints<E extends ValibotApiEndpoints> = {
   [Path in keyof E & string]: ToApiEndpoint<E, Path>;
@@ -67,11 +67,11 @@ export type ToApiSpec<ZAS extends ValibotApiSpec> = {
   headers: InferOrUndefined<ZAS["headers"]>;
   resHeaders: InferOrUndefined<ZAS["resHeaders"]>;
 };
-export type ValibotApiResponses = Partial<Record<StatusCode, v.AnySchema>>;
+export type ValibotApiResponses = Partial<Record<StatusCode, AnyV>>;
 export type ValibotApiResSchema<
   AResponses extends ValibotApiResponses,
   SC extends keyof AResponses & StatusCode,
-> = AResponses[SC] extends v.AnySchema ? AResponses[SC] : never;
+> = AResponses[SC] extends AnyV ? AResponses[SC] : never;
 export type ToApiResponses<AR extends ValibotApiResponses> = {
   [SC in keyof AR & StatusCode]: v.InferOutput<ValibotApiResSchema<AR, SC>>;
 };
