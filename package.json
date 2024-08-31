@@ -17,7 +17,6 @@
   "author": "mpppk",
   "license": "ISC",
   "devDependencies": {
-    "@types/express": "^4.17.21",
     "@types/qs": "^6.9.15",
     "@types/supertest": "^6.0.2",
     "@typescript-eslint/eslint-plugin": "^7.0.0",
@@ -26,15 +25,33 @@
     "dotenv-cli": "^7.2.1",
     "eslint": "^8.57.0",
     "eslint-config-prettier": "^9.0.0",
-    "express": "^4.19.2",
     "npm-run-all2": "^6.0.0",
     "prettier": "^3.0.0",
     "supertest": "^7.0.0",
     "tsup": "^8.0.0",
     "tsx": "^4.0.0",
+    "vitest": "^2.0.0"
+  },
+  "peerDependencies": {
+    "zod": "^3.23.0",
+    "valibot": "^0.40.0",
     "typescript": "^5.4.5",
-    "vitest": "^2.0.0",
-    "zod": "^3.23.8"
+    "express": "^4.19.2",
+    "@types/express": "^4.17.21"
+  },
+  "peerDependenciesMeta": {
+    "zod": {
+      "optional": true
+    },
+    "valibot": {
+      "optional": true
+    },
+    "express": {
+      "optional": true
+    },
+    "@types/express": {
+      "optional": true
+    }
   },
   "files": [
     "dist",
