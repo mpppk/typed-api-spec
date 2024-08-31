@@ -1,7 +1,7 @@
 import express from "express";
-import { asAsync } from "../../src/express";
-import { pathMap } from "./spec-zod";
-import { ToHandlers, typed } from "../../src/express/zod";
+import { asAsync } from "../../../src/express";
+import { pathMap } from "./spec";
+import { ToHandlers, typed } from "../../../src/express/zod";
 
 const emptyMiddleware = (
   req: express.Request,
