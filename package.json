@@ -11,8 +11,10 @@
     "test:lint": "eslint .",
     "test:format": "prettier --check .",
     "test:type-check": "tsc --noEmit",
-    "example:express": "tsx examples/express/zod/express.ts",
-    "example:fetch": "tsx examples/express/zod/fetch.ts"
+    "example:express-zod": "tsx examples/express/zod/express.ts",
+    "example:express-zod-fetch": "tsx examples/express/zod/fetch.ts",
+    "example:fasitify-zod": "tsx examples/fastify/zod/fastify.ts",
+    "example:fasitify-zod-fetch": "tsx examples/fastify/zod/fetch.ts"
   },
   "author": "mpppk",
   "license": "ISC",
@@ -25,6 +27,7 @@
     "dotenv-cli": "^7.2.1",
     "eslint": "^8.57.0",
     "eslint-config-prettier": "^9.0.0",
+    "fastify-type-provider-zod": "^2.0.0",
     "npm-run-all2": "^6.0.0",
     "prettier": "^3.0.0",
     "supertest": "^7.0.0",
@@ -33,11 +36,12 @@
     "vitest": "^2.0.0"
   },
   "peerDependencies": {
-    "zod": "^3.23.0",
-    "valibot": "^0.40.0",
-    "typescript": "^5.4.5",
+    "@types/express": "^4.17.21",
     "express": "^4.19.2",
-    "@types/express": "^4.17.21"
+    "fastify": "^4.28.1",
+    "typescript": "^5.4.5",
+    "valibot": "^0.40.0",
+    "zod": "^3.23.0"
   },
   "peerDependenciesMeta": {
     "zod": {
@@ -50,6 +54,9 @@
       "optional": true
     },
     "@types/express": {
+      "optional": true
+    },
+    "fastify": {
       "optional": true
     }
   },
@@ -78,6 +85,11 @@
       "import": "./dist/express/zod.mjs",
       "types": "./dist/express/zod.d.ts"
     },
+    "./express/valibot": {
+      "require": "./dist/express/valibot.js",
+      "import": "./dist/express/valibot.mjs",
+      "types": "./dist/express/valibot.d.ts"
+    },
     "./fetch": {
       "require": "./dist/fetch/index.js",
       "import": "./dist/fetch/index.mjs",
@@ -92,6 +104,11 @@
       "require": "./dist/zod/index.js",
       "import": "./dist/zod/index.mjs",
       "types": "./dist/zod/index.d.ts"
+    },
+    "./valibot": {
+      "require": "./dist/valibot/index.js",
+      "import": "./dist/valibot/index.mjs",
+      "types": "./dist/valibot/index.d.ts"
     }
   },
   "main": "./dist/index.js",
