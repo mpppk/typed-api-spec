@@ -27,7 +27,6 @@
     "dotenv-cli": "^7.2.1",
     "eslint": "^8.57.0",
     "eslint-config-prettier": "^9.0.0",
-    "fastify-type-provider-zod": "^2.0.0",
     "npm-run-all2": "^6.0.0",
     "prettier": "^3.0.0",
     "supertest": "^7.0.0",
@@ -39,6 +38,7 @@
     "@types/express": "^4.17.21",
     "express": "^4.19.2",
     "fastify": "^4.28.1",
+    "fastify-type-provider-zod": "^2.0.0",
     "typescript": "^5.4.5",
     "valibot": "^0.40.0",
     "zod": "^3.23.0"
@@ -57,6 +57,9 @@
       "optional": true
     },
     "fastify": {
+      "optional": true
+    },
+    "fastify-type-provider-zod": {
       "optional": true
     }
   },
