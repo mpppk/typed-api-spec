@@ -1,9 +1,10 @@
 import { z } from "zod";
-import { ToApiEndpoints, ZodApiEndpoints } from "../../../src";
+import { ToApiEndpoints, ZodApiEndpoints } from "../../src";
 
-const JsonHeader = z.object({
-  "Content-Type": z.literal("application/json"),
-});
+const JsonHeader = z.union([
+  z.object({ "content-type": z.string() }),
+  z.object({ "Content-Type": z.string() }),
+]);
 export const pathMap = {
   "/users": {
     get: {
