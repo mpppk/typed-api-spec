@@ -1,7 +1,7 @@
 import JSONT from "../../../src/json";
 import { unreachable } from "../../../src/utils";
 import type FetchT from "../../../src/fetch";
-import { PathMap } from "../../express/zod/spec";
+import { PathMap } from "../../spec/zod";
 
 const fetchT = fetch as FetchT<typeof origin, PathMap>;
 const origin = "http://localhost:3000";

@@ -1,5 +1,5 @@
 import * as v from "valibot";
-import { ToApiEndpoints, ValibotApiEndpoints } from "../../../src/valibot";
+import { ToApiEndpoints, ValibotApiEndpoints } from "../../src/valibot";
 
 const JsonHeader = v.object({
   "Content-Type": v.literal("application/json"),

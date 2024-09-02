@@ -1,4 +1,4 @@
-import type { PathMap } from "./spec";
+import type { PathMap } from "../../spec/valibot";
 import JSONT from "../../../src/json";
 import { unreachable } from "../../../src/utils";
 import type FetchT from "../../../src/fetch";

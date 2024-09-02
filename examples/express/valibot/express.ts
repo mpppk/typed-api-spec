@@ -1,6 +1,6 @@
 import express from "express";
 import { asAsync } from "../../../src/express";
-import { pathMap } from "./spec";
+import { pathMap } from "../../spec/valibot";
 import { ToHandlers, typed } from "../../../src/express/valibot";
 
 const emptyMiddleware = (
