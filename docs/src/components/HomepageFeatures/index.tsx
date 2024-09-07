@@ -1,6 +1,9 @@
 import clsx from "clsx";
 import Heading from "@theme/Heading";
 import styles from "./styles.module.css";
+import mountainSvg from "@site/static/img/undraw_docusaurus_mountain.svg";
+import treeSvg from "@site/static/img/undraw_docusaurus_tree.svg";
+import reactSvg from "@site/static/img/undraw_docusaurus_react.svg";
 
 type FeatureItem = {
   title: string;
@@ -11,7 +14,7 @@ type FeatureItem = {
 const FeatureList: FeatureItem[] = [
   {
     title: "All you need is TypeScript",
-    Svg: require("@site/static/img/undraw_docusaurus_mountain.svg").default,
+    Svg: mountainSvg,
     description: (
       <>
         typed-api-spec's API definition schema is built on top of TypeScript, so
@@ -21,7 +24,7 @@ const FeatureList: FeatureItem[] = [
   },
   {
     title: "type-safe, zero-runtime client",
-    Svg: require("@site/static/img/undraw_docusaurus_tree.svg").default,
+    Svg: treeSvg,
     description: (
       <>
         typed-api-spec provides type-safe, 0kb bundle size API client. You can
@@ -32,7 +35,7 @@ const FeatureList: FeatureItem[] = [
   },
   {
     title: "Framework-agnostic",
-    Svg: require("@site/static/img/undraw_docusaurus_react.svg").default,
+    Svg: reactSvg,
     description: (
       <>
         typed-api-spec does not require any other dependencies. It supports
