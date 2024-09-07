@@ -2,11 +2,11 @@ import {
   ApiEndpoints,
   ApiHasP,
   ApiP,
-  ApiResponses,
+  AnyApiResponses,
   CaseInsensitiveMethod,
   FilterNever,
   MatchedPatterns,
-  MergeApiResponses,
+  MergeApiResponseBodies,
   Method,
   NormalizePath,
   ParseURL,
@@ -53,12 +53,21 @@ type FetchT<UrlPrefix extends UrlPrefixPattern, E extends ApiEndpoints> = <
     M,
     "query"
   >,
-  ResBody extends ApiP<E, CandidatePaths, M, "resBody"> = ApiP<
+  ResBody extends ApiP<
     E,
     CandidatePaths,
     M,
-    "resBody"
-  >,
+    "responses"
+  > extends AnyApiResponses
+    ? MergeApiResponseBodies<ApiP<E, CandidatePaths, M, "responses">>
+    : Record<StatusCode, never> = ApiP<
+    E,
+    CandidatePaths,
+    M,
+    "responses"
+  > extends AnyApiResponses
+    ? MergeApiResponseBodies<ApiP<E, CandidatePaths, M, "responses">>
+    : Record<StatusCode, never>,
 >(
   input: Input,
   init: ApiHasP<E, CandidatePaths, M> extends true
@@ -74,10 +83,6 @@ type FetchT<UrlPrefix extends UrlPrefixPattern, E extends ApiEndpoints> = <
             ApiP<E, CandidatePaths, M, "headers">
           >
         | undefined,
-) => Promise<
-  MergeApiResponses<
-    ResBody extends ApiResponses ? ResBody : Record<StatusCode, never>
-  >
->;
+) => Promise<ResBody>;
 
 export default FetchT;

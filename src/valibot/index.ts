@@ -1,5 +1,12 @@
 import * as v from "valibot";
-import { BaseApiSpec, Method, StatusCode } from "../common";
+import {
+  AnyApiResponses,
+  BaseApiSpec,
+  DefineApiResponses,
+  DefineResponse,
+  Method,
+  StatusCode,
+} from "../common";
 import {
   getApiSpec,
   Validator,
@@ -42,12 +49,9 @@ export type ValibotApiSpec<
   Params extends AnyV = AnyV,
   Query extends AnyV = AnyV,
   Body extends AnyV = AnyV,
-  ResBody extends Partial<Record<StatusCode, AnyV>> = Partial<
-    Record<StatusCode, AnyV>
-  >,
   RequestHeaders extends AnyV = AnyV,
-  ResponseHeaders extends AnyV = AnyV,
-> = BaseApiSpec<Params, Query, Body, ResBody, RequestHeaders, ResponseHeaders>;
+  Responses extends AnyApiResponses = AnyApiResponses,
+> = BaseApiSpec<Params, Query, Body, RequestHeaders, Responses>;
 export type ToApiEndpoints<E extends ValibotApiEndpoints> = {
   [Path in keyof E & string]: ToApiEndpoint<E, Path>;
 };
@@ -55,26 +59,28 @@ export type ToApiEndpoint<
   E extends ValibotApiEndpoints,
   Path extends keyof E,
 > = {
-  [M in keyof E[Path] & Method]: E[Path][M] extends undefined
-    ? undefined
-    : ToApiSpec<NonNullable<E[Path][M]>>;
+  [M in keyof E[Path] & Method]: ToApiSpec<NonNullable<E[Path][M]>>;
 };
 export type ToApiSpec<ZAS extends ValibotApiSpec> = {
   query: InferOrUndefined<ZAS["query"]>;
   params: InferOrUndefined<ZAS["params"]>;
   body: InferOrUndefined<ZAS["body"]>;
-  resBody: ToApiResponses<ZAS["resBody"]>;
   headers: InferOrUndefined<ZAS["headers"]>;
-  resHeaders: InferOrUndefined<ZAS["resHeaders"]>;
+  responses: ToApiResponses<ZAS["responses"]>;
 };
+export type ToApiResponses<AR extends ValibotAnyApiResponses> = {
+  [SC in keyof AR & StatusCode]: {
+    body: InferOrUndefined<NonNullable<AR[SC]>["body"]>;
+    headers: InferOrUndefined<NonNullable<AR[SC]>["headers"]>;
+  };
+};
+type ValibotAnyApiResponse = DefineResponse<AnyV, AnyV>;
+export type ValibotAnyApiResponses = DefineApiResponses<ValibotAnyApiResponse>;
 export type ValibotApiResponses = Partial<Record<StatusCode, AnyV>>;
 export type ValibotApiResSchema<
   AResponses extends ValibotApiResponses,
   SC extends keyof AResponses & StatusCode,
 > = AResponses[SC] extends AnyV ? AResponses[SC] : never;
-export type ToApiResponses<AR extends ValibotApiResponses> = {
-  [SC in keyof AR & StatusCode]: v.InferOutput<ValibotApiResSchema<AR, SC>>;
-};
 
 /**
  * Create a new validator for the given endpoints.

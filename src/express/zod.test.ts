@@ -35,14 +35,18 @@ describe("validatorMiddleware", () => {
         params: z.object({
           name: z.string(),
         }),
-        resBody: {
-          200: z.object({
-            id: z.string(),
-            name: z.string(),
-          }),
-          400: z.object({
-            message: z.string(),
-          }),
+        responses: {
+          200: {
+            body: z.object({
+              id: z.string(),
+              name: z.string(),
+            }),
+          },
+          400: {
+            body: z.object({
+              message: z.string(),
+            }),
+          },
         },
       },
     },
@@ -237,15 +241,15 @@ describe("typed", () => {
   const UserName = z.object({ name: z.string() });
   const User = UserName.merge(UserId);
   const Err = z.object({ message: z.string() });
-  const BadRequest = { 400: Err };
+  const BadRequest = { 400: { body: Err } };
   const pathMap = {
     "/users": {
       get: {
-        resBody: { 200: z.array(User) },
+        responses: { 200: { body: z.array(User) } },
       },
       post: {
         body: UserName,
-        resBody: { 200: User, ...BadRequest },
+        responses: { 200: { body: User }, ...BadRequest },
       },
     },
     "/users/:id": {
@@ -257,7 +261,10 @@ describe("typed", () => {
         query: z.object({
           detail: z.union([z.literal("true"), z.literal("false")]),
         }),
-        resBody: { 200: User, ...BadRequest },
+        responses: {
+          200: { body: User },
+          ...BadRequest,
+        },
       },
     },
   } satisfies ZodApiEndpoints;
@@ -365,22 +372,26 @@ describe("Handler", () => {
         get: {
           params: z.object({ active: z.string() }),
           query: z.object({ name: z.string() }),
-          resBody: {
-            200: z.array(
-              z.object({
-                id: z.string(),
-                name: z.string(),
-                active: z.string(),
-              }),
-            ),
-            400: z.object({ message: z.string() }),
+          responses: {
+            200: {
+              body: z.array(
+                z.object({
+                  id: z.string(),
+                  name: z.string(),
+                  active: z.string(),
+                }),
+              ),
+            },
+            400: { body: z.object({ message: z.string() }) },
           },
         },
         post: {
           body: z.object({ name: z.string() }),
-          resBody: {
-            200: z.array(z.object({ id: z.string(), name: z.string() })),
-            400: z.object({ message: z.string() }),
+          responses: {
+            200: {
+              body: z.array(z.object({ id: z.string(), name: z.string() })),
+            },
+            400: { body: z.object({ message: z.string() }) },
           },
         },
       },

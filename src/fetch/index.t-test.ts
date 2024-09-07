@@ -7,9 +7,7 @@ const JSONT = JSON as JSONT;
   type Spec = DefineApiEndpoints<{
     "/users": {
       get: {
-        resBody: {
-          200: { prop: string };
-        };
+        responses: { 200: { body: { prop: string } } };
       };
     };
   }>;
@@ -27,17 +25,15 @@ const JSONT = JSON as JSONT;
   type Spec = DefineApiEndpoints<{
     "/users": {
       get: {
-        resBody: {
-          200: { prop: string };
-        };
+        responses: { 200: { body: { prop: string } } };
       };
       post: {
         body: {
           userName: string;
         };
-        resBody: {
-          200: { postProp: string };
-          400: { error: string };
+        responses: {
+          200: { body: { postProp: string } };
+          400: { body: { error: string } };
         };
       };
     };
@@ -125,9 +121,7 @@ const JSONT = JSON as JSONT;
     "/users": {
       get: {
         headers: { Cookie: `a=${string}` };
-        resBody: {
-          200: { prop: string };
-        };
+        responses: { 200: { body: { prop: string } } };
       };
     };
   }>;
@@ -154,9 +148,7 @@ const JSONT = JSON as JSONT;
     "/packages/list": {
       get: {
         headers: { Cookie: `a=${string}` };
-        resBody: {
-          200: { prop: string };
-        };
+        responses: { 200: { body: { prop: string } } };
         query: {
           state: boolean;
         };
@@ -190,17 +182,13 @@ const JSONT = JSON as JSONT;
   type Spec = DefineApiEndpoints<{
     "/vectorize/indexes/:indexName": {
       post: {
-        resBody: {
-          200: { prop2: string };
-        };
+        responses: { 200: { body: { prop2: string } } };
       };
     };
     "/vectorize/indexes/:indexName/get-by-ids": {
       post: {
         body: { ids: string[] };
-        resBody: {
-          200: { prop: string };
-        };
+        responses: { 200: { body: { prop: string } } };
       };
     };
   }>;

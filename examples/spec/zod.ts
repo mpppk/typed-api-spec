@@ -11,17 +11,22 @@ export const pathMap = {
       query: z.object({
         page: z.string(),
       }),
-      resBody: {
-        200: z.object({ userNames: z.string().array() }),
-        400: z.object({ errorMessage: z.string() }),
+      responses: {
+        200: { body: z.object({ userNames: z.string().array() }) },
+        400: { body: z.object({ errorMessage: z.string() }) },
       },
     },
     post: {
       headers: JsonHeader,
-      resHeaders: JsonHeader,
-      resBody: {
-        200: z.object({ userId: z.string() }),
-        400: z.object({ errorMessage: z.string() }),
+      responses: {
+        200: {
+          headers: JsonHeader,
+          body: z.object({ userId: z.string() }),
+        },
+        400: {
+          headers: JsonHeader,
+          body: z.object({ errorMessage: z.string() }),
+        },
       },
       body: z.object({
         userName: z.string(),
@@ -31,9 +36,9 @@ export const pathMap = {
   "/users/:userId": {
     get: {
       params: z.object({ userId: z.string() }),
-      resBody: {
-        200: z.object({ userName: z.string() }),
-        400: z.object({ errorMessage: z.string() }),
+      responses: {
+        200: { body: z.object({ userName: z.string() }) },
+        400: { body: z.object({ errorMessage: z.string() }) },
       },
     },
   },

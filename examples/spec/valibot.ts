@@ -10,29 +10,34 @@ export const pathMap = {
       query: v.object({
         page: v.string(),
       }),
-      resBody: {
-        200: v.object({ userNames: v.array(v.string()) }),
-        400: v.object({ errorMessage: v.string() }),
+      responses: {
+        200: { body: v.object({ userNames: v.array(v.string()) }) },
+        400: { body: v.object({ errorMessage: v.string() }) },
       },
     },
     post: {
       headers: JsonHeader,
-      resHeaders: JsonHeader,
-      resBody: {
-        200: v.object({ userId: v.string() }),
-        400: v.object({ errorMessage: v.string() }),
-      },
       body: v.object({
         userName: v.string(),
       }),
+      responses: {
+        200: {
+          headers: JsonHeader,
+          body: v.object({ userId: v.string() }),
+        },
+        400: {
+          headers: JsonHeader,
+          body: v.object({ errorMessage: v.string() }),
+        },
+      },
     },
   },
   "/users/:userId": {
     get: {
       params: v.object({ userId: v.string() }),
-      resBody: {
-        200: v.object({ userName: v.string() }),
-        400: v.object({ errorMessage: v.string() }),
+      responses: {
+        200: { body: v.object({ userName: v.string() }) },
+        400: { body: v.object({ errorMessage: v.string() }) },
       },
     },
   },

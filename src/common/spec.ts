@@ -42,16 +42,14 @@ export interface BaseApiSpec<
   Query,
   Body,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ResBody,
   RequestHeaders,
-  ResponseHeaders,
+  Responses extends AnyApiResponses,
 > {
   query?: Query;
   params?: Params;
   body?: Body;
-  resBody: ResBody;
+  responses: Responses;
   headers?: RequestHeaders;
-  resHeaders?: ResponseHeaders;
 }
 export type ApiSpec<
   ParamKeys extends string = string,
@@ -62,16 +60,11 @@ export type ApiSpec<
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   Query extends Record<string, string> = Record<string, any>,
   Body extends object = object,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ResBody extends Partial<Record<StatusCode, any>> = Partial<
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    Record<StatusCode, any>
-  >,
   RequestHeaders extends Record<string, string> = Record<string, string>,
-  ResponseHeaders extends Record<string, string> = Record<string, string>,
-> = BaseApiSpec<Params, Query, Body, ResBody, RequestHeaders, ResponseHeaders>;
+  Responses extends AnyApiResponses = AnyApiResponses,
+> = BaseApiSpec<Params, Query, Body, RequestHeaders, Responses>;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type AnyApiSpec = BaseApiSpec<any, any, any, any, any, any>;
+export type AnyApiSpec = BaseApiSpec<any, any, any, any, any>;
 
 type JsonHeader = {
   "Content-Type": "application/json";
@@ -82,7 +75,10 @@ type WithJsonHeader<H extends Record<string, string> | undefined> =
 
 type AsJsonApiSpec<AS extends ApiSpec> = Omit<AS, "headers" | "resHeaders"> & {
   headers: WithJsonHeader<AS["headers"]>;
-  resHeaders: WithJsonHeader<AS["resHeaders"]>;
+  // FIXME: いい感じにマージが必要
+  // response: {
+  //   headers: WithJsonHeader<AS["response"]["headers"]>;
+  // };
 };
 
 export type ApiP<
@@ -115,19 +111,24 @@ export type ApiHasP<
   : never;
 
 export type ApiRes<
-  AResponses extends ApiResponses,
+  AResponses extends AnyApiResponses,
   SC extends keyof AResponses & StatusCode,
-  Res = object,
-> = AResponses[SC] extends Res ? AResponses[SC] : never;
-export type ApiResponses<Res = object> = Partial<Record<StatusCode, Res>>;
-export type ApiClientResponses<AResponses extends ApiResponses> = {
+> = AResponses[SC] extends AnyResponse ? AResponses[SC]["body"] : undefined;
+export type AnyApiResponses = DefineApiResponses<AnyResponse>;
+export type DefineApiResponses<Response extends AnyResponse> = Partial<
+  Record<StatusCode, Response>
+>;
+export type DefineResponse<Body, Headers> = { body: Body; headers?: Headers };
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type AnyResponse = DefineResponse<any, any>;
+export type ApiClientResponses<AResponses extends AnyApiResponses> = {
   [SC in keyof AResponses & StatusCode]: ClientResponse<
     ApiRes<AResponses, SC>,
     SC,
     "json"
   >;
 };
-export type MergeApiResponses<AR extends ApiResponses> =
+export type MergeApiResponseBodies<AR extends AnyApiResponses> =
   ApiClientResponses<AR>[keyof ApiClientResponses<AR>];
 
 /**
