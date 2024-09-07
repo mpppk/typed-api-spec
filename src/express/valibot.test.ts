@@ -42,14 +42,18 @@ describe("valibot", () => {
           params: v.object({
             name: v.string(),
           }),
-          resBody: {
-            200: v.object({
-              id: v.string(),
-              name: v.string(),
-            }),
-            400: v.object({
-              message: v.string(),
-            }),
+          responses: {
+            200: {
+              body: v.object({
+                id: v.string(),
+                name: v.string(),
+              }),
+            },
+            400: {
+              body: v.object({
+                message: v.string(),
+              }),
+            },
           },
         },
       },
@@ -293,11 +297,14 @@ describe("valibot", () => {
     const pathMap = {
       "/users": {
         get: {
-          resBody: { 200: v.array(User) },
+          responses: { 200: { body: v.array(User) } },
         },
         post: {
           body: UserName,
-          resBody: { 200: User, ...BadRequest },
+          responses: {
+            200: { body: User, ...BadRequest },
+            400: { body: Err },
+          },
         },
       },
       "/users/:id": {
@@ -309,7 +316,10 @@ describe("valibot", () => {
           query: v.object({
             detail: v.union([v.literal("true"), v.literal("false")]),
           }),
-          resBody: { 200: User, ...BadRequest },
+          responses: {
+            200: { body: User, ...BadRequest },
+            400: { body: Err },
+          },
         },
       },
     } satisfies ValibotApiEndpoints;
@@ -417,22 +427,26 @@ describe("valibot", () => {
           get: {
             params: v.object({ active: v.string() }),
             query: v.object({ name: v.string() }),
-            resBody: {
-              200: v.array(
-                v.object({
-                  id: v.string(),
-                  name: v.string(),
-                  active: v.string(),
-                }),
-              ),
-              400: v.object({ message: v.string() }),
+            responses: {
+              200: {
+                body: v.array(
+                  v.object({
+                    id: v.string(),
+                    name: v.string(),
+                    active: v.string(),
+                  }),
+                ),
+              },
+              400: { body: v.object({ message: v.string() }) },
             },
           },
           post: {
             body: v.object({ name: v.string() }),
-            resBody: {
-              200: v.array(v.object({ id: v.string(), name: v.string() })),
-              400: v.object({ message: v.string() }),
+            responses: {
+              200: {
+                body: v.array(v.object({ id: v.string(), name: v.string() })),
+              },
+              400: { body: v.object({ message: v.string() }) },
             },
           },
         },

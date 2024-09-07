@@ -1,5 +1,12 @@
 import { IRouter, RequestHandler } from "express";
-import { Method, ApiResponses, ApiRes, ApiSpec, ApiEndpoints } from "../index";
+import {
+  Method,
+  AnyApiResponses,
+  ApiRes,
+  ApiSpec,
+  AnyApiSpec,
+  AnyApiEndpoints,
+} from "../index";
 import {
   NextFunction,
   ParamsDictionary,
@@ -27,12 +34,12 @@ export type Handler<
 > = (
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   req: Request<ParamsDictionary, any, any, ParsedQs, Locals>,
-  res: ExpressResponse<NonNullable<Spec>["resBody"], 200, Locals>,
+  res: ExpressResponse<NonNullable<Spec>["responses"], 200, Locals>,
   next: NextFunction,
 ) => void;
 
 export type ToHandler<
-  Spec extends ApiSpec | undefined,
+  Spec extends AnyApiSpec | undefined,
   Validators extends AnyValidators | undefined,
 > = Handler<
   Spec,
@@ -41,7 +48,7 @@ export type ToHandler<
   >
 >;
 
-export type ToHandlers<E extends ApiEndpoints, V extends ValidatorsMap> = {
+export type ToHandlers<E extends AnyApiEndpoints, V extends ValidatorsMap> = {
   [Path in keyof E & string]: {
     [M in Method]: ToHandler<E[Path][M], V[Path][M]>;
   };
@@ -51,7 +58,7 @@ export type ToHandlers<E extends ApiEndpoints, V extends ValidatorsMap> = {
  * Express Response, but with more strict type information.
  */
 export type ExpressResponse<
-  Responses extends ApiResponses,
+  Responses extends AnyApiResponses,
   SC extends keyof Responses & StatusCode,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   LocalsObj extends Record<string, any> = Record<string, any>,
@@ -69,7 +76,7 @@ export type ValidateLocals<Vs extends AnyValidators | Record<string, never>> = {
  * Express Router, but with more strict type information.
  */
 export type RouterT<
-  E extends ApiEndpoints,
+  E extends AnyApiEndpoints,
   V extends ValidatorsMap,
   SC extends StatusCode = StatusCode,
 > = Omit<IRouter, Method> & {

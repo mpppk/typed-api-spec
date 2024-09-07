@@ -1,5 +1,11 @@
 import { SafeParseReturnType, z, ZodError, ZodType } from "zod";
-import { BaseApiSpec, Method, StatusCode } from "../common";
+import {
+  BaseApiSpec,
+  DefineApiResponses,
+  DefineResponse,
+  Method,
+  StatusCode,
+} from "../common";
 import {
   getApiSpec,
   Validator,
@@ -47,35 +53,31 @@ export type ZodApiSpec<
   >,
   Query extends z.ZodTypeAny = z.ZodTypeAny,
   Body extends z.ZodTypeAny = z.ZodTypeAny,
-  ResBody extends ZodApiResponses = Partial<Record<StatusCode, z.ZodTypeAny>>,
   RequestHeaders extends z.ZodTypeAny = z.ZodTypeAny,
-  ResponseHeaders extends z.ZodTypeAny = z.ZodTypeAny,
-> = BaseApiSpec<Params, Query, Body, ResBody, RequestHeaders, ResponseHeaders>;
-export type ZodApiResponses = Partial<Record<StatusCode, z.ZodTypeAny>>;
-export type ZodApiResSchema<
-  AResponses extends ZodApiResponses,
-  SC extends keyof AResponses & StatusCode,
-> = AResponses[SC] extends z.ZodTypeAny ? AResponses[SC] : never;
+  Responses extends ZodAnyApiResponses = ZodAnyApiResponses,
+> = BaseApiSpec<Params, Query, Body, RequestHeaders, Responses>;
+type ZodAnyApiResponse = DefineResponse<z.ZodTypeAny, z.ZodTypeAny>;
+export type ZodAnyApiResponses = DefineApiResponses<ZodAnyApiResponse>;
 
 // -- converter --
 export type ToApiEndpoints<E extends ZodApiEndpoints> = {
   [Path in keyof E & string]: ToApiEndpoint<E, Path>;
 };
 export type ToApiEndpoint<E extends ZodApiEndpoints, Path extends keyof E> = {
-  [M in keyof E[Path] & Method]: E[Path][M] extends undefined
-    ? undefined
-    : ToApiSpec<NonNullable<E[Path][M]>>;
+  [M in keyof E[Path] & Method]: ToApiSpec<NonNullable<E[Path][M]>>;
 };
 export type ToApiSpec<ZAS extends ZodApiSpec> = {
   query: InferOrUndefined<ZAS["query"]>;
   params: InferOrUndefined<ZAS["params"]>;
   body: InferOrUndefined<ZAS["body"]>;
-  resBody: ToApiResponses<ZAS["resBody"]>;
   headers: InferOrUndefined<ZAS["headers"]>;
-  resHeaders: InferOrUndefined<ZAS["resHeaders"]>;
+  responses: ToApiResponses<ZAS["responses"]>;
 };
-export type ToApiResponses<AR extends ZodApiResponses> = {
-  [SC in keyof AR & StatusCode]: z.infer<ZodApiResSchema<AR, SC>>;
+export type ToApiResponses<AR extends ZodAnyApiResponses> = {
+  [SC in keyof AR & StatusCode]: {
+    body: InferOrUndefined<NonNullable<AR[SC]>["body"]>;
+    headers: InferOrUndefined<NonNullable<AR[SC]>["headers"]>;
+  };
 };
 
 /**

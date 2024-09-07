@@ -1,12 +1,27 @@
 import { ZodApiEndpoint, ZodApiEndpoints, ZodApiSpec } from "../zod";
-import { Method } from "../common";
+import { AnyApiResponses, Method, StatusCode } from "../common";
+
+const toFastifyResponse = <Responses extends AnyApiResponses>(
+  responses: Responses,
+): ToFastifyResponse<Responses> => {
+  const ret = { ...responses };
+  Object.keys(responses).forEach((key) => {
+    const sc = key as keyof Responses as StatusCode;
+    ret[sc] = responses[sc]!.body;
+  });
+  return ret as ToFastifyResponse<Responses>;
+};
+
+type ToFastifyResponse<Responses extends AnyApiResponses> = {
+  [SC in keyof Responses & StatusCode]: NonNullable<Responses[SC]>["body"];
+};
 
 type FastifySchema<Spec extends ZodApiSpec> = {
   querystring: Spec["query"];
   params: Spec["params"];
   body: Spec["body"];
   headers: Spec["headers"];
-  response: Spec["resBody"];
+  response: ToFastifyResponse<Spec["responses"]>;
 };
 export const toSchema = <Spec extends ZodApiSpec>(
   spec: Spec,
@@ -16,7 +31,7 @@ export const toSchema = <Spec extends ZodApiSpec>(
     params: spec.params,
     body: spec.body,
     headers: spec.headers,
-    response: spec.resBody,
+    response: toFastifyResponse(spec.responses),
   };
 };
 
