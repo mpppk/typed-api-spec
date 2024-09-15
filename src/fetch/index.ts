@@ -13,6 +13,7 @@ import {
   PathToUrlParamPattern,
   Replace,
   StatusCode,
+  IsAllOptional,
 } from "../common";
 import { UrlPrefixPattern, ToUrlParamPattern } from "../common";
 import { TypedString } from "../json";
@@ -26,9 +27,15 @@ export type RequestInitT<
   method?: InputMethod;
 } & FilterNever<{
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    body: Body extends Record<string, any> ? TypedString<Body> : never;
+    body: Body extends Record<string, any>
+      ? IsAllOptional<Body> extends true
+        ? Body | TypedString<Body> | undefined
+        : TypedString<Body>
+      : never;
     headers: HeadersObj extends Record<string, string>
-      ? HeadersObj | Headers
+      ? IsAllOptional<HeadersObj> extends true
+        ? HeadersObj | Headers | undefined
+        : HeadersObj | Headers
       : never;
   }>;
 

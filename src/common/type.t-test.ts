@@ -3,6 +3,7 @@ import {
   CountChar,
   ExtractByPrefix,
   FilterNever,
+  IsAllOptional,
   IsEqualNumber,
   Replace,
   ReplaceAll,
@@ -107,4 +108,14 @@ type SameSlashNumTestCases = [
   Expect<Equal<SameSlashNum<string, "/">, false>>,
   Expect<Equal<SameSlashNum<`/${string}`, "/a">, true>>,
   Expect<Equal<SameSlashNum<`/${string}`, "/a/b">, false>>,
+];
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type IsAllOptionalTestCases = [
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  Expect<Equal<IsAllOptional<{}>, true>>,
+  Expect<Equal<IsAllOptional<{ a?: string }>, true>>,
+  Expect<Equal<IsAllOptional<{ a: string }>, false>>,
+  Expect<Equal<IsAllOptional<{ a?: string; b: string }>, false>>,
+  Expect<Equal<IsAllOptional<{ a?: string; b?: string }>, true>>,
 ];
