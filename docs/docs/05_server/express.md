@@ -32,7 +32,48 @@ newApp().listen(3000, () => { console.log(`Example app listening on port ${port}
 
 ### typed()
 
+typed() is a function that applies more strict types to the Express app.
+It returns an Express app same as the input app, but validate method has been added to the request locals.
+
+Note that the validate method is depended on validation library you use.
+Following example uses zod.
+
+```typescript 
+import { ZodApiEndpoints } from "@mpppk/typed-api-spec/zod";
+import { typed } from "@mpppk/typed-api-spec/express/zod";
+import { z } from "zod";
+
+const Spec = {
+  "/users": {
+    get: {
+      query: z.object({ page: z.string() }),
+      responses: { 200: { body: z.object({ userNames: z.string().array() }) } }
+    }
+  }
+} satisfies ZodApiEndpoints
+
+const wApp = typed(pathMap, app);
+wApp.get("users", (req, res) => {
+  // validate method is available in res.locals because of typed()
+  const { data, error } = res.locals.validate(req).query();
+})
+```
+
 ### validate()
 
+validate() is a method that is added to the request locals by typed().
+It returns a function that validates the request parameters and returns the result.
+Available methods are `query()`, `params()`, `headers()`, and `body()`.
+
 ### asAsync()
+
+asAsync() is a function that wraps the express app to handle errors of async handlers.
+If error is thrown in async handler of wrapped app, it will be caught and passed to the error handler.
+
+:::note
+
+The reason why we provide this function is that Express4 or lower does not properly handle async errors.
+The upcoming Express5 release will support async error handling, making this method unnecessary.
+
+:::
 

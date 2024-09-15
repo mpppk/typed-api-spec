@@ -27,3 +27,32 @@ await fastify.listen({ port: 3000 });
 ## API
 
 ### toRoutes()
+
+toRoutes() is a function that converts the API specification schema to Fastify route object.
+
+```typescript
+
+const Spec = {
+  "/users": {
+    get: {
+      query: z.object({ page: z.string() }),
+      responses: { 200: { body: z.object({ userNames: z.string().array() }) }},
+    },
+  },
+} satisfies ZodApiEndpoints
+
+const routes = toRoutes(Spec);
+console.log(routes["/users"]["get"])
+/* =>
+{
+  method: 'GET',
+  url: '/users',
+  schema: {
+    query: z.object({ page: { type: 'string' } }),
+    response: {
+      200: { z.object({ userNames: z.string().array() } }
+    }
+  }
+}
+*/ 
+```
