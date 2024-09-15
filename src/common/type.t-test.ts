@@ -112,6 +112,7 @@ type SameSlashNumTestCases = [
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 type IsAllOptionalTestCases = [
+  // eslint-disable-next-line @typescript-eslint/ban-types
   Expect<Equal<IsAllOptional<{}>, true>>,
   Expect<Equal<IsAllOptional<{ a?: string }>, true>>,
   Expect<Equal<IsAllOptional<{ a: string }>, false>>,
