@@ -48,35 +48,14 @@ const config: Config = {
     navbar: {
       title: "typed-api-spec",
       logo: {
-        alt: "My Site Logo",
+        alt: "typed-api-spec Logo",
         src: "img/logo.svg",
       },
-      items: [
-        {
-          type: "docSidebar",
-          sidebarId: "tutorialSidebar",
-          position: "left",
-          label: "Getting Started",
-        },
-        {
-          href: "https://github.com/mpppk/typed-api-spec",
-          label: "GitHub",
-          position: "right",
-        },
-      ],
+      items: [],
     },
     footer: {
       style: "dark",
       links: [
-        {
-          title: "Docs",
-          items: [
-            {
-              label: "Tutorial",
-              to: "/docs/intro",
-            },
-          ],
-        },
         {
           title: "More",
           items: [

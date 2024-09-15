@@ -30,4 +30,4 @@ const Spec = {
 ## Using server integration
 
 If you use `express` or `fastify`, you can use official integration to validate request parameters based on the API specification.
-See the [express](/typed-api-spec/docs/server/express) or [fastify](/typed-api-spec/docs/server/fastify) page for more information.
+See the [express](/docs/server/express) or [fastify](/docs/server/fastify) page for more information.

@@ -129,7 +129,7 @@ const Spec = {
 } satisfies ZodApiEndpoints
 ```
 
-For more information, see the [Validation](/typed-api-spec/docs/category/validation) page.
+For more information, see the [Validation](/docs/category/validation) page.
 
 ## API
 
