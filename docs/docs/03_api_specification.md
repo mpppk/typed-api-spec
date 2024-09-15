@@ -1,6 +1,11 @@
-# Specification
+---
+sidebar_position: 3
+---
 
-The API definition in typed-api-spec consists of the following three layers:
+# API Specification
+
+API specification is a definition of the API endpoint.  
+In typed-api-spec, API specification is written in TypeScript type and has the following structure:
 
 ```
 Path --> Method --> Spec
@@ -10,10 +15,7 @@ Path --> Method --> Spec
 - Method: The HTTP method of the API endpoint.
 - Spec: The specification of the API endpoint, which includes request parameters, response schema, etc.
 
-For example, the following code defines:
-- Path: `/users`
-- Method: `get`
-- Spec: `{ responses: { 200: { body: { userNames: string[] }; }; }; }`
+For example, if you write the following code:
 
 ```typescript
 type Spec = DefineApiEndpoints<{
@@ -28,7 +30,12 @@ type Spec = DefineApiEndpoints<{
 }>;
 ```
 
-## Properties
+the above code defines:
+- Path: `/users`
+- Method: `get`
+- Spec: `{ responses: { 200: { body: { userNames: string[] }; }; }; }`
+
+## Structure
 
 ### Path
 
@@ -121,6 +128,8 @@ const Spec = {
   },
 } satisfies ZodApiEndpoints
 ```
+
+For more information, see the [Validation](/typed-api-spec/docs/category/validation) page.
 
 ## API
 

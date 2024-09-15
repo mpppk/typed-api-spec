@@ -1,4 +1,8 @@
-# Concept
+---
+sidebar_position: 4
+---
+
+# Client(zero-fetch)
 
 typed-api-spec provides `zero-fetch`, a type-safe, zero-runtime API client.
 
