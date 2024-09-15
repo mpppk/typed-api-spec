@@ -6,7 +6,7 @@ sidebar_position: 4
 
 typed-api-spec provides `zero-fetch`, a type-safe, zero-runtime API client.
 
-## What does zero-runtime mean?
+:::info[What does **zero-runtime** mean?]
 
 zero-fetch just add type information to native fetch, and does not add any runtime code.
 Type information is erased during compilation, so it does not affect the runtime behavior.
@@ -16,6 +16,8 @@ As a result, it does not increase bundle size and does not have any runtime depe
 // fetchT is just native fetch, so it does not have any additional runtime dependencies
 const fetchT = fetch as FetchT<"", Spec>;
 ````
+
+:::
 
 ## Type-safe features
 

@@ -77,3 +77,7 @@ The upcoming Express5 release will support async error handling, making this met
 
 :::
 
+## Supported validation libraries
+
+* [zod](/typed-api-spec/docs/validation/zod)
+* [valibot](/typed-api-spec/docs/validation/valibot)
