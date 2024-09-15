@@ -142,3 +142,6 @@ export type SameSlashNum<P1 extends string, P2 extends string> = IsEqualNumber<
   CountChar<P1, "/">,
   CountChar<P2, "/">
 >;
+
+// eslint-disable-next-line @typescript-eslint/ban-types
+export type IsAllOptional<T> = {} extends T ? true : false;
