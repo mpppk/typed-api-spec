@@ -78,7 +78,7 @@ type Spec = DefineApiEndpoints<{
 
 ### Spec
 
-Spec have the following properties:
+Spec has the following properties:
 - `params`: The path parameters of the request.
 - `query`: The query parameters of the request.
 - `headers`: The headers of the request.

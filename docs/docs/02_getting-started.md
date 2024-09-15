@@ -20,13 +20,13 @@ const { names } = await response.json()
 console.log(names); // => ["api-spec", "fetch", "typescript"]
 ```
 
-### Installation
+## Installation
 
 ```bash
 npm install @mpppk/typed-api-spec
 ```
 
-### Define API Spec
+## Define API Spec
 
 ```typescript
 type Spec = DefineApiEndpoints<{
@@ -42,14 +42,14 @@ type Spec = DefineApiEndpoints<{
 }>;
 ```
 
-### Add types to fetch function
+## Add types to fetch function
 
 ```typescript
 import { fetchT } from "@mpppk/typed-api-spec";
 const fetch = fetch as FetchT<typeof GITHUB_API_ORIGIN, Spec>;
 ```
 
-### Use fetch function
+## Use fetch function
 
 ```typescript {3}
 const GITHUB_API_ORIGIN = "https://api.github.com";
