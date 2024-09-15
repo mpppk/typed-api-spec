@@ -59,4 +59,4 @@ console.log(routes["/users"]["get"])
 
 ## Supported validation libraries
 
-* [zod](/typed-api-spec/docs/validation/zod)
+* [zod](/docs/validation/zod)
