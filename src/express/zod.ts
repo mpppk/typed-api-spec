@@ -51,8 +51,8 @@ export type ToValidatorsMap<ZodE extends ZodApiEndpoints> = {
  * ```
  * const router = typed(pathMap, express.Router())
  * router.get('/path', (req, res) => {
- *   const r = res.locals.validate(req).query()
- *   if (!r.success) {
+ *   const {data, error} = res.locals.validate(req).query()
+ *   if (error) {
  *     return res.status(400).json({ message: 'Invalid query' })
  *   }
  *   return res.status(200).json({ message: 'success', value: r.data.value })

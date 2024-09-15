@@ -8,7 +8,7 @@ const config: Config = {
     "TypeScript based declarative API specification and zero-runtime client",
   favicon: "img/favicon.ico",
 
-  // Set the production url of your site here
+  // Set the poduction url of your site here
   url: "https://your-docusaurus-site.example.com",
   // Set the /<baseUrl>/ pathname under which your site is served
   // For GitHub pages deployment, it is often '/<projectName>/'
