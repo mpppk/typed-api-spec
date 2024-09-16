@@ -4,7 +4,6 @@ import {
   ApiP,
   AnyApiResponses,
   CaseInsensitiveMethod,
-  FilterNever,
   MatchedPatterns,
   MergeApiResponseBodies,
   Method,
@@ -25,19 +24,19 @@ export type RequestInitT<
   HeadersObj extends Record<string, string> | undefined,
 > = Omit<RequestInit, "method" | "body" | "headers"> & {
   method?: InputMethod;
-} & FilterNever<{
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    body: Body extends Record<string, any>
-      ? IsAllOptional<Body> extends true
-        ? Body | TypedString<Body> | undefined
-        : TypedString<Body>
-      : never;
-    headers: HeadersObj extends Record<string, string>
-      ? IsAllOptional<HeadersObj> extends true
-        ? HeadersObj | Headers | undefined
-        : HeadersObj | Headers
-      : never;
-  }>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+} & (Body extends Record<string, any>
+    ? IsAllOptional<Body> extends true
+      ? { body?: Body | TypedString<Body> }
+      : { body: TypedString<Body> }
+    : // eslint-disable-next-line @typescript-eslint/ban-types
+      {}) &
+  (HeadersObj extends Record<string, string>
+    ? IsAllOptional<HeadersObj> extends true
+      ? { headers?: HeadersObj | Headers }
+      : { headers: HeadersObj | Headers }
+    : // eslint-disable-next-line @typescript-eslint/ban-types
+      {});
 
 /**
  * FetchT is a type for window.fetch like function but more strict type information
