@@ -1,5 +1,5 @@
 import { Result } from "../utils";
-import { AnyApiEndpoint, AnyApiEndpoints, isMethod, Method } from "./spec";
+import { AnyApiEndpoint, AnyApiEndpoints, Method } from "./spec";
 import { ParsedQs } from "qs";
 
 export type Validators<
@@ -57,15 +57,8 @@ const validatePath = <E extends AnyApiEndpoints, Path extends string>(
 
 const validateMethod = <Endpoint extends AnyApiEndpoint, M extends string>(
   endpoint: Endpoint,
-  method: M,
+  method: M & Method,
 ): Result<keyof Endpoint & M, ValidationError> => {
-  if (!isMethod(method)) {
-    return Result.error({
-      target: "method",
-      actual: method,
-      message: `invalid method`,
-    });
-  }
   if (endpoint[method] === undefined) {
     return Result.error({
       target: "method",
@@ -79,7 +72,7 @@ const validateMethod = <Endpoint extends AnyApiEndpoint, M extends string>(
 const validatePathAndMethod = <
   E extends AnyApiEndpoints,
   Path extends string,
-  M extends string,
+  M extends string & Method,
 >(
   endpoints: E,
   maybePath: Path,
@@ -98,7 +91,7 @@ const validatePathAndMethod = <
 export const getApiSpec = <
   E extends AnyApiEndpoints,
   Path extends string,
-  M extends string,
+  M extends string & Method,
 >(
   endpoints: E,
   maybePath: Path,
