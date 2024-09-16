@@ -4,6 +4,7 @@ import {
   BaseApiSpec,
   DefineApiResponses,
   DefineResponse,
+  isMethod,
   Method,
   StatusCode,
 } from "../common";
@@ -93,11 +94,13 @@ export const newValibotValidator = <E extends ValibotApiEndpoints>(
   return <Path extends keyof E & string, M extends keyof E[Path] & Method>(
     input: ValidatorsInput,
   ) => {
-    const { data: spec, error } = getApiSpec(
-      endpoints,
-      input.path,
-      input.method?.toLowerCase(),
-    );
+    const method = input.method?.toLowerCase();
+    if (!isMethod(method)) {
+      return {} as E[Path][M] extends ValibotApiSpec
+        ? ValibotValidators<E[Path][M], "">
+        : Record<string, never>;
+    }
+    const { data: spec, error } = getApiSpec(endpoints, input.path, method);
     if (error !== undefined) {
       return {} as E[Path][M] extends ValibotApiSpec
         ? ValibotValidators<E[Path][M], "">
