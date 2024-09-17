@@ -14,9 +14,9 @@ const JSONT = JSON as JSONT;
   (async () => {
     const f = fetch as FetchT<"", Spec>;
     {
-      // TODO: 今はinitを省略する場合undefinedを明示的に渡す必要があるが、なんとかしたい
+      // TODO: 今はinitの省略ができないが、できるようにしたい
       // methodを省略した場合はgetとして扱う
-      const res = await f("/users", undefined);
+      const res = await f("/users", {});
       (await res.json()).prop;
     }
   })();

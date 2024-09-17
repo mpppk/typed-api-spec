@@ -1,6 +1,5 @@
 import {
   ApiEndpoints,
-  ApiHasP,
   ApiP,
   AnyApiResponses,
   CaseInsensitiveMethod,
@@ -76,19 +75,11 @@ type FetchT<UrlPrefix extends UrlPrefixPattern, E extends ApiEndpoints> = <
     : Record<StatusCode, never>,
 >(
   input: Input,
-  init: ApiHasP<E, CandidatePaths, M> extends true
-    ? RequestInitT<
-        InputMethod,
-        ApiP<E, CandidatePaths, M, "body">,
-        ApiP<E, CandidatePaths, M, "headers">
-      >
-    :
-        | RequestInitT<
-            InputMethod,
-            ApiP<E, CandidatePaths, M, "body">,
-            ApiP<E, CandidatePaths, M, "headers">
-          >
-        | undefined,
+  init: RequestInitT<
+    InputMethod,
+    ApiP<E, CandidatePaths, M, "body">,
+    ApiP<E, CandidatePaths, M, "headers">
+  >,
 ) => Promise<ResBody>;
 
 export default FetchT;
