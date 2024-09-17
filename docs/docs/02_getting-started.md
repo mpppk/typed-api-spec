@@ -67,3 +67,7 @@ console.log(names); // => ["api-spec", "fetch", "typescript"]
 ```
 
 Notice that only few (highlighted) lines have been changed from original, but now the __fetch__ is type-safe.
+
+## Playground
+
+<iframe style={{width: "100%", height: '85svh'}} src="https://stackblitz.com/edit/vitejs-vite-7x2cnq?embed=1&file=src%2Fexamples%2Fgithub.ts&hideExplorer=1&view=editor"></iframe>

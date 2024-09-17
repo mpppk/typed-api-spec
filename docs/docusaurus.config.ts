@@ -51,7 +51,10 @@ const config: Config = {
         alt: "typed-api-spec Logo",
         src: "img/logo.svg",
       },
-      items: [],
+      items: [
+        { to: "docs/overview", label: "Docs", position: "left" },
+        { to: "docs/playground", label: "Playground", position: "left" },
+      ],
     },
     footer: {
       style: "dark",
