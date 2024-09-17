@@ -110,7 +110,7 @@ const JSONT = JSON as JSONT;
     }
 
     {
-      // TODO: 今は定義していないメソッドを受け付けてしまうが、いつかなんとかしたい
+      // @ts-expect-error 定義されていないmethodは指定できない
       await f("/users", { method: "patch" });
     }
   })();
@@ -151,7 +151,7 @@ const JSONT = JSON as JSONT;
   }>;
   (async () => {
     const f = fetch as FetchT<"", Spec>;
-    // TODO: getが定義されていない場合、methodを省略したらエラーになってほしいが今はならない
+    // @ts-expect-error getが定義されていない場合、methodは省略できない
     await f(`/users`, {});
   })();
 }

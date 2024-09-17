@@ -12,6 +12,7 @@ import {
   Replace,
   StatusCode,
   IsAllOptional,
+  CaseInsensitive,
 } from "../common";
 import { UrlPrefixPattern, ToUrlParamPattern } from "../common";
 import { TypedString } from "../json";
@@ -21,10 +22,12 @@ export type RequestInitT<
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   Body extends Record<string, any> | undefined,
   HeadersObj extends Record<string, string> | undefined,
-> = Omit<RequestInit, "method" | "body" | "headers"> & {
-  method?: InputMethod;
+> = Omit<RequestInit, "method" | "body" | "headers"> &
+  (InputMethod extends "get" | "GET"
+    ? { method?: InputMethod }
+    : { method: InputMethod }) &
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-} & (Body extends Record<string, any>
+  (Body extends Record<string, any>
     ? IsAllOptional<Body> extends true
       ? { body?: Body | TypedString<Body> }
       : { body: TypedString<Body> }
@@ -50,8 +53,12 @@ type FetchT<UrlPrefix extends UrlPrefixPattern, E extends ApiEndpoints> = <
     >
   >,
   CandidatePaths extends string = MatchedPatterns<InputPath, keyof E & string>,
-  InputMethod extends CaseInsensitiveMethod = "get",
-  M extends Method = Lowercase<InputMethod>,
+  InputMethod extends CaseInsensitive<keyof E[CandidatePaths] & string> &
+    CaseInsensitiveMethod = CaseInsensitive<keyof E[CandidatePaths] & string> &
+    CaseInsensitiveMethod,
+  M extends Method = CaseInsensitive<"get"> extends InputMethod
+    ? "get"
+    : Lowercase<InputMethod>,
   Query extends ApiP<E, CandidatePaths, M, "query"> = ApiP<
     E,
     CandidatePaths,
