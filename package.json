@@ -40,7 +40,7 @@
     "fastify": "^4.28.1",
     "fastify-type-provider-zod": "^2.0.0",
     "typescript": "^5.4.5",
-    "valibot": "^0.40.0",
+    "valibot": "^0.40.0 || ^0.42.0",
     "zod": "^3.23.0"
   },
   "peerDependenciesMeta": {
