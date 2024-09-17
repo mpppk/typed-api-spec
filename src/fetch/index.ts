@@ -44,9 +44,12 @@ export type RequestInitT<
  * FetchT is a type for window.fetch like function but more strict type information
  */
 type FetchT<UrlPrefix extends UrlPrefixPattern, E extends ApiEndpoints> = <
+  UrlPattern extends ToUrlParamPattern<`${UrlPrefix}${keyof E & string}`>,
   Input extends Query extends undefined
-    ? ToUrlParamPattern<`${UrlPrefix}${keyof E & string}`>
-    : `${ToUrlParamPattern<`${UrlPrefix}${keyof E & string}`>}?${string}`,
+    ? UrlPattern
+    : IsAllOptional<Query> extends true
+      ? UrlPattern | `${UrlPattern}?${string}`
+      : `${UrlPattern}?${string}`,
   InputPath extends PathToUrlParamPattern<
     NormalizePath<
       ParseURL<Replace<Input, ToUrlParamPattern<UrlPrefix>, "">>["path"]

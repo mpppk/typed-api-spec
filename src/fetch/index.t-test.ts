@@ -210,6 +210,34 @@ const JSONT = JSON as JSONT;
 
 {
   type Spec = DefineApiEndpoints<{
+    "/packages/list": {
+      get: {
+        responses: { 200: { body: { prop: string } } };
+        query: { state?: boolean };
+      };
+    };
+  }>;
+  (async () => {
+    const basePath = "/api/projects/:projectName/workflow";
+    const f = fetch as FetchT<typeof basePath, Spec>;
+    {
+      const res = await f(
+        `/api/projects/projectA/workflow/packages/list?state=true`,
+        {},
+      );
+      if (res.ok) {
+        (await res.json()).prop;
+      }
+    }
+    {
+      // query parameter can be omitted because it is optional
+      f(`/api/projects/projectA/workflow/packages/list`, {});
+    }
+  })();
+}
+
+{
+  type Spec = DefineApiEndpoints<{
     "/vectorize/indexes/:indexName": {
       post: {
         responses: { 200: { body: { prop2: string } } };
