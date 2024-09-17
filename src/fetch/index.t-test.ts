@@ -14,9 +14,9 @@ const JSONT = JSON as JSONT;
   (async () => {
     const f = fetch as FetchT<"", Spec>;
     {
-      // TODO: 今はinitを省略する場合undefinedを明示的に渡す必要があるが、なんとかしたい
+      // TODO: 今はinitの省略ができないが、できるようにしたい
       // methodを省略した場合はgetとして扱う
-      const res = await f("/users", undefined);
+      const res = await f("/users", {});
       (await res.json()).prop;
     }
   })();
@@ -110,7 +110,7 @@ const JSONT = JSON as JSONT;
     }
 
     {
-      // TODO: 今は定義していないメソッドを受け付けてしまうが、いつかなんとかしたい
+      // @ts-expect-error 定義されていないmethodは指定できない
       await f("/users", { method: "patch" });
     }
   })();
@@ -151,7 +151,7 @@ const JSONT = JSON as JSONT;
   }>;
   (async () => {
     const f = fetch as FetchT<"", Spec>;
-    // TODO: getが定義されていない場合、methodを省略したらエラーになってほしいが今はならない
+    // @ts-expect-error getが定義されていない場合、methodは省略できない
     await f(`/users`, {});
   })();
 }
@@ -204,6 +204,34 @@ const JSONT = JSON as JSONT;
       f(`/api/projects/projectA/workflow/packages/list`, {
         headers: { Cookie: "a=b" },
       });
+    }
+  })();
+}
+
+{
+  type Spec = DefineApiEndpoints<{
+    "/packages/list": {
+      get: {
+        responses: { 200: { body: { prop: string } } };
+        query: { state?: boolean };
+      };
+    };
+  }>;
+  (async () => {
+    const basePath = "/api/projects/:projectName/workflow";
+    const f = fetch as FetchT<typeof basePath, Spec>;
+    {
+      const res = await f(
+        `/api/projects/projectA/workflow/packages/list?state=true`,
+        {},
+      );
+      if (res.ok) {
+        (await res.json()).prop;
+      }
+    }
+    {
+      // query parameter can be omitted because it is optional
+      f(`/api/projects/projectA/workflow/packages/list`, {});
     }
   })();
 }

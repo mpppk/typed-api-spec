@@ -23,6 +23,7 @@ export const Method = [
   "head",
 ] as const;
 export type Method = (typeof Method)[number];
+export type CaseInsensitive<S extends string> = Uppercase<S> | Lowercase<S>;
 export type CaseInsensitiveMethod = Method | Uppercase<Method>;
 export const isMethod = (x: unknown): x is Method =>
   Method.includes(x as Method);
