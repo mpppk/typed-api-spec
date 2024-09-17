@@ -146,6 +146,19 @@ const JSONT = JSON as JSONT;
 {
   type Spec = DefineApiEndpoints<{
     "/users": {
+      post: { responses: { 200: { body: { prop: string } } } };
+    };
+  }>;
+  (async () => {
+    const f = fetch as FetchT<"", Spec>;
+    // TODO: getが定義されていない場合、methodを省略したらエラーになってほしいが今はならない
+    await f(`/users`, {});
+  })();
+}
+
+{
+  type Spec = DefineApiEndpoints<{
+    "/users": {
       post: {
         headers: { "Content-Type"?: "application/json" };
         body: { userName?: string };
@@ -156,7 +169,7 @@ const JSONT = JSON as JSONT;
   (async () => {
     const f = fetch as FetchT<"", Spec>;
     // headers and body can be omitted because they are optional
-    await f(`/users`, {});
+    await f(`/users`, { method: "post" });
   })();
 }
 
