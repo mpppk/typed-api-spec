@@ -21,7 +21,7 @@ export type RequestInitT<
   InputMethod extends CaseInsensitiveMethod,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   Body extends Record<string, any> | undefined,
-  HeadersObj extends Record<string, string> | undefined,
+  HeadersObj extends string | Record<string, string> | undefined,
 > = Omit<RequestInit, "method" | "body" | "headers"> &
   (InputMethod extends "get" | "GET"
     ? { method?: InputMethod }
@@ -31,8 +31,10 @@ export type RequestInitT<
     ? IsAllOptional<Body> extends true
       ? { body?: Body | TypedString<Body> }
       : { body: TypedString<Body> }
-    : // eslint-disable-next-line @typescript-eslint/ban-types
-      {}) &
+    : Body extends string
+      ? { body: string }
+      : // eslint-disable-next-line @typescript-eslint/ban-types
+        {}) &
   (HeadersObj extends Record<string, string>
     ? IsAllOptional<HeadersObj> extends true
       ? { headers?: HeadersObj | Headers }
