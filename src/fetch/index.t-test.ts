@@ -175,6 +175,21 @@ const JSONT = JSON as JSONT;
 
 {
   type Spec = DefineApiEndpoints<{
+    "/users": {
+      post: {
+        body: string;
+        responses: { 200: { body: string } };
+      };
+    };
+  }>;
+  (async () => {
+    const f = fetch as FetchT<"", Spec>;
+    await f(`/users`, { method: "post", body: "some string" });
+  })();
+}
+
+{
+  type Spec = DefineApiEndpoints<{
     "/packages/list": {
       get: {
         headers: { Cookie: `a=${string}` };

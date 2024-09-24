@@ -39,10 +39,8 @@ export type AnyApiEndpoints = { [Path in string]: AnyApiEndpoint };
 
 export interface BaseApiSpec<
   Params,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   Query,
   Body,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   RequestHeaders,
   Responses extends AnyApiResponses,
 > {
@@ -60,7 +58,8 @@ export type ApiSpec<
   >,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   Query extends Record<string, string> = Record<string, any>,
-  Body extends object = object,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  Body extends Record<string, any> | string = Record<string, any> | string,
   RequestHeaders extends Record<string, string> = Record<string, string>,
   Responses extends AnyApiResponses = AnyApiResponses,
 > = BaseApiSpec<Params, Query, Body, RequestHeaders, Responses>;
@@ -90,7 +89,7 @@ export type ApiP<
 > = E[Path] extends ApiEndpoint
   ? E[Path][M] extends ApiSpec<ParseUrlParams<Path>>
     ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      E[Path][M][P] extends Record<string, any>
+      E[Path][M][P] extends Record<string, any> | string
       ? E[Path][M][P]
       : undefined
     : undefined
