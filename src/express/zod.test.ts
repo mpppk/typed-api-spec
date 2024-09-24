@@ -10,7 +10,7 @@ import {
 } from "../zod";
 import { z, ZodError } from "zod";
 import { Request } from "express";
-import { ParseUrlParams } from "../common";
+import { ParseUrlParams } from "../core";
 import { ToHandlers, typed } from "./zod";
 
 type ZodValidateLocals<

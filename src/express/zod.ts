@@ -5,7 +5,7 @@ import {
   ZodApiSpec,
   ZodValidators,
 } from "../zod";
-import { Method } from "../common";
+import { Method } from "../core";
 import {
   RouterT,
   ToHandler as ToPureHandler,

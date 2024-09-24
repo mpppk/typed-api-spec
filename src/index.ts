@@ -1,4 +1,4 @@
-export * from "./common";
+export * from "./core";
 export {
   asAsync as expressAsAsync,
   wrap as expressWrap,

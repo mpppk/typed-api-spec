@@ -4,7 +4,7 @@ import express from "express";
 import { asAsync, ValidateLocals, validatorMiddleware } from "./index";
 import * as v from "valibot";
 import { Request } from "express";
-import { ParseUrlParams } from "../common";
+import { ParseUrlParams } from "../core";
 import { ToHandlers, typed } from "./valibot";
 import {
   newValibotValidator,

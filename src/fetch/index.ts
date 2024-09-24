@@ -13,8 +13,8 @@ import {
   StatusCode,
   IsAllOptional,
   CaseInsensitive,
-} from "../common";
-import { UrlPrefixPattern, ToUrlParamPattern } from "../common";
+} from "../core";
+import { UrlPrefixPattern, ToUrlParamPattern } from "../core";
 import { TypedString } from "../json";
 
 export type RequestInitT<

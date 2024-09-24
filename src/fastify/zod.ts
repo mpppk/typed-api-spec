@@ -1,5 +1,5 @@
 import { ZodApiEndpoint, ZodApiEndpoints, ZodApiSpec } from "../zod";
-import { AnyApiResponses, Method, StatusCode } from "../common";
+import { AnyApiResponses, Method, StatusCode } from "../core";
 
 const toFastifyResponse = <Responses extends AnyApiResponses>(
   responses: Responses,

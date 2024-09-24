@@ -73,10 +73,10 @@
       "import": "./dist/index.mjs",
       "types": "./dist/index.d.ts"
     },
-    "./common": {
-      "require": "./dist/common/index.js",
-      "import": "./dist/common/index.mjs",
-      "types": "./dist/common/index.d.ts"
+    "./core": {
+      "require": "./dist/core/index.js",
+      "import": "./dist/core/index.mjs",
+      "types": "./dist/core/index.d.ts"
     },
     "./express": {
       "require": "./dist/express/index.js",

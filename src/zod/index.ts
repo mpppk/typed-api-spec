@@ -6,13 +6,13 @@ import {
   isMethod,
   Method,
   StatusCode,
-} from "../common";
+} from "../core";
 import {
   getApiSpec,
   Validator,
   Validators,
   ValidatorsInput,
-} from "../common/validate";
+} from "../core/validate";
 import { Result } from "../utils";
 
 export const anyZ = <T>() => z.any() as ZodType<T>;
