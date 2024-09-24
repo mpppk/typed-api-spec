@@ -184,7 +184,7 @@ const JSONT = JSON as JSONT;
   }>;
   (async () => {
     const f = fetch as FetchT<"", Spec>;
-    await f(`/users`, { method: "post" });
+    await f(`/users`, { method: "post", body: "some string" });
   })();
 }
 

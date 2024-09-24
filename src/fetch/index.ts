@@ -20,7 +20,7 @@ import { TypedString } from "../json";
 export type RequestInitT<
   InputMethod extends CaseInsensitiveMethod,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  Body extends Record<string, any> | undefined,
+  Body extends Record<string, any> | string | undefined,
   HeadersObj extends string | Record<string, string> | undefined,
 > = Omit<RequestInit, "method" | "body" | "headers"> &
   (InputMethod extends "get" | "GET"
