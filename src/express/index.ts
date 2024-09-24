@@ -13,13 +13,13 @@ import {
   Request,
   Response,
 } from "express-serve-static-core";
-import { StatusCode } from "../common";
+import { StatusCode } from "../core";
 import { ParsedQs } from "qs";
 import {
   AnyValidators,
   ValidatorsInput,
   ValidatorsMap,
-} from "../common/validate";
+} from "../core/validate";
 
 /**
  * Express Request Handler, but with more strict type information.

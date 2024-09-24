@@ -16,7 +16,7 @@ const newApp = () => {
   // ```
   // // validatorMiddleware allows to use res.locals.validate method
   // app.use(validatorMiddleware(pathMap));
-  // // wApp is same as app, but with additional common information
+  // // wApp is same as app, but with additional core information
   // const wApp = app as TRouter<typeof pathMap>;
   // ```
   const wApp = asAsync(typed(pathMap, app));

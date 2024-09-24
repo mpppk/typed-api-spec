@@ -5,7 +5,7 @@ import {
   ValibotApiSpec,
   ValibotValidators,
 } from "../valibot";
-import { Method } from "../common";
+import { Method } from "../core";
 import {
   RouterT,
   ToHandler as ToPureHandler,

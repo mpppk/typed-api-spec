@@ -1,4 +1,4 @@
-import { AsJsonApi, DefineApiEndpoints } from "../common";
+import { AsJsonApi, DefineApiEndpoints } from "../core";
 import FetchT from "./index";
 import JSONT from "../json";
 const JSONT = JSON as JSONT;
