@@ -315,6 +315,22 @@ describe("typed", () => {
 });
 
 describe("asAsync", () => {
+  describe("", () => {
+    it("ok", async () => {
+      const routerGet = vi.fn();
+      const routerMethod = vi.fn();
+      const app = asAsync({
+        get: routerGet,
+        noMethod: 1,
+        method: routerMethod,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } as any);
+      // getやpostなどのメソッドを呼んだ時だけ、ラップされた関数が返ってくる
+      expect(app.get).not.toBe(routerGet);
+      expect(app.method).toBe(routerMethod);
+      expect(app.noMethod).toBe(1);
+    });
+  });
   describe("async handler", () => {
     it("ok", async () => {
       const app = asAsync(newApp());
