@@ -20,6 +20,15 @@ const JSONT = JSON as JSONT;
       (await res.json()).prop;
     }
   })();
+  (async () => {
+    const f = fetch as FetchT<"", Spec>;
+    {
+      // TODO: 今はinitの省略ができないが、できるようにしたい
+      // methodを省略した場合はgetとして扱う
+      const res = await f("/users", {});
+      (await res.json()).prop;
+    }
+  })();
 }
 {
   type Spec = DefineApiEndpoints<{
@@ -217,6 +226,23 @@ const JSONT = JSON as JSONT;
     {
       // @ts-expect-error queryが定義されているSpecに対してクエリパラメータを指定しなかった場合は型エラー
       f(`/api/projects/projectA/workflow/packages/list`, {
+        headers: { Cookie: "a=b" },
+      });
+    }
+    {
+      // @ts-expect-error 定義されているパラメータを指定していない場合はエラー
+      f(`/api/projects/projectA/workflow/packages/list?a=b`, {
+        headers: { Cookie: "a=b" },
+      });
+    }
+    {
+      // @ts-expect-error 定義されていないパラメータを指定した場合は型エラー
+      f(`/api/projects/projectA/workflow/packages/list?state=true&a=b`, {
+        headers: { Cookie: "a=b" },
+      });
+
+      // @ts-expect-error 順序は関係ない
+      f(`/api/projects/projectA/workflow/packages/list?a=b&state=true`, {
         headers: { Cookie: "a=b" },
       });
     }

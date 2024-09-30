@@ -13,9 +13,24 @@ import {
   StatusCode,
   IsAllOptional,
   CaseInsensitive,
+  ExtractQuery,
+  IsValidQuery,
+  ToQueryUnion,
 } from "../core";
 import { UrlPrefixPattern, ToUrlParamPattern } from "../core";
 import { TypedString } from "../json";
+
+type IsValidUrl<
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  QueryDef extends Record<string, any> | undefined,
+  Url extends string,
+  Query extends string | undefined = ExtractQuery<Url>,
+  QueryKeys extends string = Query extends string ? ToQueryUnion<Query> : never,
+> = IsValidQuery<
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/ban-types
+  QueryDef extends Record<string, any> ? QueryDef : {},
+  QueryKeys
+>;
 
 export type RequestInitT<
   InputMethod extends CaseInsensitiveMethod,
@@ -86,7 +101,7 @@ type FetchT<UrlPrefix extends UrlPrefixPattern, E extends ApiEndpoints> = <
     ? MergeApiResponseBodies<ApiP<E, CandidatePaths, M, "responses">>
     : Record<StatusCode, never>,
 >(
-  input: Input,
+  input: IsValidUrl<Query, Input> extends true ? Input : never,
   init: RequestInitT<
     InputMethod,
     ApiP<E, CandidatePaths, M, "body">,
@@ -95,3 +110,5 @@ type FetchT<UrlPrefix extends UrlPrefixPattern, E extends ApiEndpoints> = <
 ) => Promise<ResBody>;
 
 export default FetchT;
+
+// type ValidUrlAndQuery<Query extends string> = Query extends `${string}?${string}`
