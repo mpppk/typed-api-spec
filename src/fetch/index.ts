@@ -22,7 +22,7 @@ import { TypedString } from "../json";
 
 type IsValidUrl<
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  QueryDef extends Record<string, any> | undefined,
+  QueryDef extends Record<string, unknown> | undefined,
   Url extends string,
   Query extends string | undefined = ExtractQuery<Url>,
   QueryKeys extends string = Query extends string ? ToQueryUnion<Query> : never,
@@ -34,15 +34,13 @@ type IsValidUrl<
 
 export type RequestInitT<
   InputMethod extends CaseInsensitiveMethod,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  Body extends Record<string, any> | string | undefined,
+  Body extends Record<string, unknown> | string | undefined,
   HeadersObj extends string | Record<string, string> | undefined,
 > = Omit<RequestInit, "method" | "body" | "headers"> &
   (InputMethod extends "get" | "GET"
     ? { method?: InputMethod }
     : { method: InputMethod }) &
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (Body extends Record<string, any>
+  (Body extends Record<string, unknown>
     ? IsAllOptional<Body> extends true
       ? { body?: Body | TypedString<Body> }
       : { body: TypedString<Body> }
