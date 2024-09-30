@@ -38,3 +38,40 @@ export type SetProperty<T, K extends PropertyKey, V = true> = {
       ? T[P]
       : never;
 };
+
+export type ExtractQuery<URL extends string> =
+  URL extends `${string}?${infer Query}` ? Query : undefined;
+
+export type ToQueryUnion<Query extends string> =
+  Query extends `${infer Key}=${string}&${infer Rest}`
+    ? Key | ToQueryUnion<Rest>
+    : Query extends `${infer Key}=${string}`
+      ? Key
+      : `invalid query: ${Query}`;
+
+export type HasMissingQuery<
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  QueryDef extends Record<string, any>,
+  QueryKeys extends string,
+> = NonOptionalKeys<QueryDef> extends QueryKeys ? false : true;
+
+export type HasExcessiveQuery<
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  QueryDef extends Record<string, any>,
+  QueryKeys extends string,
+  // no union distribution
+> = [QueryKeys] extends [keyof QueryDef] ? false : true;
+
+export type NonOptionalKeys<T> = {
+  [K in keyof T]-?: undefined extends T[K] ? never : K;
+}[keyof T];
+
+export type IsValidQuery<
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  QueryDef extends Record<string, any>,
+  QueryKeys extends string,
+> = [HasMissingQuery<QueryDef, QueryKeys>] extends [true]
+  ? `E: maybe missing query: ${keyof QueryDef & string}`
+  : [HasExcessiveQuery<QueryDef, QueryKeys>] extends [true]
+    ? `E: maybe excessive query: ${QueryKeys}`
+    : true;
