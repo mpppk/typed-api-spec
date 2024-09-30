@@ -110,5 +110,3 @@ type FetchT<UrlPrefix extends UrlPrefixPattern, E extends ApiEndpoints> = <
 ) => Promise<ResBody>;
 
 export default FetchT;
-
-// type ValidUrlAndQuery<Query extends string> = Query extends `${string}?${string}`

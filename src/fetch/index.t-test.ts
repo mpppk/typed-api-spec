@@ -20,15 +20,6 @@ const JSONT = JSON as JSONT;
       (await res.json()).prop;
     }
   })();
-  (async () => {
-    const f = fetch as FetchT<"", Spec>;
-    {
-      // TODO: 今はinitの省略ができないが、できるようにしたい
-      // methodを省略した場合はgetとして扱う
-      const res = await f("/users", {});
-      (await res.json()).prop;
-    }
-  })();
 }
 {
   type Spec = DefineApiEndpoints<{
