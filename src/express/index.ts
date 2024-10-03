@@ -160,14 +160,18 @@ export const asAsync = <Router extends IRouter | RouterT<any, any>>(
 ): Router => {
   return new Proxy(router, {
     get(target, prop, receiver) {
+      // o is the original method of the provided router
       const o = Reflect.get(target, prop, receiver);
-      if (typeof prop !== "string") {
-        return o;
-      }
-      if (![...Method, "all"].includes(prop)) {
-        return o;
-      }
-      if (typeof o !== "function") {
+      if (
+        // prop may be string or symbol. We only want to wrap string methods.
+        typeof prop !== "string" ||
+        // We only wrap methods that are represents HTTP methods.
+        // We don't want to wrap the "all" method, as it's a special method in Express.
+        ![...Method, "all"].includes(prop) ||
+        // If `prop` is one of the HTTP methods, `o` should be a function, but we check just to be sure.
+        typeof o !== "function"
+      ) {
+        // If it's not a method we want to wrap, just return the original method.
         return o;
       }
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -178,6 +182,7 @@ export const asAsync = <Router extends IRouter | RouterT<any, any>>(
         }
         const handlers = args
           .slice(1)
+          // wrap all middleware and handlers
           .map((h) => (typeof h === "function" ? wrap(h) : h));
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return o.apply(target, [args[0], ...handlers] as any);
