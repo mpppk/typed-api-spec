@@ -166,7 +166,6 @@ export const asAsync = <Router extends IRouter | RouterT<any, any>>(
         // prop may be string or symbol. We only want to wrap string methods.
         typeof prop !== "string" ||
         // We only wrap methods that are represents HTTP methods.
-        // We don't want to wrap the "all" method, as it's a special method in Express.
         ![...Method, "all"].includes(prop) ||
         // If `prop` is one of the HTTP methods, `o` should be a function, but we check just to be sure.
         typeof o !== "function"
