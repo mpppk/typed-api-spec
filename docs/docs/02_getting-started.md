@@ -57,11 +57,11 @@ const url = `/repos/mpppk/typed-api-spec/topics?page=1`;
 const fetchT = fetch as FetchT<typeof GITHUB_API_ORIGIN, Spec>;
 const response = await fetchT(`${GITHUB_API_ORIGIN}${url}`);
 if (!response.ok) {
-  // reponse.json() is typed as { message: string } because resnose is not ok
+  // response.json() is typed as { message: string } because response is not ok
   const { message } = await response.json()
   return console.error(message);
 }
-// reponse.json() is typed as { names: string[] } because resnose is ok
+// response.json() is typed as { names: string[] } because response is ok
 const { names } = await response.json()
 console.log(names); // => ["api-spec", "fetch", "typescript"]
 ```
