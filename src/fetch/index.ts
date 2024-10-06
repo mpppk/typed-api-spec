@@ -5,39 +5,43 @@ import {
   CaseInsensitiveMethod,
   MatchedPatterns,
   MergeApiResponseBodies,
-  Method,
   NormalizePath,
   ParseURL,
   PathToUrlParamPattern,
   Replace,
   StatusCode,
   IsAllOptional,
-  CaseInsensitive,
   ExtractQuery,
-  IsValidQuery,
+  CheckQuery,
   ToQueryUnion,
+  Method,
+  CaseInsensitive,
 } from "../core";
 import { UrlPrefixPattern, ToUrlParamPattern } from "../core";
 import { TypedString } from "../json";
+import { TResult } from "../error";
 
-type IsValidUrl<
+export type NoPathError = TResult.E<"no matched patterns">;
+
+type CheckUrl<
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   QueryDef extends Record<string, unknown> | undefined,
   Url extends string,
   Query extends string | undefined = ExtractQuery<Url>,
   QueryKeys extends string = Query extends string ? ToQueryUnion<Query> : never,
-> = IsValidQuery<
+> = CheckQuery<
   // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/ban-types
   QueryDef extends Record<string, any> ? QueryDef : {},
   QueryKeys
 >;
 
 export type RequestInitT<
-  InputMethod extends CaseInsensitiveMethod,
+  CanOmitMethod extends boolean,
   Body extends Record<string, unknown> | string | undefined,
   HeadersObj extends string | Record<string, string> | undefined,
+  InputMethod extends CaseInsensitiveMethod,
 > = Omit<RequestInit, "method" | "body" | "headers"> &
-  (InputMethod extends "get" | "GET"
+  (CanOmitMethod extends true
     ? { method?: InputMethod }
     : { method: InputMethod }) &
   (Body extends Record<string, unknown>
@@ -55,6 +59,10 @@ export type RequestInitT<
     : // eslint-disable-next-line @typescript-eslint/ban-types
       {});
 
+// LowerCase Method
+export type LCMethod<M extends CaseInsensitiveMethod | NoPathError> =
+  M extends CaseInsensitiveMethod ? Lowercase<M> : M;
+
 /**
  * FetchT is a type for window.fetch like function but more strict type information
  */
@@ -70,40 +78,53 @@ type FetchT<UrlPrefix extends UrlPrefixPattern, E extends ApiEndpoints> = <
       ParseURL<Replace<Input, ToUrlParamPattern<UrlPrefix>, "">>["path"]
     >
   >,
-  CandidatePaths extends string = MatchedPatterns<InputPath, keyof E & string>,
-  InputMethod extends CaseInsensitive<keyof E[CandidatePaths] & string> &
-    CaseInsensitiveMethod = CaseInsensitive<keyof E[CandidatePaths] & string> &
-    CaseInsensitiveMethod,
-  M extends Method = CaseInsensitive<"get"> extends InputMethod
-    ? "get"
-    : Lowercase<InputMethod>,
-  Query extends ApiP<E, CandidatePaths, M, "query"> = ApiP<
+  CandidatePaths extends MatchedPatterns<
+    InputPath,
+    keyof E & string
+  > = MatchedPatterns<InputPath, keyof E & string>,
+  AcceptableMethods extends CandidatePaths extends string
+    ? Extract<Method, keyof E[CandidatePaths]>
+    : never = CandidatePaths extends string
+    ? Extract<Method, keyof E[CandidatePaths]>
+    : never,
+  InputMethod extends CaseInsensitive<AcceptableMethods> = Extract<
+    AcceptableMethods,
+    "get"
+  >,
+  Query extends ApiP<E, CandidatePaths, LCMethod<InputMethod>, "query"> = ApiP<
     E,
     CandidatePaths,
-    M,
+    LCMethod<InputMethod>,
     "query"
   >,
   ResBody extends ApiP<
     E,
     CandidatePaths,
-    M,
+    LCMethod<InputMethod>,
     "responses"
   > extends AnyApiResponses
-    ? MergeApiResponseBodies<ApiP<E, CandidatePaths, M, "responses">>
+    ? MergeApiResponseBodies<
+        ApiP<E, CandidatePaths, LCMethod<InputMethod>, "responses">
+      >
     : Record<StatusCode, never> = ApiP<
     E,
     CandidatePaths,
-    M,
+    LCMethod<InputMethod>,
     "responses"
   > extends AnyApiResponses
-    ? MergeApiResponseBodies<ApiP<E, CandidatePaths, M, "responses">>
+    ? MergeApiResponseBodies<
+        ApiP<E, CandidatePaths, LCMethod<InputMethod>, "responses">
+      >
     : Record<StatusCode, never>,
 >(
-  input: IsValidUrl<Query, Input> extends true ? Input : never,
+  input: CheckUrl<Query, Input> extends TResult.OK
+    ? Input
+    : CheckUrl<Query, Input>,
   init: RequestInitT<
-    InputMethod,
-    ApiP<E, CandidatePaths, M, "body">,
-    ApiP<E, CandidatePaths, M, "headers">
+    AcceptableMethods extends "get" ? true : false,
+    ApiP<E, CandidatePaths, LCMethod<InputMethod>, "body">,
+    ApiP<E, CandidatePaths, LCMethod<InputMethod>, "headers">,
+    InputMethod
   >,
 ) => Promise<ResBody>;
 

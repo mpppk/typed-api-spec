@@ -1,5 +1,6 @@
 import { ParseQueryString } from "./query-string";
 import { ExtractByPrefix, SameSlashNum, Split, UndefinedTo } from "./type";
+import { TResult } from "../error";
 
 type ExtractParams<T extends string> = ExtractByPrefix<T, ":">;
 
@@ -74,13 +75,20 @@ export type ToUrlPattern<T extends string> = T extends `${infer O}?${infer R}`
  * // => "/users/:userId"
  * ```
  */
-export type MatchedPatterns<T extends string, Patterns extends string> = keyof {
-  [P in Patterns as T extends ToUrlPattern<P>
-    ? SameSlashNum<P, T> extends true
-      ? P
-      : never
-    : never]: true;
-};
+export type MatchedPatterns<
+  T extends string,
+  Patterns extends string,
+  Matched = {
+    [P in Patterns as T extends ToUrlPattern<P>
+      ? SameSlashNum<P, T> extends true
+        ? P
+        : never
+      : never]: true;
+  },
+> =
+  Matched extends Record<string, never>
+    ? TResult.E<"no matched patterns">
+    : keyof Matched;
 
 /**
  * Parse host and port

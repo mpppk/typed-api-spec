@@ -1,4 +1,6 @@
 // https://github.com/type-challenges/type-challenges/issues/21419
+import { TResult } from "../error";
+
 export type ParseQueryString<S extends string> = S extends ""
   ? Record<string, never>
   : MergeParams<SplitParams<S>>;
@@ -66,12 +68,12 @@ export type NonOptionalKeys<T> = {
   [K in keyof T]-?: undefined extends T[K] ? never : K;
 }[keyof T];
 
-export type IsValidQuery<
+export type CheckQuery<
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   QueryDef extends Record<string, any>,
   QueryKeys extends string,
 > = [HasMissingQuery<QueryDef, QueryKeys>] extends [true]
-  ? `E: maybe missing query: ${keyof QueryDef & string}`
+  ? TResult.E<`maybe missing query: ${keyof QueryDef & string}`>
   : [HasExcessiveQuery<QueryDef, QueryKeys>] extends [true]
-    ? `E: maybe excessive query: ${QueryKeys}`
-    : true;
+    ? TResult.E<`maybe excessive query: ${QueryKeys}`>
+    : TResult.OK;

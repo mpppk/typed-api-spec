@@ -8,6 +8,7 @@ import {
   ToUrlParamPattern,
   ToUrlPattern,
 } from "./url";
+import { TResult } from "../error";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 type ParseUrlParamsTestCases = [
@@ -55,6 +56,7 @@ type ToUrlPatternTestCases = [
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 type MatchedPatternsTestCases = [
+  Expect<Equal<MatchedPatterns<string, "">, TResult.E<"no matched patterns">>>,
   Expect<Equal<MatchedPatterns<"", "">, "">>,
   Expect<Equal<MatchedPatterns<"/1", "/:userId">, "/:userId">>,
   Expect<
