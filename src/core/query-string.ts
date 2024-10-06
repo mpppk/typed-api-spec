@@ -1,5 +1,5 @@
 // https://github.com/type-challenges/type-challenges/issues/21419
-import { TResult } from "../error";
+import { C } from "../compile-error-utils";
 
 export type ParseQueryString<S extends string> = S extends ""
   ? Record<string, never>
@@ -73,7 +73,7 @@ export type CheckQuery<
   QueryDef extends Record<string, any>,
   QueryKeys extends string,
 > = [HasMissingQuery<QueryDef, QueryKeys>] extends [true]
-  ? TResult.E<`maybe missing query: ${keyof QueryDef & string}`>
+  ? C.E<`maybe missing query: ${keyof QueryDef & string}`>
   : [HasExcessiveQuery<QueryDef, QueryKeys>] extends [true]
-    ? TResult.E<`maybe excessive query: ${QueryKeys}`>
-    : TResult.OK;
+    ? C.E<`maybe excessive query: ${QueryKeys}`>
+    : C.OK;

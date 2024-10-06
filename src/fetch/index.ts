@@ -19,9 +19,9 @@ import {
 } from "../core";
 import { UrlPrefixPattern, ToUrlParamPattern } from "../core";
 import { TypedString } from "../json";
-import { TResult } from "../error";
+import { C } from "../compile-error-utils";
 
-export type NoPathError = TResult.E<"no matched patterns">;
+export type NoPathError = C.E<"no matched patterns">;
 
 type CheckUrl<
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -117,9 +117,7 @@ type FetchT<UrlPrefix extends UrlPrefixPattern, E extends ApiEndpoints> = <
       >
     : Record<StatusCode, never>,
 >(
-  input: CheckUrl<Query, Input> extends TResult.OK
-    ? Input
-    : CheckUrl<Query, Input>,
+  input: CheckUrl<Query, Input> extends C.OK ? Input : CheckUrl<Query, Input>,
   init: RequestInitT<
     AcceptableMethods extends "get" ? true : false,
     ApiP<E, CandidatePaths, LCMethod<InputMethod>, "body">,

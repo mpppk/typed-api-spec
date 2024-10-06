@@ -6,7 +6,7 @@ import {
   NonOptionalKeys,
   ToQueryUnion,
 } from "./query-string";
-import { TResult } from "../error";
+import { C } from "../compile-error-utils";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 type ToQueryUnionCase = [
@@ -51,23 +51,21 @@ type NonOptionalKeysCase = [
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 type IsValidQueryCase = [
-  Expect<Equal<CheckQuery<{ a: string }, "a">, TResult.OK>>,
-  Expect<
-    Equal<CheckQuery<{ a: string }, "b">, TResult.E<"maybe missing query: a">>
-  >,
+  Expect<Equal<CheckQuery<{ a: string }, "a">, C.OK>>,
+  Expect<Equal<CheckQuery<{ a: string }, "b">, C.E<"maybe missing query: a">>>,
   Expect<
     Equal<
       CheckQuery<{ a: string }, "a" | "b">,
-      TResult.E<"maybe excessive query: a" | "maybe excessive query: b">
+      C.E<"maybe excessive query: a" | "maybe excessive query: b">
     >
   >,
-  Expect<Equal<CheckQuery<{ a: string; b?: string }, "a">, TResult.OK>>,
-  Expect<Equal<CheckQuery<{ a: string; b?: string }, "a" | "b">, TResult.OK>>,
+  Expect<Equal<CheckQuery<{ a: string; b?: string }, "a">, C.OK>>,
+  Expect<Equal<CheckQuery<{ a: string; b?: string }, "a" | "b">, C.OK>>,
   Expect<
     Equal<
       CheckQuery<{ a: string; b: string }, "a">,
-      TResult.E<"maybe missing query: a" | "maybe missing query: b">
+      C.E<"maybe missing query: a" | "maybe missing query: b">
     >
   >,
-  Expect<Equal<CheckQuery<{ a: string; b: string }, "a" | "b">, TResult.OK>>,
+  Expect<Equal<CheckQuery<{ a: string; b: string }, "a" | "b">, C.OK>>,
 ];

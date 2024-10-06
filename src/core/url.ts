@@ -1,6 +1,6 @@
 import { ParseQueryString } from "./query-string";
 import { ExtractByPrefix, SameSlashNum, Split, UndefinedTo } from "./type";
-import { TResult } from "../error";
+import { C } from "../compile-error-utils";
 
 type ExtractParams<T extends string> = ExtractByPrefix<T, ":">;
 
@@ -87,7 +87,7 @@ export type MatchedPatterns<
   },
 > =
   Matched extends Record<string, never>
-    ? TResult.E<"no matched patterns">
+    ? C.E<"no matched patterns">
     : keyof Matched;
 
 /**
