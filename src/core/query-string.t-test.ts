@@ -29,6 +29,12 @@ type PickMissingQueryCase = [
   Expect<Equal<PickMissingQuery<{ a: string }, "b">, "a">>,
   Expect<Equal<PickMissingQuery<{ a: string; b: string }, "b">, "a">>,
   Expect<Equal<PickMissingQuery<{ a: string; b?: string }, "b">, "a">>,
+  Expect<
+    Equal<
+      PickMissingQuery<{ a: string; b?: string; c: string }, "b">,
+      "a" | "c"
+    >
+  >,
 ];
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -56,18 +62,12 @@ type ValidateQueryCase = [
   Expect<Equal<ValidateQuery<{ a: string }, "a">, C.OK>>,
   Expect<Equal<ValidateQuery<{ a: string }, "b">, MissingQueryError<"a">>>,
   Expect<
-    Equal<
-      ValidateQuery<{ a: string }, "a" | "b">,
-      ExcessiveQueryError<"a" | "b">
-    >
+    Equal<ValidateQuery<{ a: string }, "a" | "b">, ExcessiveQueryError<"b">>
   >,
   Expect<Equal<ValidateQuery<{ a: string; b?: string }, "a">, C.OK>>,
   Expect<Equal<ValidateQuery<{ a: string; b?: string }, "a" | "b">, C.OK>>,
   Expect<
-    Equal<
-      ValidateQuery<{ a: string; b: string }, "a">,
-      MissingQueryError<"a" | "b">
-    >
+    Equal<ValidateQuery<{ a: string; b: string }, "a">, MissingQueryError<"b">>
   >,
   Expect<Equal<ValidateQuery<{ a: string; b: string }, "a" | "b">, C.OK>>,
 ];

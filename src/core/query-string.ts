@@ -55,7 +55,7 @@ export type PickMissingQuery<
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   QueryDef extends Record<string, any>,
   QueryKeys extends string,
-> = Exclude<NonOptionalKeys<QueryDef>, QueryKeys>;
+> = Exclude<NonOptionalKeys<QueryDef> & string, QueryKeys>;
 
 export type PickExcessiveQuery<
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -84,5 +84,5 @@ export type ValidateQuery<
   PickMissingQuery<QueryDef, QueryKeys> extends never
     ? PickExcessiveQuery<QueryDef, QueryKeys> extends never
       ? C.OK
-      : ExcessiveQueryError<QueryKeys>
-    : MissingQueryError<keyof QueryDef & string>;
+      : ExcessiveQueryError<PickExcessiveQuery<QueryDef, QueryKeys>>
+    : MissingQueryError<PickMissingQuery<QueryDef, QueryKeys>>;
