@@ -1,7 +1,7 @@
 import { Equal, Expect } from "./type-test";
 import {
-  HasExcessiveQuery,
-  HasMissingQuery,
+  PickExcessiveQuery,
+  CheckMissingQuery,
   ValidateQuery,
   NonOptionalKeys,
   ToQueryUnion,
@@ -19,28 +19,28 @@ type ToQueryUnionCase = [
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 type HasMissingQueryCase = [
-  Expect<Equal<HasMissingQuery<{ a: string }, "a">, false>>,
-  Expect<Equal<HasMissingQuery<{ a?: string }, "a">, false>>,
-  Expect<Equal<HasMissingQuery<{ a?: string }, "b">, false>>,
-  Expect<Equal<HasMissingQuery<{ a?: string }, never>, false>>,
-  Expect<Equal<HasMissingQuery<{ a: string }, "a" | "b">, false>>,
-  Expect<Equal<HasMissingQuery<{ a?: string }, "a" | "b">, false>>,
-  Expect<Equal<HasMissingQuery<{ a: string; b?: string }, "a">, false>>,
-  Expect<Equal<HasMissingQuery<{ a: string }, "b">, true>>,
-  Expect<Equal<HasMissingQuery<{ a: string; b: string }, "b">, true>>,
-  Expect<Equal<HasMissingQuery<{ a: string; b?: string }, "b">, true>>,
+  Expect<Equal<CheckMissingQuery<{ a: string }, "a">, false>>,
+  Expect<Equal<CheckMissingQuery<{ a?: string }, "a">, false>>,
+  Expect<Equal<CheckMissingQuery<{ a?: string }, "b">, false>>,
+  Expect<Equal<CheckMissingQuery<{ a?: string }, never>, false>>,
+  Expect<Equal<CheckMissingQuery<{ a: string }, "a" | "b">, false>>,
+  Expect<Equal<CheckMissingQuery<{ a?: string }, "a" | "b">, false>>,
+  Expect<Equal<CheckMissingQuery<{ a: string; b?: string }, "a">, false>>,
+  Expect<Equal<CheckMissingQuery<{ a: string }, "b">, true>>,
+  Expect<Equal<CheckMissingQuery<{ a: string; b: string }, "b">, true>>,
+  Expect<Equal<CheckMissingQuery<{ a: string; b?: string }, "b">, true>>,
 ];
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-type HasExcessiveQueryCase = [
-  Expect<Equal<HasExcessiveQuery<{ a: string }, "a">, false>>,
-  Expect<Equal<HasExcessiveQuery<{ a: string }, "b">, true>>,
-  Expect<Equal<HasExcessiveQuery<{ a: string }, "a" | "b">, true>>,
-  Expect<Equal<HasExcessiveQuery<{ a: string; b: string }, "a" | "b">, false>>,
-  Expect<Equal<HasExcessiveQuery<{ a: string; b?: string }, "a" | "b">, false>>,
-  Expect<
-    Equal<HasExcessiveQuery<{ a: string; b: string }, "a" | "b" | "c">, true>
-  >,
+type PickExcessiveQueryErrorCase = [
+  Expect<Equal<PickExcessiveQuery<{ a: 1 }, "a">, never>>,
+  Expect<Equal<PickExcessiveQuery<{ a: 1; b: 1 }, "a">, never>>,
+  Expect<Equal<PickExcessiveQuery<{ a: 1; b: 1 }, "a" | "b">, never>>,
+  Expect<Equal<PickExcessiveQuery<{ a: 1; b: 1 }, "c">, "c">>,
+  Expect<Equal<PickExcessiveQuery<{ a: 1; b: 1 }, "c" | "d">, "c" | "d">>,
+  Expect<Equal<PickExcessiveQuery<{ a: 1; b: 1 }, "b" | "c">, "c">>,
+  Expect<Equal<PickExcessiveQuery<{ a: 1; b?: 1 }, "b">, never>>,
+  Expect<Equal<PickExcessiveQuery<{ a: 1; b?: 1 }, "c">, "c">>,
 ];
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars

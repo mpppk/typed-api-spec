@@ -51,18 +51,18 @@ export type ToQueryUnion<Query extends string> =
       ? Key
       : `invalid query: ${Query}`;
 
-export type HasMissingQuery<
+export type CheckMissingQuery<
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   QueryDef extends Record<string, any>,
   QueryKeys extends string,
 > = NonOptionalKeys<QueryDef> extends QueryKeys ? false : true;
 
-export type HasExcessiveQuery<
+export type PickExcessiveQuery<
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   QueryDef extends Record<string, any>,
   QueryKeys extends string,
   // no union distribution
-> = [QueryKeys] extends [keyof QueryDef] ? false : true;
+> = Exclude<QueryKeys, keyof QueryDef>;
 
 export type NonOptionalKeys<T> = {
   [K in keyof T]-?: undefined extends T[K] ? never : K;
@@ -80,8 +80,8 @@ export type ValidateQuery<
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   QueryDef extends Record<string, any>,
   QueryKeys extends string,
-> = [HasMissingQuery<QueryDef, QueryKeys>] extends [true]
+> = [CheckMissingQuery<QueryDef, QueryKeys>] extends [true]
   ? MissingQueryError<keyof QueryDef & string>
-  : [HasExcessiveQuery<QueryDef, QueryKeys>] extends [true]
-    ? ExcessiveQueryError<QueryKeys>
-    : C.OK;
+  : PickExcessiveQuery<QueryDef, QueryKeys> extends never
+    ? C.OK
+    : ExcessiveQueryError<QueryKeys>;
