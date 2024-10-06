@@ -1,5 +1,6 @@
 import { ParseUrlParams } from "./url";
 import { ClientResponse, StatusCode } from "./hono-types";
+import { C } from "../compile-error-utils";
 
 /**
  * { // ApiEndpoints
@@ -23,7 +24,7 @@ export const Method = [
   "head",
 ] as const;
 export type Method = (typeof Method)[number];
-export type CaseInsensitive<S extends string> = Uppercase<S> | Lowercase<S>;
+export type CaseInsensitive<S extends string> = S | Uppercase<S> | Lowercase<S>;
 export type CaseInsensitiveMethod = Method | Uppercase<Method>;
 export const isMethod = (x: unknown): x is Method =>
   Method.includes(x as Method);
@@ -83,14 +84,18 @@ type AsJsonApiSpec<AS extends ApiSpec> = Omit<AS, "headers" | "resHeaders"> & {
 
 export type ApiP<
   E extends ApiEndpoints,
-  Path extends keyof E & string,
+  Path extends (keyof E & string) | C.AnyE,
   M extends Method,
   P extends keyof ApiSpec,
-> = E[Path] extends ApiEndpoint
-  ? E[Path][M] extends ApiSpec<ParseUrlParams<Path>>
-    ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      E[Path][M][P] extends Record<string, any> | string
-      ? E[Path][M][P]
+> = Path extends keyof E & string
+  ? E[Path] extends ApiEndpoint
+    ? M extends Method
+      ? E[Path][M] extends ApiSpec<ParseUrlParams<Path>>
+        ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          E[Path][M][P] extends Record<string, any> | string
+          ? E[Path][M][P]
+          : undefined
+        : undefined
       : undefined
     : undefined
   : undefined;

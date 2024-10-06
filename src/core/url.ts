@@ -1,5 +1,6 @@
 import { ParseQueryString } from "./query-string";
 import { ExtractByPrefix, SameSlashNum, Split, UndefinedTo } from "./type";
+import { C } from "../compile-error-utils";
 
 type ExtractParams<T extends string> = ExtractByPrefix<T, ":">;
 
@@ -63,6 +64,8 @@ export type ToUrlPattern<T extends string> = T extends `${infer O}?${infer R}`
   ? `${ToUrlParamPattern<O>}?${ToUrlPattern<R>}`
   : ToUrlParamPattern<T>;
 
+export type NoPathError = C.E<"no matched path found">;
+
 /**
  * Extract matched URL pattern from URL
  * T: URL
@@ -74,13 +77,17 @@ export type ToUrlPattern<T extends string> = T extends `${infer O}?${infer R}`
  * // => "/users/:userId"
  * ```
  */
-export type MatchedPatterns<T extends string, Patterns extends string> = keyof {
-  [P in Patterns as T extends ToUrlPattern<P>
-    ? SameSlashNum<P, T> extends true
-      ? P
-      : never
-    : never]: true;
-};
+export type MatchedPatterns<
+  T extends string,
+  Patterns extends string,
+  Matched = {
+    [P in Patterns as T extends ToUrlPattern<P>
+      ? SameSlashNum<P, T> extends true
+        ? P
+        : never
+      : never]: true;
+  },
+> = Matched extends Record<string, never> ? NoPathError : keyof Matched;
 
 /**
  * Parse host and port

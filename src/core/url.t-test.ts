@@ -1,6 +1,7 @@
 import { Equal, Expect } from "./type-test";
 import {
   MatchedPatterns,
+  NoPathError,
   ParseHostAndPort,
   ParseOriginAndPath,
   ParseURL,
@@ -55,6 +56,7 @@ type ToUrlPatternTestCases = [
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 type MatchedPatternsTestCases = [
+  Expect<Equal<MatchedPatterns<string, "">, NoPathError>>,
   Expect<Equal<MatchedPatterns<"", "">, "">>,
   Expect<Equal<MatchedPatterns<"/1", "/:userId">, "/:userId">>,
   Expect<
