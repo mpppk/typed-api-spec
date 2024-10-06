@@ -16,13 +16,12 @@ import {
   ToQueryUnion,
   Method,
   CaseInsensitive,
-  NoPathError,
 } from "../core";
 import { UrlPrefixPattern, ToUrlParamPattern } from "../core";
 import { TypedString } from "../json";
 import { C } from "../compile-error-utils";
 
-type CheckUrl<
+type ValidateUrl<
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   QueryDef extends Record<string, unknown> | undefined,
   Url extends string,
@@ -58,14 +57,39 @@ export type RequestInitT<
     : // eslint-disable-next-line @typescript-eslint/ban-types
       {});
 
-// LowerCase Method
-export type LCMethod<M extends CaseInsensitiveMethod | NoPathError> =
-  M extends CaseInsensitiveMethod ? Lowercase<M> : M;
-
 /**
  * FetchT is a type for window.fetch like function but more strict type information
+ *
+ * @template UrlPrefix - url prefix of `Input`
+ * For example, if `UrlPrefix` is "https://example.com", then `Input` must be `https://example.com/${string}`
+ *
+ * @template E - ApiEndpoints
+ * E is used to infer the type of the acceptable path, response body, and more
  */
 type FetchT<UrlPrefix extends UrlPrefixPattern, E extends ApiEndpoints> = <
+  /**
+   * internal type for FetchT
+   *
+   * @template UrlPattern - Acceptable url pattern
+   * for example, if endpoints is defined as below:
+   * { "/users": ..., "/users/:userId": ... }
+   * then UrlPattern will be "/users" | "/users/:userId"
+   *
+   * @template InputPath - Extracted path from `Input`
+   *
+   * @template CandidatePaths - Matched paths from `InputPath` and `keyof E`
+   *
+   * @template AcceptableMethods - Acceptable methods for the matched path
+   *
+   * @template InputMethod - Method of the request
+   *
+   * @template LM - Lowercase of `InputMethod`
+   *
+   * @template Query - Query object
+   *
+   * @template ResBody - Response body
+   *
+   */
   UrlPattern extends ToUrlParamPattern<`${UrlPrefix}${keyof E & string}`>,
   Input extends Query extends undefined
     ? UrlPattern
@@ -90,37 +114,37 @@ type FetchT<UrlPrefix extends UrlPrefixPattern, E extends ApiEndpoints> = <
     AcceptableMethods,
     "get"
   >,
-  Query extends ApiP<E, CandidatePaths, LCMethod<InputMethod>, "query"> = ApiP<
+  LM extends Lowercase<InputMethod> = Lowercase<InputMethod>,
+  Query extends ApiP<E, CandidatePaths, LM, "query"> = ApiP<
     E,
     CandidatePaths,
-    LCMethod<InputMethod>,
+    LM,
     "query"
   >,
   ResBody extends ApiP<
     E,
     CandidatePaths,
-    LCMethod<InputMethod>,
+    LM,
     "responses"
   > extends AnyApiResponses
-    ? MergeApiResponseBodies<
-        ApiP<E, CandidatePaths, LCMethod<InputMethod>, "responses">
-      >
+    ? MergeApiResponseBodies<ApiP<E, CandidatePaths, LM, "responses">>
     : Record<StatusCode, never> = ApiP<
     E,
     CandidatePaths,
-    LCMethod<InputMethod>,
+    LM,
     "responses"
   > extends AnyApiResponses
-    ? MergeApiResponseBodies<
-        ApiP<E, CandidatePaths, LCMethod<InputMethod>, "responses">
-      >
+    ? MergeApiResponseBodies<ApiP<E, CandidatePaths, LM, "responses">>
     : Record<StatusCode, never>,
 >(
-  input: CheckUrl<Query, Input> extends C.OK ? Input : CheckUrl<Query, Input>,
+  input: ValidateUrl<Query, Input> extends C.OK
+    ? Input
+    : ValidateUrl<Query, Input>,
   init: RequestInitT<
-    AcceptableMethods extends "get" ? true : false,
-    ApiP<E, CandidatePaths, LCMethod<InputMethod>, "body">,
-    ApiP<E, CandidatePaths, LCMethod<InputMethod>, "headers">,
+    // If `get` method is defined in the spec, method can be omitted
+    "get" extends AcceptableMethods ? true : false,
+    ApiP<E, CandidatePaths, LM, "body">,
+    ApiP<E, CandidatePaths, LM, "headers">,
     InputMethod
   >,
 ) => Promise<ResBody>;

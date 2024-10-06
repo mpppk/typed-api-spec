@@ -85,7 +85,7 @@ type AsJsonApiSpec<AS extends ApiSpec> = Omit<AS, "headers" | "resHeaders"> & {
 export type ApiP<
   E extends ApiEndpoints,
   Path extends (keyof E & string) | C.AnyE,
-  M extends Method | C.AnyE,
+  M extends Method,
   P extends keyof ApiSpec,
 > = Path extends keyof E & string
   ? E[Path] extends ApiEndpoint
