@@ -1,6 +1,5 @@
 import { ParseUrlParams } from "./url";
 import { ClientResponse, StatusCode } from "./hono-types";
-import { NoPathError } from "../fetch";
 import { C } from "../compile-error-utils";
 
 /**
@@ -86,7 +85,7 @@ type AsJsonApiSpec<AS extends ApiSpec> = Omit<AS, "headers" | "resHeaders"> & {
 export type ApiP<
   E extends ApiEndpoints,
   Path extends (keyof E & string) | C.AnyE,
-  M extends Method | NoPathError,
+  M extends Method | C.AnyE,
   P extends keyof ApiSpec,
 > = Path extends keyof E & string
   ? E[Path] extends ApiEndpoint

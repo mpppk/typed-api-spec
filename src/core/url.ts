@@ -64,6 +64,8 @@ export type ToUrlPattern<T extends string> = T extends `${infer O}?${infer R}`
   ? `${ToUrlParamPattern<O>}?${ToUrlPattern<R>}`
   : ToUrlParamPattern<T>;
 
+export type NoPathError = C.E<"no matched path found">;
+
 /**
  * Extract matched URL pattern from URL
  * T: URL
@@ -85,10 +87,7 @@ export type MatchedPatterns<
         : never
       : never]: true;
   },
-> =
-  Matched extends Record<string, never>
-    ? C.E<"no matched patterns">
-    : keyof Matched;
+> = Matched extends Record<string, never> ? NoPathError : keyof Matched;
 
 /**
  * Parse host and port

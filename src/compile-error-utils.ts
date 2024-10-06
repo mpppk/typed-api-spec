@@ -3,7 +3,8 @@
 export declare namespace C {
   const e: unique symbol;
   const ok: unique symbol;
-  export type E<MSG extends string> = { [e]: MSG };
+  export type E<MSG> = { [e]: MSG };
   export type OK = { [ok]: true };
-  export type AnyE = E<string>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  export type AnyE = E<any>;
 }

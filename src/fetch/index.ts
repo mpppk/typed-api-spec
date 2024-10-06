@@ -12,16 +12,15 @@ import {
   StatusCode,
   IsAllOptional,
   ExtractQuery,
-  CheckQuery,
+  ValidateQuery,
   ToQueryUnion,
   Method,
   CaseInsensitive,
+  NoPathError,
 } from "../core";
 import { UrlPrefixPattern, ToUrlParamPattern } from "../core";
 import { TypedString } from "../json";
 import { C } from "../compile-error-utils";
-
-export type NoPathError = C.E<"no matched patterns">;
 
 type CheckUrl<
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -29,7 +28,7 @@ type CheckUrl<
   Url extends string,
   Query extends string | undefined = ExtractQuery<Url>,
   QueryKeys extends string = Query extends string ? ToQueryUnion<Query> : never,
-> = CheckQuery<
+> = ValidateQuery<
   // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/ban-types
   QueryDef extends Record<string, any> ? QueryDef : {},
   QueryKeys

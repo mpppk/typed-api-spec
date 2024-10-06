@@ -68,12 +68,20 @@ export type NonOptionalKeys<T> = {
   [K in keyof T]-?: undefined extends T[K] ? never : K;
 }[keyof T];
 
-export type CheckQuery<
+export type MissingQueryError<Keys extends string> = {
+  reason: `missing query`;
+  keys: Keys;
+};
+export type ExcessiveQueryError<Keys extends string> = {
+  reason: `excessive query`;
+  keys: Keys;
+};
+export type ValidateQuery<
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   QueryDef extends Record<string, any>,
   QueryKeys extends string,
 > = [HasMissingQuery<QueryDef, QueryKeys>] extends [true]
-  ? C.E<`maybe missing query: ${keyof QueryDef & string}`>
+  ? MissingQueryError<keyof QueryDef & string>
   : [HasExcessiveQuery<QueryDef, QueryKeys>] extends [true]
-    ? C.E<`maybe excessive query: ${QueryKeys}`>
+    ? ExcessiveQueryError<QueryKeys>
     : C.OK;
