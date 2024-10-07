@@ -21,12 +21,14 @@ import { UrlPrefixPattern, ToUrlParamPattern } from "../core";
 import { TypedString } from "../json";
 import { C } from "../compile-error-utils";
 
-type ValidateUrl<
+export type ValidateUrl<
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   QueryDef extends Record<string, unknown> | undefined,
   Url extends string,
   Query extends string | undefined = ExtractQuery<Url>,
-  QueryKeys extends string = Query extends string ? ToQueryUnion<Query> : never,
+  QueryKeys extends string = [Query] extends [string]
+    ? ToQueryUnion<Query>
+    : never,
 > = ValidateQuery<
   // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/ban-types
   QueryDef extends Record<string, any> ? QueryDef : {},
@@ -139,7 +141,7 @@ type FetchT<UrlPrefix extends UrlPrefixPattern, E extends ApiEndpoints> = <
     "get"
   >,
 >(
-  input: ValidateUrl<Query, Input> extends C.OK
+  input: [ValidateUrl<Query, Input>] extends [C.OK]
     ? Input
     : ValidateUrl<Query, Input>,
   init: RequestInitT<

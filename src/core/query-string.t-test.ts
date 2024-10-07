@@ -60,7 +60,12 @@ type NonOptionalKeysCase = [
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 type ValidateQueryCase = [
   Expect<Equal<ValidateQuery<{ a: string }, "a">, C.OK>>,
-  Expect<Equal<ValidateQuery<{ a: string }, "b">, MissingQueryError<"a">>>,
+  Expect<
+    Equal<
+      ValidateQuery<{ a: string }, "b">,
+      MissingQueryError<"a"> | ExcessiveQueryError<"b">
+    >
+  >,
   Expect<
     Equal<ValidateQuery<{ a: string }, "a" | "b">, ExcessiveQueryError<"b">>
   >,

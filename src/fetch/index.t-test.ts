@@ -1,7 +1,33 @@
-import { AsJsonApi, DefineApiEndpoints } from "../core";
-import FetchT from "./index";
+import {
+  AsJsonApi,
+  DefineApiEndpoints,
+  ExcessiveQueryError,
+  MissingQueryError,
+} from "../core";
+import FetchT, { ValidateUrl } from "./index";
 import JSONT from "../json";
+import { Equal, Expect } from "../core/type-test";
+import { C } from "../compile-error-utils";
 const JSONT = JSON as JSONT;
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type ValidateUrlTestCase = [
+  Expect<
+    Equal<
+      ValidateUrl<
+        { a: string },
+        `/api/projects/projectA/workflow/packages/list?a=b`
+      >,
+      C.OK
+    >
+  >,
+  Expect<
+    Equal<
+      ValidateUrl<{ state: string }, "https://example.com?a=1">,
+      MissingQueryError<"state"> | ExcessiveQueryError<"a">
+    >
+  >,
+];
 
 {
   type Spec = DefineApiEndpoints<{
@@ -197,7 +223,7 @@ const JSONT = JSON as JSONT;
         headers: { Cookie: `a=${string}` };
         responses: { 200: { body: { prop: string } } };
         query: {
-          state: boolean;
+          state: string;
         };
       };
     };

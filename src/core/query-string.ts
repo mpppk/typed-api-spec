@@ -61,7 +61,6 @@ export type PickExcessiveQuery<
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   QueryDef extends Record<string, any>,
   QueryKeys extends string,
-  // no union distribution
 > = Exclude<QueryKeys, keyof QueryDef>;
 
 export type NonOptionalKeys<T> = {
@@ -76,13 +75,23 @@ export type ExcessiveQueryError<Keys extends string> = {
   reason: `excessive query`;
   keys: Keys;
 };
+
 export type ValidateQuery<
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   QueryDef extends Record<string, any>,
   QueryKeys extends string,
-> =
-  PickMissingQuery<QueryDef, QueryKeys> extends never
-    ? PickExcessiveQuery<QueryDef, QueryKeys> extends never
-      ? C.OK
-      : ExcessiveQueryError<PickExcessiveQuery<QueryDef, QueryKeys>>
-    : MissingQueryError<PickMissingQuery<QueryDef, QueryKeys>>;
+  Missing extends PickMissingQuery<QueryDef, QueryKeys> = PickMissingQuery<
+    QueryDef,
+    QueryKeys
+  >,
+  Excessive extends PickExcessiveQuery<
+    QueryDef,
+    QueryKeys
+  > = PickExcessiveQuery<QueryDef, QueryKeys>,
+> = [Missing] extends [never]
+  ? [Excessive] extends [never]
+    ? C.OK
+    : ExcessiveQueryError<Excessive>
+  : [Excessive] extends [never]
+    ? MissingQueryError<Missing>
+    : MissingQueryError<Missing> | ExcessiveQueryError<Excessive>;
