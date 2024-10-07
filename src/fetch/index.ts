@@ -69,26 +69,45 @@ export type RequestInitT<
 type FetchT<UrlPrefix extends UrlPrefixPattern, E extends ApiEndpoints> = <
   /**
    * internal type for FetchT
+   * They are not supposed to be specified by the user
    *
    * @template UrlPattern - Acceptable url pattern
-   * for example, if endpoints is defined as below:
+   * For example, if endpoints is defined as below:
    * { "/users": ..., "/users/:userId": ... }
-   * then UrlPattern will be "/users" | "/users/:userId"
+   * and UrlPrefix is "https://example.com",
+   * then UrlPattern will be "https://example.com/users" | "https://example.com/users/${string}"
    *
-   * @template InputPath - Extracted path from `Input`
+   * @template Input - Input of the request by the user
+   * For example, if endpoints is defined as below:
+   * { "/users": ..., "/users/:userId": ... }
+   * then Input accepts "https://example.com/users" | "https://example.com/users/${string}"
+   * If query is defined in the spec, Input also accepts "https://example.com/users?${string}" | "https://example.com/users/${string}?${string}"
+   *
+   * @template InputPath - Converted path from `Input`
+   * For example, if Input is "https://example.com/users/1", then InputPath will be "/users/${string}"
    *
    * @template CandidatePaths - Matched paths from `InputPath` and `keyof E`
+   * For example, if InputPath is "/users/1" and endpoints is defined as below:
+   * { "/users": ..., "/users/:userId": ... }
+   * then CandidatePaths will be "/users/:userId"
+   * If no matched path is found, CandidatePaths will be never
+   * If multiple matched paths are found, CandidatePaths will be union of matched paths
    *
    * @template AcceptableMethods - Acceptable methods for the matched path
-   *
-   * @template InputMethod - Method of the request
+   * For example, if CandidatePaths is "/users/:userId" and endpoints is defined as below:
+   * { "/users": { get: ... }, "/users/:userId": { get: ..., post: ... } }
+   * then AcceptableMethods will be "get" | "post"
    *
    * @template LM - Lowercase of `InputMethod`
    *
-   * @template Query - Query object
+   * @template Query - Query object of endpoint which is matched with `CandidatePaths`
    *
-   * @template ResBody - Response body
+   * @template ResBody - Response body of the endpoint which is matched with `CandidatePaths`
    *
+   * @template InputMethod - Method of the request specified by the user
+   * For example, if `fetch` is called with `fetch("https://example.com/users", { method: "post" })`,
+   * then InputMethod will be "post".
+   * If `get` method is defined in the spec, method can be omitted, and it will be `get` by default
    */
   UrlPattern extends ToUrlParamPattern<`${UrlPrefix}${keyof E & string}`>,
   Input extends Query extends undefined
@@ -101,26 +120,12 @@ type FetchT<UrlPrefix extends UrlPrefixPattern, E extends ApiEndpoints> = <
       ParseURL<Replace<Input, ToUrlParamPattern<UrlPrefix>, "">>["path"]
     >
   >,
-  CandidatePaths extends MatchedPatterns<
-    InputPath,
-    keyof E & string
-  > = MatchedPatterns<InputPath, keyof E & string>,
+  CandidatePaths extends MatchedPatterns<InputPath, keyof E & string>,
   AcceptableMethods extends CandidatePaths extends string
     ? Extract<Method, keyof E[CandidatePaths]>
-    : never = CandidatePaths extends string
-    ? Extract<Method, keyof E[CandidatePaths]>
     : never,
-  InputMethod extends CaseInsensitive<AcceptableMethods> = Extract<
-    AcceptableMethods,
-    "get"
-  >,
-  LM extends Lowercase<InputMethod> = Lowercase<InputMethod>,
-  Query extends ApiP<E, CandidatePaths, LM, "query"> = ApiP<
-    E,
-    CandidatePaths,
-    LM,
-    "query"
-  >,
+  LM extends Lowercase<InputMethod>,
+  Query extends ApiP<E, CandidatePaths, LM, "query">,
   ResBody extends ApiP<
     E,
     CandidatePaths,
@@ -128,14 +133,11 @@ type FetchT<UrlPrefix extends UrlPrefixPattern, E extends ApiEndpoints> = <
     "responses"
   > extends AnyApiResponses
     ? MergeApiResponseBodies<ApiP<E, CandidatePaths, LM, "responses">>
-    : Record<StatusCode, never> = ApiP<
-    E,
-    CandidatePaths,
-    LM,
-    "responses"
-  > extends AnyApiResponses
-    ? MergeApiResponseBodies<ApiP<E, CandidatePaths, LM, "responses">>
     : Record<StatusCode, never>,
+  InputMethod extends CaseInsensitive<AcceptableMethods> = Extract<
+    AcceptableMethods,
+    "get"
+  >,
 >(
   input: ValidateUrl<Query, Input> extends C.OK
     ? Input
