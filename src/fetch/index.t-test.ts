@@ -14,7 +14,9 @@ const JSONT = JSON as JSONT;
   (async () => {
     const f = fetch as FetchT<"", Spec>;
     {
-      // TODO: 今はinitの省略ができないが、できるようにしたい
+      // @ts-expect-error 今はinitの省略ができないが、できるようにしたい
+      await f("/users");
+
       // methodを省略した場合はgetとして扱う
       const res = await f("/users", {});
       (await res.json()).prop;

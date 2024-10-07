@@ -35,7 +35,7 @@ type Spec = DefineApiEndpoints<{
 }>;
 
 const fetchT = fetch as FetchT<"", Spec>;
-const res = await fetchT("/users");
+const res = await fetchT("/users", {});
 const data = await res.json(); // data is { userNames: string[] }
 ```
 
@@ -56,7 +56,7 @@ type Spec = DefineApiEndpoints<{
 }>;
 
 const fetchT = fetch as FetchT<"", Spec>;
-const res = await fetchT("/users");
+const res = await fetchT("/users", {});
 if (!res.ok) {
   // If res.ok is false, status code is 400 or 500
   // So res.json() returns { message: string } | { internalError: string }
@@ -86,10 +86,10 @@ type Spec = DefineApiEndpoints<{
 }>;
 const fetchT = fetch as FetchT<"", Spec>;
 
-await fetchT("/users"); // OK
-await fetchT("/users/1"); // OK
-await fetchT("/posts"); // Error: Argument of type '"/posts"' is not assignable to parameter of type '"/users" | "/users/:id"'.
-await fetchT("/users/1/2"); // Error: Argument of type '"/users/1/2"' is not assignable to parameter of type '"/users" | "/users/:id"'.
+await fetchT("/users", {}); // OK
+await fetchT("/users/1", {}); // OK
+await fetchT("/posts", {}); // Error: Argument of type '"/posts"' is not assignable to parameter of type '"/users" | "/users/:id"'.
+await fetchT("/users/1/2", {}); // Error: Argument of type '"/users/1/2"' is not assignable to parameter of type '"/users" | "/users/:id"'.
 ```
 
 ### Query
@@ -107,8 +107,9 @@ type Spec = DefineApiEndpoints<{
 }>;
 
 const fetchT = fetch as FetchT<"", Spec>;
-await fetchT("/users?page=1"); // OK
-await fetchT("/users"); // Error: Argument of type '"/users"' is not assignable to parameter of type '"/users?page=${string}"'.
+await fetchT("/users?page=1", {}); // OK
+await fetchT("/users", {}); // Error: Argument of type string is not assignable to parameter of type MissingQueryError<"page">
+await fetchT("/users?page=1&noexist=1", {}); // Error: Argument of type string is not assignable to parameter of type ExcessiveQueryError<"noexist">
 ```
 
 ### headers
@@ -151,6 +152,14 @@ const JSONT = JSON as JSONT;
 await fetchT("/users", { method: "POST", body: JSONT.stringify({ name: "name" }) }); // OK
 await fetchT("/users", { method: "POST", body: JSONT.stringify({ name: 1 }) }); // Error: Type TypedString<{ userName: number; }> is not assignable to type TypedString<{ userName: string; }>
 ```
+
+:::info[Known issue of RequestInit]
+
+Currently, zero-fetch can not omit the `RequestInit` arg.
+We hope to address this issue in the future, but for now, you must provide an empty object as the second argument.
+
+:::
+
 
 ## API
 
