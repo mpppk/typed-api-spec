@@ -12,9 +12,15 @@ import { C } from "../compile-error-utils";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 type ToQueryUnionCase = [
+  Expect<Equal<ToQueryUnion<"a">, "a">>,
   Expect<Equal<ToQueryUnion<"a=1">, "a">>,
+  Expect<Equal<ToQueryUnion<"a[]">, "a">>,
+  Expect<Equal<ToQueryUnion<"a[]=1">, "a">>,
   Expect<Equal<ToQueryUnion<"a=1&b=2">, "a" | "b">>,
   Expect<Equal<ToQueryUnion<"a=1&b=2&a=3">, "a" | "b">>,
+  Expect<Equal<ToQueryUnion<"a=1&b">, "a" | "b">>,
+  Expect<Equal<ToQueryUnion<"a[]=1&b">, "a" | "b">>,
+  Expect<Equal<ToQueryUnion<"a[]=1&b[]">, "a" | "b">>,
 ];
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars

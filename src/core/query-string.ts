@@ -1,5 +1,6 @@
 // https://github.com/type-challenges/type-challenges/issues/21419
 import { C } from "../compile-error-utils";
+import { Replace } from "./type";
 
 export type ParseQueryString<S extends string> = S extends ""
   ? Record<string, never>
@@ -46,10 +47,10 @@ export type ExtractQuery<URL extends string> =
 
 export type ToQueryUnion<Query extends string> =
   Query extends `${infer Key}=${string}&${infer Rest}`
-    ? Key | ToQueryUnion<Rest>
+    ? Replace<Key, "[]", ""> | ToQueryUnion<Rest>
     : Query extends `${infer Key}=${string}`
-      ? Key
-      : `invalid query: ${Query}`;
+      ? Replace<Key, "[]", "">
+      : Replace<Query, "[]", "">;
 
 export type PickMissingQuery<
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
