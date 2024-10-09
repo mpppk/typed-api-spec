@@ -12,13 +12,14 @@ const JSONT = JSON as JSONT;
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 type ValidateUrlTestCase = [
+  Expect<Equal<ValidateUrl<{ a: string }, `/topics?a=b`>, C.OK>>,
+  Expect<
+    Equal<ValidateUrl<{ a: string }, `https://api.github.com/topics?a=b`>, C.OK>
+  >,
   Expect<
     Equal<
-      ValidateUrl<
-        { a: string },
-        `/api/projects/projectA/workflow/packages/list?a=b`
-      >,
-      C.OK
+      ValidateUrl<{ a: string }, `/repos/mpppk/typed-api-spec/topics`>,
+      C.E<"query parameter required">
     >
   >,
   Expect<
@@ -28,6 +29,8 @@ type ValidateUrlTestCase = [
     >
   >,
 ];
+
+// type A = ValidateUrl<{ a: string }, `/topics?a=b`>;
 
 {
   type Spec = DefineApiEndpoints<{

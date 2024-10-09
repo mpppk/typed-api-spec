@@ -21,19 +21,32 @@ import { UrlPrefixPattern, ToUrlParamPattern } from "../core";
 import { TypedString } from "../json";
 import { C } from "../compile-error-utils";
 
+export type QueryParameterRequiredError = C.E<"query parameter required">;
 export type ValidateUrl<
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   QueryDef extends Record<string, unknown> | undefined,
   Url extends string,
+  // -- local types --
   Query extends string | undefined = ExtractQuery<Url>,
   QueryKeys extends string = [Query] extends [string]
     ? ToQueryUnion<Query>
     : never,
-> = ValidateQuery<
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/ban-types
-  QueryDef extends Record<string, any> ? QueryDef : {},
-  QueryKeys
->;
+  QueryRequiredError extends boolean = [QueryDef] extends [
+    Record<string, unknown>,
+  ]
+    ? [QueryKeys] extends [never]
+      ? true
+      : false
+    : false,
+> = [QueryRequiredError] extends [true]
+  ? QueryParameterRequiredError
+  : // If Url is given as like "https://example.com?${string}", then QueryKeys will be string
+    string extends QueryKeys
+    ? C.OK
+    : ValidateQuery<
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/ban-types
+        QueryDef extends Record<string, any> ? QueryDef : {},
+        QueryKeys
+      >;
 
 export type RequestInitT<
   CanOmitMethod extends boolean,
@@ -136,14 +149,15 @@ type FetchT<UrlPrefix extends UrlPrefixPattern, E extends ApiEndpoints> = <
   > extends AnyApiResponses
     ? MergeApiResponseBodies<ApiP<E, CandidatePaths, LM, "responses">>
     : Record<StatusCode, never>,
+  ValidatedUrl extends ValidateUrl<Query, Input>,
   InputMethod extends CaseInsensitive<AcceptableMethods> = Extract<
     AcceptableMethods,
     "get"
   >,
 >(
-  input: [ValidateUrl<Query, Input>] extends [C.OK]
+  input: [ValidatedUrl] extends [C.OK | QueryParameterRequiredError]
     ? Input
-    : ValidateUrl<Query, Input>,
+    : ValidatedUrl,
   init: RequestInitT<
     // If `get` method is defined in the spec, method can be omitted
     "get" extends AcceptableMethods ? true : false,
