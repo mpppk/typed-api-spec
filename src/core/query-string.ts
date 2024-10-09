@@ -81,6 +81,7 @@ export type ValidateQuery<
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   QueryDef extends Record<string, any>,
   QueryKeys extends string,
+  // -- local types --
   Missing extends PickMissingQuery<QueryDef, QueryKeys> = PickMissingQuery<
     QueryDef,
     QueryKeys
