@@ -1,6 +1,6 @@
 {
   "name": "@mpppk/typed-api-spec",
-  "version": "0.0.0-test35",
+  "version": "0.0.0-test36",
   "scripts": {
     "build": "tsup ./src",
     "watch:build": "tsup ./src --watch",
