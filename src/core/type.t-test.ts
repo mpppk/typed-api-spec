@@ -1,10 +1,13 @@
 import { Equal, Expect } from "./type-test";
 import {
+  AllKeys,
+  AllValues,
   CountChar,
   ExtractByPrefix,
   FilterNever,
   IsAllOptional,
   IsEqualNumber,
+  IsOptional,
   Replace,
   ReplaceAll,
   SameSlashNum,
@@ -111,6 +114,13 @@ type SameSlashNumTestCases = [
 ];
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
+type IsOptionalTestCases = [
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  Expect<Equal<IsOptional<{ a: string; b?: string }, "a">, false>>,
+  Expect<Equal<IsOptional<{ a: string; b?: string }, "b">, true>>,
+];
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 type IsAllOptionalTestCases = [
   // eslint-disable-next-line @typescript-eslint/ban-types
   Expect<Equal<IsAllOptional<{}>, true>>,
@@ -118,4 +128,16 @@ type IsAllOptionalTestCases = [
   Expect<Equal<IsAllOptional<{ a: string }>, false>>,
   Expect<Equal<IsAllOptional<{ a?: string; b: string }>, false>>,
   Expect<Equal<IsAllOptional<{ a?: string; b?: string }>, true>>,
+];
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type AllKeysTestCases = [
+  Expect<Equal<AllKeys<{ a: string } | { b: string }>, "a" | "b">>,
+  Expect<Equal<AllKeys<{ a: string } | { a: string; b: string }>, "a" | "b">>,
+];
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type AllValuesTestCases = [
+  Expect<Equal<AllValues<{ a: 1 } | { a: 2 }, "a">, 1 | 2>>,
+  Expect<Equal<AllValues<{ a: 1; b: 3 } | { a: 2 }, "b">, 3>>,
 ];

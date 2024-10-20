@@ -119,6 +119,12 @@ export type ApiRes<
   AResponses extends AnyApiResponses,
   SC extends keyof AResponses & StatusCode,
 > = AResponses[SC] extends AnyResponse ? AResponses[SC]["body"] : undefined;
+export type ApiResHeaders<
+  AResponses extends AnyApiResponses,
+  SC extends keyof AResponses & StatusCode,
+> = AResponses[SC] extends AnyResponse
+  ? AResponses[SC]["headers"]
+  : Record<string, never>;
 export type AnyApiResponses = DefineApiResponses<AnyResponse>;
 export type DefineApiResponses<Response extends AnyResponse> = Partial<
   Record<StatusCode, Response>
@@ -130,7 +136,8 @@ export type ApiClientResponses<AResponses extends AnyApiResponses> = {
   [SC in keyof AResponses & StatusCode]: ClientResponse<
     ApiRes<AResponses, SC>,
     SC,
-    "json"
+    "json",
+    ApiResHeaders<AResponses, SC>
   >;
 };
 export type MergeApiResponseBodies<AR extends AnyApiResponses> =
