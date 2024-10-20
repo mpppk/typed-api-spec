@@ -36,7 +36,12 @@ type ValidateUrlTestCase = [
   type Spec = DefineApiEndpoints<{
     "/users": {
       get: {
-        responses: { 200: { body: { prop: string } } };
+        responses: {
+          200: {
+            body: { prop: string };
+            headers: { "Content-Type": "application/json" };
+          };
+        };
       };
     };
   }>;
@@ -49,6 +54,11 @@ type ValidateUrlTestCase = [
       // methodを省略した場合はgetとして扱う
       const res = await f("/users", {});
       (await res.json()).prop;
+
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const contentType: "application/json" = res.headers.get("Content-Type");
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const hasContentType: true = res.headers.has("Content-Type");
     }
   })();
 }
