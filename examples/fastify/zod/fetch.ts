@@ -50,6 +50,10 @@ const main = async () => {
       const r = await res.json();
       console.log(`${path}:${method} => ${r.userId}`);
       console.log(res.headers.get("Content-Type"));
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const contentType: "application/json" = res.headers.get("Content-Type");
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const hasContentType: true = res.headers.has("Content-Type");
     } else {
       // e is the response schema defined in pathMap["/users"]["post"].res other than "20X"
       const e = await res.text();

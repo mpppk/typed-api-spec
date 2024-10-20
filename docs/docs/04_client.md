@@ -42,14 +42,15 @@ const data = await res.json(); // data is { userNames: string[] }
 If the response have multiple status codes, response type is union of each status code type.
 
 ```typescript
+type Headers = { headers: { 'Content-Type': 'application/json' } };
 type Spec = DefineApiEndpoints<{
   "/users": {
     get: {
       responses: {
-        200: { body: { names: string[] }; };
-        201: { body: { ok: boolean }; };
-        400: { body: { message: string; }; };
-        500: { body: { internalError: string; }; };
+        200: { body: { names: string[] }; } & Headers;
+        201: { body: { ok: boolean }; } & Headers;
+        400: { body: { message: string; }; } & Headers;
+        500: { body: { internalError: string; }; } & Headers;
       };
     };
   }
@@ -61,6 +62,12 @@ if (!res.ok) {
   // If res.ok is false, status code is 400 or 500
   // So res.json() returns { message: string } | { internalError: string }
   const data = await res.json();
+  
+  // Response headers are also type-checked. Content-Type is always 'application/json'
+  const contentType: 'application/json' = res.headers.get('Content-Type');
+  // and, hasContentType is inferred as true, not boolean
+  const hasContentType: true = res.headers.has('Content-Type');
+  
   return console.error(data);
 }
 // If res.ok is true, status code is 200 or 201
@@ -68,6 +75,20 @@ if (!res.ok) {
 const data = await res.json(); // names is string[]
 console.log(data);
 ```
+
+:::info[Response headers limitation]
+
+Response headers are treated as an immutable object for strict type checking.
+It means that you can not `append`, `set` or `delete` operation after the response object is created.
+This is a limitation of the type system, not a runtime change. If you need mutable operations, you can cast types.
+
+```typescript
+const immutableHeaders = res.headers
+const mutableHeaders = res.headers as Headers;
+```
+
+:::
+
 
 ### Path & Path parameters
 

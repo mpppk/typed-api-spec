@@ -143,5 +143,19 @@ export type SameSlashNum<P1 extends string, P2 extends string> = IsEqualNumber<
   CountChar<P2, "/">
 >;
 
+export type IsOptional<T, K extends keyof T> =
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  {} extends Pick<T, K> ? true : false;
+
 // eslint-disable-next-line @typescript-eslint/ban-types
 export type IsAllOptional<T> = {} extends T ? true : false;
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type AllKeys<T> = T extends any ? keyof T : never;
+
+export type AllValues<T, Key extends AllKeys<T>> = T extends {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [key in Key]?: any;
+}
+  ? T[Key]
+  : never;

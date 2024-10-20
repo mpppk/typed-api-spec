@@ -1,3 +1,5 @@
+import { ImmutableHeaders } from "./headers";
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type BlankRecordToNever<T> = T extends any
   ? T extends null
@@ -13,7 +15,8 @@ export interface ClientResponse<
   T,
   U extends number = StatusCode,
   F extends ResponseFormat = ResponseFormat,
-> extends globalThis.Response {
+  H extends Record<string, string> = Record<string, string>,
+> extends Omit<globalThis.Response, "headers"> {
   readonly body: ReadableStream | null;
   readonly bodyUsed: boolean;
   ok: U extends SuccessStatusCode
@@ -23,7 +26,7 @@ export interface ClientResponse<
       : boolean;
   status: U;
   statusText: string;
-  headers: Headers;
+  headers: ImmutableHeaders<H>;
   url: string;
   redirect(url: string, status: number): Response;
   clone(): Response;
