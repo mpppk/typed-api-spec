@@ -65,6 +65,7 @@ export const typed = <const Endpoints extends ValibotApiEndpoints>(
   pathMap: Endpoints,
   router: Router,
 ): RouterT<ToApiEndpoints<Endpoints>, ToValidatorsMap<Endpoints>> => {
-  router.use(validatorMiddleware(newValibotValidator(pathMap)));
+  const { req: reqValidator } = newValibotValidator(pathMap);
+  router.use(validatorMiddleware(reqValidator));
   return router;
 };

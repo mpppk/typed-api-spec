@@ -58,7 +58,8 @@ describe("valibot", () => {
         },
       },
     } satisfies ValibotApiEndpoints;
-    const middleware = validatorMiddleware(newValibotValidator(pathMap));
+    const { req: reqValidator } = newValibotValidator(pathMap);
+    const middleware = validatorMiddleware(reqValidator);
     const next = vi.fn();
 
     describe("request to endpoint which is defined in ApiSpec", () => {

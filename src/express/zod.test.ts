@@ -51,7 +51,7 @@ describe("validatorMiddleware", () => {
       },
     },
   } satisfies ZodApiEndpoints;
-  const { request: reqValidator } = newZodValidator(pathMap);
+  const { req: reqValidator } = newZodValidator(pathMap);
   const middleware = validatorMiddleware(reqValidator);
   const next = vi.fn();
 
@@ -303,7 +303,8 @@ describe("typed", () => {
 
     {
       const res = await request(app).post("/users").send({ name: "alice" });
-      // expect(res.status).toBe(200);
+      console.log(res.body);
+      expect(res.status).toBe(200);
       expect(res.body).toEqual({ id: "1", name: "alice" });
     }
 

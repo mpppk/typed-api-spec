@@ -111,7 +111,10 @@ const newResponseErrorHandler = (policy: "throw" | "log") => {
 
 export const withValidation = <
   Fetch extends typeof fetch,
-  Validators extends (input: ValidatorsInput) => AnyValidators,
+  Validators extends (input: ValidatorsInput) => {
+    validator: AnyValidators;
+    error: unknown;
+  },
   ResponseValidators extends (input: ResponseValidatorsInput) => {
     validator: AnyResponseValidators;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -132,8 +135,8 @@ export const withValidation = <
     const [input, init] = args;
     const vInput = toInputWithMatcher(input, init);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const validators = validatorGenerator(vInput);
-    handleError(runValidators(validators));
+    const { validator, error } = validatorGenerator(vInput);
+    handleError(runValidators(validator, error));
     const res = await f(input, init);
     const res1 = res.clone();
     // TODO: jsonじゃない時どうするか

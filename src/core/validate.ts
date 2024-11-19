@@ -1,5 +1,5 @@
 import { Result } from "../utils";
-import { AnyApiEndpoint, AnyApiEndpoints, Method } from "./spec";
+import { AnyApiEndpoint, AnyApiEndpoints, isMethod, Method } from "./spec";
 import { ParsedQs } from "qs";
 
 export type Validators<
@@ -25,9 +25,10 @@ export type ValidatorsMap = {
   [Path in string]: Partial<Record<Method, AnyValidators>>;
 };
 
-export const runValidators = (validators: AnyValidators) => {
+export const runValidators = (validators: AnyValidators, error: unknown) => {
   const newD = () => Result.data(undefined);
   return {
+    preCheck: error,
     params: validators.params?.() ?? newD(),
     query: validators.query?.() ?? newD(),
     body: validators.body?.() ?? newD(),
@@ -141,6 +142,18 @@ export const getApiSpec = <
 ) => {
   const r = validatePathAndMethod(endpoints, maybePath, maybeMethod);
   return Result.map(r, (d) => endpoints[d.path][d.method]);
+};
+
+export const preCheck = <E extends AnyApiEndpoints>(
+  endpoints: E,
+  path: string,
+  maybeMethod: string,
+) => {
+  const method = maybeMethod?.toLowerCase();
+  if (!isMethod(method)) {
+    return Result.error(newValidatorMethodNotFoundError(method));
+  }
+  return getApiSpec(endpoints, path, method);
 };
 
 export type ValidatorError =

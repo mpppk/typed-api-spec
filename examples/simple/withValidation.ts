@@ -24,8 +24,7 @@ const spec2 = {
 const main = async () => {
   {
     // const fetchT = fetch as FetchT<typeof GITHUB_API_ORIGIN, Spec>;
-    const { request: reqValidator, response: resValidator } =
-      newZodValidator(spec);
+    const { req: reqValidator, res: resValidator } = newZodValidator(spec);
     const fetchWithV = withValidation(fetch, spec, reqValidator, resValidator);
     const response = await fetchWithV(
       `${GITHUB_API_ORIGIN}/repos/mpppk/typed-api-spec/topics?page=1`,
@@ -41,8 +40,7 @@ const main = async () => {
 
   {
     // const fetchT = fetch as FetchT<typeof GITHUB_API_ORIGIN, Spec>;
-    const { request: reqValidator, response: resValidator } =
-      newZodValidator(spec2);
+    const { req: reqValidator, res: resValidator } = newZodValidator(spec2);
     const fetchWithV = withValidation(fetch, spec2, reqValidator, resValidator);
     try {
       await fetchWithV(
