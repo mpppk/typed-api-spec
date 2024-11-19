@@ -1,5 +1,5 @@
 {
-  "name": "@nota/typed-api-spec",
+  "name": "@notainc/typed-api-spec",
   "version": "0.1.0",
   "scripts": {
     "build": "tsup ./src",
@@ -18,7 +18,7 @@
     "example:withValidation": "tsx examples/simple/withValidation.ts"
   },
   "author": "mpppk",
-  "license": "ISC",
+  "license": "MIT",
   "devDependencies": {
     "@types/path-to-regexp": "^1.7.0",
     "@types/qs": "^6.9.15",
