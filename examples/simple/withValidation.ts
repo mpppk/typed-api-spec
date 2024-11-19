@@ -27,7 +27,7 @@ const main = async () => {
     const { req: reqValidator, res: resValidator } = newZodValidator(spec);
     const fetchWithV = withValidation(fetch, spec, reqValidator, resValidator);
     const response = await fetchWithV(
-      `${GITHUB_API_ORIGIN}/repos/mpppk/typed-api-spec/topics?page=1`,
+      `${GITHUB_API_ORIGIN}/repos/nota/typed-api-spec/topics?page=1`,
       { headers: { Accept: "application/vnd.github+json" } },
     );
     if (!response.ok) {
@@ -44,7 +44,7 @@ const main = async () => {
     const fetchWithV = withValidation(fetch, spec2, reqValidator, resValidator);
     try {
       await fetchWithV(
-        `${GITHUB_API_ORIGIN}/repos/mpppk/typed-api-spec/topics?page=1`,
+        `${GITHUB_API_ORIGIN}/repos/nota/typed-api-spec/topics?page=1`,
         { headers: { Accept: "application/vnd.github+json" } },
       );
     } catch (e: unknown) {

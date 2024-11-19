@@ -16,7 +16,7 @@ const config: Config = {
 
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
-  organizationName: "mpppk", // Usually your GitHub org/user name.
+  organizationName: "nota", // Usually your GitHub org/user name.
   projectName: "typed-api-spec", // Usually your repo name.
 
   onBrokenLinks: "throw",
@@ -64,7 +64,7 @@ const config: Config = {
           items: [
             {
               label: "GitHub",
-              href: "https://github.com/mpppk/typed-api-spec",
+              href: "https://github.com/nota/typed-api-spec",
             },
           ],
         },
