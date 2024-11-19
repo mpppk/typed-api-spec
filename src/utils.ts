@@ -41,5 +41,23 @@ export const Result = {
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const isEmptyObject = (obj: Record<any, unknown>): boolean =>
-  Object.keys(obj).length === 0;
+export const memoize = <T extends (...args: any[]) => any>(fn: T): T => {
+  const cache: Record<string, ReturnType<T>> = {};
+  return ((...args: Parameters<T>) => {
+    const key = JSON.stringify(args);
+    if (cache[key] === undefined) {
+      cache[key] = fn(...args);
+    }
+    return cache[key];
+  }) as T;
+};
+
+export function tupleIteratorToObject<T extends string | number | symbol, U>(
+  iterator: Iterable<[T, U]>,
+): Record<T, U> {
+  const result = {} as Record<T, U>;
+  for (const [key, value] of iterator) {
+    result[key] = value;
+  }
+  return result;
+}

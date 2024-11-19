@@ -1,5 +1,5 @@
 import { Result } from "../utils";
-import { AnyApiEndpoint, AnyApiEndpoints, Method } from "./spec";
+import { AnyApiEndpoint, AnyApiEndpoints, isMethod, Method } from "./spec";
 import { ParsedQs } from "qs";
 
 export type Validators<
@@ -25,6 +25,42 @@ export type ValidatorsMap = {
   [Path in string]: Partial<Record<Method, AnyValidators>>;
 };
 
+export const runValidators = (validators: AnyValidators, error: unknown) => {
+  const newD = () => Result.data(undefined);
+  return {
+    preCheck: error,
+    params: validators.params?.() ?? newD(),
+    query: validators.query?.() ?? newD(),
+    body: validators.body?.() ?? newD(),
+    headers: validators.headers?.() ?? newD(),
+  };
+};
+
+export type ResponseValidators<
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  BodyValidator extends AnyValidator | undefined,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  HeadersValidator extends AnyValidator | undefined,
+> = {
+  body: BodyValidator;
+  headers: HeadersValidator;
+};
+export type AnyResponseValidators = Partial<
+  ResponseValidators<AnyValidator, AnyValidator>
+>;
+export const runResponseValidators = (validators: {
+  validator: AnyResponseValidators;
+  error: unknown;
+}) => {
+  const newD = () => Result.data(undefined);
+  return {
+    // TODO: スキーマが間違っていても、bodyのvalidatorがなぜか定義されていない
+    preCheck: validators.error,
+    body: validators.validator.body?.() ?? newD(),
+    headers: validators.validator.headers?.() ?? newD(),
+  };
+};
+
 export type Validator<Data, Error> = () => Result<Data, Error>;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type AnyValidator = Validator<any, any>;
@@ -32,10 +68,17 @@ export type AnyValidator = Validator<any, any>;
 export type ValidatorsInput = {
   path: string;
   method: string;
-  params?: Record<string, string>;
+  params: Record<string, string | string[]>;
   query?: ParsedQs;
   body?: Record<string, string>;
   headers: Record<string, string | string[] | undefined>;
+};
+export type ResponseValidatorsInput = {
+  path: string;
+  method: string;
+  statusCode: number;
+  body?: unknown;
+  headers: Headers;
 };
 
 type ValidationError = {
@@ -100,3 +143,36 @@ export const getApiSpec = <
   const r = validatePathAndMethod(endpoints, maybePath, maybeMethod);
   return Result.map(r, (d) => endpoints[d.path][d.method]);
 };
+
+export const preCheck = <E extends AnyApiEndpoints>(
+  endpoints: E,
+  path: string,
+  maybeMethod: string,
+) => {
+  const method = maybeMethod?.toLowerCase();
+  if (!isMethod(method)) {
+    return Result.error(newValidatorMethodNotFoundError(method));
+  }
+  return getApiSpec(endpoints, path, method);
+};
+
+export type ValidatorError =
+  | ValidatorMethodNotFoundError
+  | ValidatorPathNotFoundError;
+
+export const newValidatorMethodNotFoundError = (method: string) => ({
+  target: "method",
+  actual: method,
+  message: `method does not exist in endpoint`,
+});
+type ValidatorMethodNotFoundError = ReturnType<
+  typeof newValidatorMethodNotFoundError
+>;
+export const newValidatorPathNotFoundError = (path: string) => ({
+  target: "path",
+  actual: path,
+  message: `path does not exist in endpoints`,
+});
+type ValidatorPathNotFoundError = ReturnType<
+  typeof newValidatorPathNotFoundError
+>;

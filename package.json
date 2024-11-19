@@ -14,11 +14,13 @@
     "example:express-zod": "tsx examples/express/zod/express.ts",
     "example:express-zod-fetch": "tsx examples/express/zod/fetch.ts",
     "example:fasitify-zod": "tsx examples/fastify/zod/fastify.ts",
-    "example:fasitify-zod-fetch": "tsx examples/fastify/zod/fetch.ts"
+    "example:fasitify-zod-fetch": "tsx examples/fastify/zod/fetch.ts",
+    "example:withValidation": "tsx examples/simple/withValidation.ts"
   },
   "author": "mpppk",
   "license": "ISC",
   "devDependencies": {
+    "@types/path-to-regexp": "^1.7.0",
     "@types/qs": "^6.9.15",
     "@types/supertest": "^6.0.2",
     "@typescript-eslint/eslint-plugin": "^7.0.0",
@@ -116,5 +118,8 @@
   },
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
-  "types": "./dist/index.d.ts"
+  "types": "./dist/index.d.ts",
+  "dependencies": {
+    "path-to-regexp": "^8.2.0"
+  }
 }

@@ -4,12 +4,12 @@ import {
   BaseApiSpec,
   DefineApiResponses,
   DefineResponse,
-  isMethod,
   Method,
   StatusCode,
 } from "../core";
 import {
-  getApiSpec,
+  preCheck,
+  ResponseValidatorsInput,
   Validator,
   Validators,
   ValidatorsInput,
@@ -91,21 +91,20 @@ export type ValibotApiResSchema<
 export const newValibotValidator = <E extends ValibotApiEndpoints>(
   endpoints: E,
 ) => {
-  return <Path extends keyof E & string, M extends keyof E[Path] & Method>(
+  const req = <
+    Path extends keyof E & string,
+    M extends keyof E[Path] & Method,
+    Validator extends E[Path][M] extends ValibotApiSpec
+      ? ValibotValidators<E[Path][M], "">
+      : Record<string, never>,
+  >(
     input: ValidatorsInput,
   ) => {
-    const method = input.method?.toLowerCase();
-    if (!isMethod(method)) {
-      return {} as E[Path][M] extends ValibotApiSpec
-        ? ValibotValidators<E[Path][M], "">
-        : Record<string, never>;
+    const r = preCheck(endpoints, input.path, input.method);
+    if (r.error) {
+      return { validator: {} as Validator, error: r.error };
     }
-    const { data: spec, error } = getApiSpec(endpoints, input.path, method);
-    if (error !== undefined) {
-      return {} as E[Path][M] extends ValibotApiSpec
-        ? ValibotValidators<E[Path][M], "">
-        : Record<string, never>;
-    }
+    const spec = r.data;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const zodValidators: Record<string, any> = {};
     const s = spec as Partial<ValibotApiSpec>;
@@ -127,10 +126,40 @@ export const newValibotValidator = <E extends ValibotApiEndpoints>(
       zodValidators["headers"] = () =>
         toResult(v.safeParse(headers, input.headers));
     }
-    return zodValidators as E[Path][M] extends ValibotApiSpec
-      ? ValibotValidators<E[Path][M], "">
-      : Record<string, never>;
+    return { validator: zodValidators as Validator, error: null };
   };
+  const res = <
+    Path extends keyof E & string,
+    M extends keyof E[Path] & Method,
+    Validator extends E[Path][M] extends ValibotApiSpec
+      ? ValibotValidators<E[Path][M], "">
+      : Record<string, never>,
+  >(
+    input: ResponseValidatorsInput,
+  ) => {
+    const r = preCheck(endpoints, input.path, input.method);
+    if (r.error) {
+      return { validator: {} as Validator, error: r.error };
+    }
+    const spec = r.data;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const zodValidators: Record<string, any> = {};
+    const resBody = spec?.responses?.[input.statusCode as StatusCode]?.body;
+    if (resBody !== undefined) {
+      zodValidators["body"] = () => toResult(v.safeParse(resBody, input.body));
+    }
+    const resHeaders =
+      spec?.responses?.[input.statusCode as StatusCode]?.headers;
+    if (resHeaders !== undefined) {
+      zodValidators["headers"] = () =>
+        toResult(v.safeParse(resHeaders, input.headers));
+    }
+    return {
+      validator: zodValidators as Validator,
+      error: null,
+    };
+  };
+  return { req, res };
 };
 
 const toResult = <T extends BaseSchema<unknown, unknown, BaseIssue<unknown>>>(

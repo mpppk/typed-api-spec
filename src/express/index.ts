@@ -92,13 +92,16 @@ export type RouterT<
 };
 
 export const validatorMiddleware = <
-  V extends (input: ValidatorsInput) => AnyValidators,
+  V extends (input: ValidatorsInput) => {
+    validator: AnyValidators;
+    error: unknown;
+  },
 >(
   validator: V,
 ) => {
   return (_req: Request, res: Response, next: NextFunction) => {
     res.locals.validate = (req: Request) => {
-      return validator({
+      const { validator: v2 } = validator({
         path: req.route?.path?.toString(),
         method: req.method,
         headers: req.headers,
@@ -106,6 +109,7 @@ export const validatorMiddleware = <
         query: req.query,
         body: req.body,
       });
+      return v2;
     };
     next();
   };
