@@ -38,6 +38,10 @@ type AsJsonApiEndpoint<AE extends ApiEndpoint> = {
 export type ApiEndpoints = { [Path in string]: ApiEndpoint };
 export type AnyApiEndpoints = { [Path in string]: AnyApiEndpoint };
 
+export type UnknownApiEndpoints = {
+  [Path in string]: Partial<Record<Method, UnknownApiSpec>>;
+};
+
 export interface BaseApiSpec<
   Params,
   Query,
@@ -66,6 +70,13 @@ export type ApiSpec<
 > = BaseApiSpec<Params, Query, Body, RequestHeaders, Responses>;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type AnyApiSpec = BaseApiSpec<any, any, any, any, any>;
+export type UnknownApiSpec = BaseApiSpec<
+  unknown,
+  unknown,
+  unknown,
+  unknown,
+  DefineApiResponses<DefineResponse<unknown, unknown>>
+>;
 
 type JsonHeader = {
   "Content-Type": "application/json";

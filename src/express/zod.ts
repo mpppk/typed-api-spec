@@ -63,6 +63,7 @@ export const typed = <const Endpoints extends ZodApiEndpoints>(
   pathMap: Endpoints,
   router: Router,
 ): RouterT<ToApiEndpoints<Endpoints>, ToValidatorsMap<Endpoints>> => {
-  router.use(validatorMiddleware(newZodValidator(pathMap)));
+  const { request: reqValidator } = newZodValidator(pathMap);
+  router.use(validatorMiddleware(reqValidator));
   return router;
 };

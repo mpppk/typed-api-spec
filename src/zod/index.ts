@@ -9,6 +9,8 @@ import {
 } from "../core";
 import {
   getApiSpec,
+  newValidatorMethodNotFoundError,
+  ResponseValidatorsInput,
   Validator,
   Validators,
   ValidatorsInput,
@@ -87,7 +89,10 @@ export type ToApiResponses<AR extends ZodAnyApiResponses> = {
  * @param endpoints API endpoints
  */
 export const newZodValidator = <E extends ZodApiEndpoints>(endpoints: E) => {
-  return <Path extends keyof E & string, M extends keyof E[Path] & Method>(
+  const request = <
+    Path extends keyof E & string,
+    M extends keyof E[Path] & Method,
+  >(
     input: ValidatorsInput,
   ) => {
     const method = input.method?.toLowerCase();
@@ -126,6 +131,54 @@ export const newZodValidator = <E extends ZodApiEndpoints>(endpoints: E) => {
       ? ZodValidators<E[Path][M], "">
       : Record<string, never>;
   };
+  const response = <
+    Path extends keyof E & string,
+    M extends keyof E[Path] & Method,
+  >(
+    input: ResponseValidatorsInput,
+  ) => {
+    const method = input.method?.toLowerCase();
+    if (!isMethod(method)) {
+      // TODO: ここでなぜエラーになったのかランタイムエラーを返したい
+      return {
+        validator: {} as E[Path][M] extends ZodApiSpec
+          ? ZodValidators<E[Path][M], "">
+          : Record<string, never>,
+        error: newValidatorMethodNotFoundError(method),
+      };
+    }
+    const { data: spec, error } = getApiSpec(endpoints, input.path, method);
+    if (error !== undefined) {
+      // TODO: ここでなぜエラーになったのかランタイムエラーを返したい
+      console.log("response validator error found");
+      return {
+        validator: {} as E[Path][M] extends ZodApiSpec
+          ? ZodValidators<E[Path][M], "">
+          : Record<string, never>,
+        error,
+      };
+    }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const zodValidators: Record<string, any> = {};
+    const resBody = spec?.responses?.[input.statusCode as StatusCode]?.body;
+    if (resBody !== undefined) {
+      zodValidators["body"] = () => toResult(resBody.safeParse(input.body));
+    }
+    const resHeaders =
+      spec?.responses?.[input.statusCode as StatusCode]?.headers;
+    if (resHeaders !== undefined) {
+      // const headers = s.headers;
+      zodValidators["headers"] = () =>
+        toResult(resHeaders.safeParse(input.headers));
+    }
+    return {
+      validator: zodValidators as E[Path][M] extends ZodApiSpec
+        ? ZodValidators<E[Path][M], "">
+        : Record<string, never>,
+      error: null,
+    };
+  };
+  return { request, response };
 };
 
 const toResult = <T, U>(
