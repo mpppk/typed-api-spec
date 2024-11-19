@@ -18,7 +18,7 @@ type ValidateUrlTestCase = [
   >,
   Expect<
     Equal<
-      ValidateUrl<{ a: string }, `/repos/mpppk/typed-api-spec/topics`>,
+      ValidateUrl<{ a: string }, `/repos/nota/typed-api-spec/topics`>,
       C.E<"query parameter required">
     >
   >,

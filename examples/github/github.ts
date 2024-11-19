@@ -40,7 +40,7 @@ const fetchT = fetch as FetchT<typeof GITHUB_API_ORIGIN, Spec>;
 
 const main = async () => {
   const response = await fetchT(
-    `${GITHUB_API_ORIGIN}/repos/mpppk/typed-api-spec/topics?page=1`,
+    `${GITHUB_API_ORIGIN}/repos/nota/typed-api-spec/topics?page=1`,
     { headers: { Accept: "application/vnd.github+json" } },
   );
   if (!response.ok) {
