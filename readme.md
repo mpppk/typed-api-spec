@@ -2,7 +2,7 @@
 
 typed-api-spec is an TypeScript based declarative API specification.
 
-Doc: https://mpppk.github.io/typed-api-spec
+Doc: https://nota.github.io/typed-api-spec
 
 ## features
 
