@@ -1,5 +1,12 @@
 import { Result } from "../utils";
-import { AnyApiEndpoint, AnyApiEndpoints, isMethod, Method } from "./spec";
+import {
+  AnyApiEndpoint,
+  AnyApiEndpoints,
+  AnyApiSpec,
+  apiSpecRequestKeys,
+  isMethod,
+  Method,
+} from "./spec";
 import { ParsedQs } from "qs";
 
 export type Validators<
@@ -161,18 +168,24 @@ export type ValidatorError =
   | ValidatorPathNotFoundError;
 
 export const newValidatorMethodNotFoundError = (method: string) => ({
-  target: "method",
+  target: "method" as const,
   actual: method,
-  message: `method does not exist in endpoint`,
+  message: `method does not exist in endpoint` as const,
 });
 type ValidatorMethodNotFoundError = ReturnType<
   typeof newValidatorMethodNotFoundError
 >;
 export const newValidatorPathNotFoundError = (path: string) => ({
-  target: "path",
+  target: "path" as const,
   actual: path,
-  message: `path does not exist in endpoints`,
+  message: `path does not exist in endpoints` as const,
 });
 type ValidatorPathNotFoundError = ReturnType<
   typeof newValidatorPathNotFoundError
 >;
+
+export const listDefinedRequestApiSpecKeys = <Spec extends AnyApiSpec>(
+  spec: Spec,
+): (typeof apiSpecRequestKeys)[number][] => {
+  return apiSpecRequestKeys.filter((key) => spec[key] !== undefined);
+};

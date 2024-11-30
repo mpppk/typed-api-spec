@@ -42,6 +42,17 @@ export type UnknownApiEndpoints = {
   [Path in string]: Partial<Record<Method, UnknownApiSpec>>;
 };
 
+export const apiSpecRequestKeys = Object.freeze([
+  "query",
+  "params",
+  "body",
+  "headers",
+] as const);
+export const apiSpecResponseKeys = Object.freeze(["body", "headers"] as const);
+export const apiSpecKeys = Object.freeze([
+  ...apiSpecRequestKeys,
+  "responses",
+] as const);
 export interface BaseApiSpec<
   Params,
   Query,

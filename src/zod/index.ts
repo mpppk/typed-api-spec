@@ -7,6 +7,7 @@ import {
   StatusCode,
 } from "../core";
 import {
+  listDefinedRequestApiSpecKeys,
   preCheck,
   ResponseValidatorsInput,
   Validator,
@@ -97,30 +98,14 @@ export const newZodValidator = <E extends ZodApiEndpoints>(endpoints: E) => {
     input: ValidatorsInput,
   ) => {
     const r = preCheck(endpoints, input.path, input.method);
-    if (r.error) {
+    if (r.error !== undefined) {
       return { validator: {} as Validator, error: r.error };
     }
-    const spec = r.data;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const zodValidators: Record<string, any> = {};
-    const s = spec as Partial<ZodApiSpec>;
-    if (s.params !== undefined) {
-      const params = s.params;
-      zodValidators["params"] = () => toResult(params.safeParse(input.params));
-    }
-    if (s.query !== undefined) {
-      const query = s.query;
-      zodValidators["query"] = () => toResult(query.safeParse(input.query));
-    }
-    if (s.body !== undefined) {
-      const body = s.body;
-      zodValidators["body"] = () => toResult(body.safeParse(input.body));
-    }
-    if (s.headers !== undefined) {
-      const headers = s.headers;
-      zodValidators["headers"] = () =>
-        toResult(headers.safeParse(input.headers));
-    }
+    const zodValidators: Record<string, unknown> = {};
+    const spec = r.data as ZodApiSpec;
+    listDefinedRequestApiSpecKeys(spec).forEach((key) => {
+      zodValidators[key] = () => toResult(spec[key]!.safeParse(input[key]));
+    });
     return { validator: zodValidators as Validator, error: null };
   };
   const res = <
