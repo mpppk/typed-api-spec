@@ -106,27 +106,26 @@ export const newValibotValidator = <E extends ValibotApiEndpoints>(
     }
     const spec = r.data;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const zodValidators: Record<string, any> = {};
+    const validators: Record<string, any> = {};
     const s = spec as Partial<ValibotApiSpec>;
     if (s.params !== undefined) {
       const params = s.params;
-      zodValidators["params"] = () =>
-        toResult(v.safeParse(params, input.params));
+      validators["params"] = () => toResult(v.safeParse(params, input.params));
     }
     if (s.query !== undefined) {
       const query = s.query;
-      zodValidators["query"] = () => toResult(v.safeParse(query, input.query));
+      validators["query"] = () => toResult(v.safeParse(query, input.query));
     }
     if (s.body !== undefined) {
       const body = s.body;
-      zodValidators["body"] = () => toResult(v.safeParse(body, input.body));
+      validators["body"] = () => toResult(v.safeParse(body, input.body));
     }
     if (s.headers !== undefined) {
       const headers = s.headers;
-      zodValidators["headers"] = () =>
+      validators["headers"] = () =>
         toResult(v.safeParse(headers, input.headers));
     }
-    return { validator: zodValidators as Validator, error: null };
+    return { validator: validators as Validator, error: null };
   };
   const res = <
     Path extends keyof E & string,
@@ -143,19 +142,19 @@ export const newValibotValidator = <E extends ValibotApiEndpoints>(
     }
     const spec = r.data;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const zodValidators: Record<string, any> = {};
+    const validator: Record<string, any> = {};
     const resBody = spec?.responses?.[input.statusCode as StatusCode]?.body;
     if (resBody !== undefined) {
-      zodValidators["body"] = () => toResult(v.safeParse(resBody, input.body));
+      validator["body"] = () => toResult(v.safeParse(resBody, input.body));
     }
     const resHeaders =
       spec?.responses?.[input.statusCode as StatusCode]?.headers;
     if (resHeaders !== undefined) {
-      zodValidators["headers"] = () =>
+      validator["headers"] = () =>
         toResult(v.safeParse(resHeaders, input.headers));
     }
     return {
-      validator: zodValidators as Validator,
+      validator: validator as Validator,
       error: null,
     };
   };
