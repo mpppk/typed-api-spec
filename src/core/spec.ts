@@ -48,6 +48,7 @@ export const apiSpecRequestKeys = Object.freeze([
   "body",
   "headers",
 ] as const);
+export type ApiSpecRequestKey = (typeof apiSpecRequestKeys)[number];
 export const apiSpecResponseKeys = Object.freeze(["body", "headers"] as const);
 export const apiSpecKeys = Object.freeze([
   ...apiSpecRequestKeys,

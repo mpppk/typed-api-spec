@@ -7,12 +7,12 @@ import {
   StatusCode,
 } from "../core";
 import {
+  createRequestValidator,
   listDefinedRequestApiSpecKeys,
   preCheck,
   ResponseValidatorsInput,
   Validator,
   Validators,
-  ValidatorsInput,
 } from "../core/validate";
 import { Result } from "../utils";
 
@@ -88,26 +88,18 @@ export type ToApiResponses<AR extends ZodAnyApiResponses> = {
  * @param endpoints API endpoints
  */
 export const newZodValidator = <E extends ZodApiEndpoints>(endpoints: E) => {
-  const req = <
-    Path extends keyof E & string,
-    M extends keyof E[Path] & Method,
-    Validator extends E[Path][M] extends ZodApiSpec
-      ? ZodValidators<E[Path][M], "">
-      : Record<string, never>,
-  >(
-    input: ValidatorsInput,
-  ) => {
-    const r = preCheck(endpoints, input.path, input.method);
-    if (r.error !== undefined) {
-      return { validator: {} as Validator, error: r.error };
-    }
-    const zodValidators: Record<string, unknown> = {};
-    const spec = r.data as ZodApiSpec;
-    listDefinedRequestApiSpecKeys(spec).forEach((key) => {
-      zodValidators[key] = () => toResult(spec[key]!.safeParse(input[key]));
-    });
-    return { validator: zodValidators as Validator, error: null };
-  };
+  const req = createRequestValidator<typeof endpoints>(
+    endpoints,
+    (spec, input) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const zodValidators: Record<string, any> = {};
+      listDefinedRequestApiSpecKeys(spec).forEach((key) => {
+        zodValidators[key] = () =>
+          toResult((spec as ZodApiSpec)[key]!.safeParse(input[key]));
+      });
+      return zodValidators;
+    },
+  );
   const res = <
     Path extends keyof E & string,
     M extends keyof E[Path] & Method,

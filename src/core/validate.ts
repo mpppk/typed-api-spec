@@ -3,11 +3,13 @@ import {
   AnyApiEndpoint,
   AnyApiEndpoints,
   AnyApiSpec,
+  ApiSpecRequestKey,
   apiSpecRequestKeys,
   isMethod,
   Method,
 } from "./spec";
 import { ParsedQs } from "qs";
+import { ZodApiSpec, ZodValidators } from "../zod";
 
 export type Validators<
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -186,6 +188,32 @@ type ValidatorPathNotFoundError = ReturnType<
 
 export const listDefinedRequestApiSpecKeys = <Spec extends AnyApiSpec>(
   spec: Spec,
-): (typeof apiSpecRequestKeys)[number][] => {
+): ApiSpecRequestKey[] => {
   return apiSpecRequestKeys.filter((key) => spec[key] !== undefined);
+};
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const createRequestValidator = <E extends AnyApiEndpoints>(
+  endpoints: E,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  specValidatorGenerator: (spec: AnyApiSpec, input: ValidatorsInput) => any,
+) => {
+  return <
+    Path extends keyof E & string,
+    M extends keyof E[Path] & Method,
+    Validator extends E[Path][M] extends ZodApiSpec
+      ? ZodValidators<E[Path][M], "">
+      : Record<string, never>,
+  >(
+    input: ValidatorsInput,
+  ) => {
+    const r = preCheck(endpoints, input.path, input.method);
+    if (r.error !== undefined) {
+      return { validator: {} as Validator, error: r.error };
+    }
+    return {
+      validator: specValidatorGenerator(r.data!, input) as Validator,
+      error: null,
+    };
+  };
 };
