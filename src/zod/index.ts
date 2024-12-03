@@ -8,9 +8,9 @@ import {
 } from "../core";
 import {
   createRequestValidator,
+  createResponseValidator,
   listDefinedRequestApiSpecKeys,
-  preCheck,
-  ResponseValidatorsInput,
+  listDefinedResponseApiSpecKeys,
   Validator,
   Validators,
 } from "../core/validate";
@@ -100,38 +100,19 @@ export const newZodValidator = <E extends ZodApiEndpoints>(endpoints: E) => {
       return zodValidators;
     },
   );
-  const res = <
-    Path extends keyof E & string,
-    M extends keyof E[Path] & Method,
-    Validator extends E[Path][M] extends ZodApiSpec
-      ? ZodValidators<E[Path][M], "">
-      : Record<string, never>,
-  >(
-    input: ResponseValidatorsInput,
-  ) => {
-    const r = preCheck(endpoints, input.path, input.method);
-    if (r.error) {
-      return { validator: {} as Validator, error: r.error };
-    }
-    const spec = r.data;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const zodValidators: Record<string, any> = {};
-    const resBody = spec?.responses?.[input.statusCode as StatusCode]?.body;
-    if (resBody !== undefined) {
-      zodValidators["body"] = () => toResult(resBody.safeParse(input.body));
-    }
-    const resHeaders =
-      spec?.responses?.[input.statusCode as StatusCode]?.headers;
-    if (resHeaders !== undefined) {
-      // const headers = s.headers;
-      zodValidators["headers"] = () =>
-        toResult(resHeaders.safeParse(input.headers));
-    }
-    return {
-      validator: zodValidators as Validator,
-      error: null,
-    };
-  };
+  const res = createResponseValidator<typeof endpoints>(
+    endpoints,
+    (spec, input) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const zodValidators: Record<string, any> = {};
+      const response = spec?.responses?.[input.statusCode as StatusCode] ?? {};
+      listDefinedResponseApiSpecKeys(response).forEach((key) => {
+        zodValidators[key] = () =>
+          toResult((spec as ZodApiSpec)[key]!.safeParse(input[key]));
+      });
+      return zodValidators;
+    },
+  );
   return { req, res };
 };
 
