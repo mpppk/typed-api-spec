@@ -12,7 +12,8 @@ import {
   Method,
 } from "./spec";
 import { ParsedQs } from "qs";
-import { ZodApiSpec, ZodValidators } from "../zod";
+import { ZodApiEndpoints, ZodApiSpec, ZodValidators } from "../zod";
+import { StatusCode } from "./hono-types";
 
 export type Validators<
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -90,7 +91,7 @@ export type ResponseValidatorsInput = {
   method: string;
   statusCode: number;
   body?: unknown;
-  headers: Headers;
+  headers: Record<string, string | string[] | undefined>;
 };
 
 type ValidationError = {
@@ -201,10 +202,15 @@ export const listDefinedResponseApiSpecKeys = <Response extends AnyResponse>(
   return apiSpecResponseKeys.filter((key) => res[key] !== undefined);
 };
 
+type RequestValidatorGenerator = (
+  spec: AnyApiSpec,
+  input: ValidatorsInput,
+  key: ApiSpecRequestKey,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+) => any;
 export const createRequestValidator = <E extends AnyApiEndpoints>(
   endpoints: E,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  specValidatorGenerator: (spec: AnyApiSpec, input: ValidatorsInput) => any,
+  specValidatorGenerator: RequestValidatorGenerator,
 ) => {
   return <
     Path extends keyof E & string,
@@ -219,20 +225,25 @@ export const createRequestValidator = <E extends AnyApiEndpoints>(
     if (r.error !== undefined) {
       return { validator: {} as Validator, error: r.error };
     }
-    return {
-      validator: specValidatorGenerator(r.data!, input) as Validator,
-      error: null,
-    };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const validator: Record<string, any> = {};
+    const spec = r.data! as AnyApiSpec;
+    listDefinedRequestApiSpecKeys(spec).forEach((key) => {
+      validator[key] = () => specValidatorGenerator(spec, input, key);
+    });
+    return { validator, error: null };
   };
 };
 
+type ResponseValidatorGenerator = (
+  spec: AnyApiSpec,
+  input: ResponseValidatorsInput,
+  key: ApiSpecResponseKey,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+) => any;
 export const createResponseValidator = <E extends AnyApiEndpoints>(
   endpoints: E,
-  specValidatorGenerator: (
-    spec: AnyApiSpec,
-    input: ResponseValidatorsInput,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ) => any,
+  resValidatorGenerator: ResponseValidatorGenerator,
 ) => {
   return <
     Path extends keyof E & string,
@@ -247,9 +258,23 @@ export const createResponseValidator = <E extends AnyApiEndpoints>(
     if (r.error !== undefined) {
       return { validator: {} as Validator, error: r.error };
     }
-    return {
-      validator: specValidatorGenerator(r.data!, input) as Validator,
-      error: null,
-    };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const validator: Record<string, any> = {};
+    const spec = r.data! as AnyApiSpec;
+    const response = spec?.responses?.[input.statusCode as StatusCode] ?? {};
+    listDefinedResponseApiSpecKeys(response).forEach((key) => {
+      validator[key] = () => resValidatorGenerator(spec, input, key);
+    });
+    return { validator, error: null };
   };
+};
+
+export const createValidator = <E extends ZodApiEndpoints>(
+  endpoints: E,
+  reqV: RequestValidatorGenerator,
+  resV: ResponseValidatorGenerator,
+) => {
+  const req = createRequestValidator<typeof endpoints>(endpoints, reqV);
+  const res = createResponseValidator<typeof endpoints>(endpoints, resV);
+  return { req, res };
 };

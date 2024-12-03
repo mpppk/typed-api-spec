@@ -6,14 +6,7 @@ import {
   Method,
   StatusCode,
 } from "../core";
-import {
-  createRequestValidator,
-  createResponseValidator,
-  listDefinedRequestApiSpecKeys,
-  listDefinedResponseApiSpecKeys,
-  Validator,
-  Validators,
-} from "../core/validate";
+import { createValidator, Validator, Validators } from "../core/validate";
 import { Result } from "../utils";
 
 export const anyZ = <T>() => z.any() as ZodType<T>;
@@ -88,32 +81,16 @@ export type ToApiResponses<AR extends ZodAnyApiResponses> = {
  * @param endpoints API endpoints
  */
 export const newZodValidator = <E extends ZodApiEndpoints>(endpoints: E) => {
-  const req = createRequestValidator<typeof endpoints>(
+  return createValidator(
     endpoints,
-    (spec, input) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const zodValidators: Record<string, any> = {};
-      listDefinedRequestApiSpecKeys(spec).forEach((key) => {
-        zodValidators[key] = () =>
-          toResult((spec as ZodApiSpec)[key]!.safeParse(input[key]));
-      });
-      return zodValidators;
+    (spec: ZodApiSpec, input, key) =>
+      toResult(spec[key]!.safeParse(input[key])),
+    (spec: ZodApiSpec, input, key) => {
+      const schema = spec["responses"][input.statusCode as StatusCode]?.[key];
+      // FIXME: schemaがundefinedの場合の処理
+      return toResult(schema!.safeParse(input[key]));
     },
   );
-  const res = createResponseValidator<typeof endpoints>(
-    endpoints,
-    (spec, input) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const zodValidators: Record<string, any> = {};
-      const response = spec?.responses?.[input.statusCode as StatusCode] ?? {};
-      listDefinedResponseApiSpecKeys(response).forEach((key) => {
-        zodValidators[key] = () =>
-          toResult((spec as ZodApiSpec)[key]!.safeParse(input[key]));
-      });
-      return zodValidators;
-    },
-  );
-  return { req, res };
 };
 
 const toResult = <T, U>(
