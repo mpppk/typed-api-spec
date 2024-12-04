@@ -6,13 +6,7 @@ import {
   Method,
   StatusCode,
 } from "../core";
-import {
-  preCheck,
-  ResponseValidatorsInput,
-  Validator,
-  Validators,
-  ValidatorsInput,
-} from "../core/validate";
+import { createValidator, Validator, Validators } from "../core/validate";
 import { Result } from "../utils";
 
 export const anyZ = <T>() => z.any() as ZodType<T>;
@@ -87,75 +81,16 @@ export type ToApiResponses<AR extends ZodAnyApiResponses> = {
  * @param endpoints API endpoints
  */
 export const newZodValidator = <E extends ZodApiEndpoints>(endpoints: E) => {
-  const req = <
-    Path extends keyof E & string,
-    M extends keyof E[Path] & Method,
-    Validator extends E[Path][M] extends ZodApiSpec
-      ? ZodValidators<E[Path][M], "">
-      : Record<string, never>,
-  >(
-    input: ValidatorsInput,
-  ) => {
-    const r = preCheck(endpoints, input.path, input.method);
-    if (r.error) {
-      return { validator: {} as Validator, error: r.error };
-    }
-    const spec = r.data;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const zodValidators: Record<string, any> = {};
-    const s = spec as Partial<ZodApiSpec>;
-    if (s.params !== undefined) {
-      const params = s.params;
-      zodValidators["params"] = () => toResult(params.safeParse(input.params));
-    }
-    if (s.query !== undefined) {
-      const query = s.query;
-      zodValidators["query"] = () => toResult(query.safeParse(input.query));
-    }
-    if (s.body !== undefined) {
-      const body = s.body;
-      zodValidators["body"] = () => toResult(body.safeParse(input.body));
-    }
-    if (s.headers !== undefined) {
-      const headers = s.headers;
-      zodValidators["headers"] = () =>
-        toResult(headers.safeParse(input.headers));
-    }
-    return { validator: zodValidators as Validator, error: null };
-  };
-  const res = <
-    Path extends keyof E & string,
-    M extends keyof E[Path] & Method,
-    Validator extends E[Path][M] extends ZodApiSpec
-      ? ZodValidators<E[Path][M], "">
-      : Record<string, never>,
-  >(
-    input: ResponseValidatorsInput,
-  ) => {
-    const r = preCheck(endpoints, input.path, input.method);
-    if (r.error) {
-      return { validator: {} as Validator, error: r.error };
-    }
-    const spec = r.data;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const zodValidators: Record<string, any> = {};
-    const resBody = spec?.responses?.[input.statusCode as StatusCode]?.body;
-    if (resBody !== undefined) {
-      zodValidators["body"] = () => toResult(resBody.safeParse(input.body));
-    }
-    const resHeaders =
-      spec?.responses?.[input.statusCode as StatusCode]?.headers;
-    if (resHeaders !== undefined) {
-      // const headers = s.headers;
-      zodValidators["headers"] = () =>
-        toResult(resHeaders.safeParse(input.headers));
-    }
-    return {
-      validator: zodValidators as Validator,
-      error: null,
-    };
-  };
-  return { req, res };
+  return createValidator(
+    endpoints,
+    (spec: ZodApiSpec, input, key) =>
+      toResult(spec[key]!.safeParse(input[key])),
+    (spec: ZodApiSpec, input, key) => {
+      const schema = spec["responses"][input.statusCode as StatusCode]?.[key];
+      // FIXME: schemaがundefinedの場合の処理
+      return toResult(schema!.safeParse(input[key]));
+    },
+  );
 };
 
 const toResult = <T, U>(
