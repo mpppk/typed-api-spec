@@ -103,10 +103,7 @@ const validatePath = <E extends AnyApiEndpoints, Path extends string>(
   path: Path,
 ): Result<keyof E & Path, ValidationError> => {
   if (!(path in endpoints)) {
-    return Result.error({
-      actual: path,
-      message: `path does not exist in endpoints`,
-    });
+    return Result.error(newValidatorPathNotFoundError(path));
   }
   return Result.data(path as keyof E & Path);
 };
@@ -115,14 +112,9 @@ const validateMethod = <Endpoint extends AnyApiEndpoint, M extends string>(
   endpoint: Endpoint,
   method: M & Method,
 ): Result<keyof Endpoint & M, ValidationError> => {
-  if (endpoint[method] === undefined) {
-    return Result.error({
-      target: "method",
-      actual: method,
-      message: `method does not exist in endpoint`,
-    });
-  }
-  return Result.data(method);
+  return endpoint[method] === undefined
+    ? Result.error(newValidatorMethodNotFoundError(method))
+    : Result.data(method);
 };
 
 const validatePathAndMethod = <
