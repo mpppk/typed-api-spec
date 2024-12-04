@@ -7,13 +7,7 @@ import {
   Method,
   StatusCode,
 } from "../core";
-import {
-  preCheck,
-  ResponseValidatorsInput,
-  Validator,
-  Validators,
-  ValidatorsInput,
-} from "../core/validate";
+import { createValidator, Validator, Validators } from "../core/validate";
 import { Result } from "../utils";
 import {
   BaseIssue,
@@ -91,74 +85,16 @@ export type ValibotApiResSchema<
 export const newValibotValidator = <E extends ValibotApiEndpoints>(
   endpoints: E,
 ) => {
-  const req = <
-    Path extends keyof E & string,
-    M extends keyof E[Path] & Method,
-    Validator extends E[Path][M] extends ValibotApiSpec
-      ? ValibotValidators<E[Path][M], "">
-      : Record<string, never>,
-  >(
-    input: ValidatorsInput,
-  ) => {
-    const r = preCheck(endpoints, input.path, input.method);
-    if (r.error) {
-      return { validator: {} as Validator, error: r.error };
-    }
-    const spec = r.data;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const validators: Record<string, any> = {};
-    const s = spec as Partial<ValibotApiSpec>;
-    if (s.params !== undefined) {
-      const params = s.params;
-      validators["params"] = () => toResult(v.safeParse(params, input.params));
-    }
-    if (s.query !== undefined) {
-      const query = s.query;
-      validators["query"] = () => toResult(v.safeParse(query, input.query));
-    }
-    if (s.body !== undefined) {
-      const body = s.body;
-      validators["body"] = () => toResult(v.safeParse(body, input.body));
-    }
-    if (s.headers !== undefined) {
-      const headers = s.headers;
-      validators["headers"] = () =>
-        toResult(v.safeParse(headers, input.headers));
-    }
-    return { validator: validators as Validator, error: null };
-  };
-  const res = <
-    Path extends keyof E & string,
-    M extends keyof E[Path] & Method,
-    Validator extends E[Path][M] extends ValibotApiSpec
-      ? ValibotValidators<E[Path][M], "">
-      : Record<string, never>,
-  >(
-    input: ResponseValidatorsInput,
-  ) => {
-    const r = preCheck(endpoints, input.path, input.method);
-    if (r.error) {
-      return { validator: {} as Validator, error: r.error };
-    }
-    const spec = r.data;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const validator: Record<string, any> = {};
-    const resBody = spec?.responses?.[input.statusCode as StatusCode]?.body;
-    if (resBody !== undefined) {
-      validator["body"] = () => toResult(v.safeParse(resBody, input.body));
-    }
-    const resHeaders =
-      spec?.responses?.[input.statusCode as StatusCode]?.headers;
-    if (resHeaders !== undefined) {
-      validator["headers"] = () =>
-        toResult(v.safeParse(resHeaders, input.headers));
-    }
-    return {
-      validator: validator as Validator,
-      error: null,
-    };
-  };
-  return { req, res };
+  return createValidator(
+    endpoints,
+    (spec: ValibotApiSpec, input, key) =>
+      toResult(v.safeParse(spec[key]!, input[key])),
+    (spec: ValibotApiSpec, input, key) => {
+      const schema = spec["responses"][input.statusCode as StatusCode]?.[key];
+      // FIXME: schemaがundefinedの場合の処理
+      return toResult(v.safeParse(schema!, input[key]));
+    },
+  );
 };
 
 const toResult = <T extends BaseSchema<unknown, unknown, BaseIssue<unknown>>>(

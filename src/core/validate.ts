@@ -12,7 +12,6 @@ import {
   Method,
 } from "./spec";
 import { ParsedQs } from "qs";
-import { ZodApiEndpoints, ZodApiSpec, ZodValidators } from "../zod";
 import { StatusCode } from "./hono-types";
 
 export type Validators<
@@ -207,8 +206,8 @@ export const createRequestValidator = <E extends AnyApiEndpoints>(
   return <
     Path extends keyof E & string,
     M extends keyof E[Path] & Method,
-    Validator extends E[Path][M] extends ZodApiSpec
-      ? ZodValidators<E[Path][M], "">
+    Validator extends E[Path][M] extends AnyApiSpec
+      ? AnyValidators
       : Record<string, never>,
   >(
     input: ValidatorsInput,
@@ -240,8 +239,8 @@ export const createResponseValidator = <E extends AnyApiEndpoints>(
   return <
     Path extends keyof E & string,
     M extends keyof E[Path] & Method,
-    Validator extends E[Path][M] extends ZodApiSpec
-      ? ZodValidators<E[Path][M], "">
+    Validator extends E[Path][M] extends AnyApiSpec
+      ? AnyValidators
       : Record<string, never>,
   >(
     input: ResponseValidatorsInput,
@@ -261,7 +260,7 @@ export const createResponseValidator = <E extends AnyApiEndpoints>(
   };
 };
 
-export const createValidator = <E extends ZodApiEndpoints>(
+export const createValidator = <E extends AnyApiEndpoints>(
   endpoints: E,
   reqV: RequestValidatorGenerator,
   resV: ResponseValidatorGenerator,
