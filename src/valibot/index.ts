@@ -7,7 +7,7 @@ import {
   Method,
   StatusCode,
 } from "../core";
-import { createValidator, Validator, Validators } from "../core/validate";
+import { createValidator, Validator } from "../core/validator/validate";
 import { Result } from "../utils";
 import {
   BaseIssue,
@@ -16,6 +16,7 @@ import {
   InferOutput,
   SafeParseResult,
 } from "valibot";
+import { Validators } from "../core/validator/request";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnyV = BaseSchema<any, any, any>;

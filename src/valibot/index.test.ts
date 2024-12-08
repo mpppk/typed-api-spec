@@ -2,12 +2,12 @@ import { describe, it, expect } from "vitest";
 import { newValibotValidator, ValibotApiEndpoints } from "./index";
 import * as v from "valibot";
 import {
-  AnyResponseValidators,
-  AnyValidators,
   newValidatorMethodNotFoundError,
   newValidatorPathNotFoundError,
-} from "../core/validate";
+} from "../core/validator/validate";
 import { InferIssue } from "valibot";
+import { AnyResponseValidators } from "../core/validator/response";
+import { AnyValidators } from "../core/validator/request";
 
 describe("newValibotValidator", () => {
   const pathMap = {
@@ -46,14 +46,17 @@ describe("newValibotValidator", () => {
 
   it("ok", () => {
     const { req, res } = newValibotValidator(pathMap);
-    const { validator: reqV, error } = req(validReqInput);
+    const { data: reqV, error } = req(validReqInput);
     expect(error).toBeNull();
+    if (error !== undefined) {
+      return;
+    }
     expect(reqV["query"]()).toEqual({ data: { queryName: "queryName" } });
     expect(reqV["params"]()).toEqual({ data: { paramsName: "paramsName" } });
     expect(reqV["body"]()).toEqual({ data: { bodyName: "bodyName" } });
     expect(reqV["headers"]()).toEqual({ data: { headersName: "headersName" } });
 
-    const { validator: resV, error: resE } = res(validResInput);
+    const { data: resV, error: resE } = res(validResInput);
     expect(resE).toBeNull();
     expect(resV["body"]()).toEqual({ data: { bodyNameRes: "bodyNameRes" } });
     expect(resV["headers"]()).toEqual({
@@ -103,7 +106,7 @@ describe("newValibotValidator", () => {
       "headers",
     ];
     it.each(keys)("%s", (key) => {
-      const { validator: reqV, error } = req({
+      const { data: reqV, error } = req({
         ...validReqInput,
         [key]: { invalid: "invalidValue" },
       });
@@ -117,7 +120,7 @@ describe("newValibotValidator", () => {
     const { res } = newValibotValidator(pathMap);
     const keys: (keyof AnyResponseValidators)[] = ["body", "headers"];
     it.each(keys)("%s", (key) => {
-      const { validator: reqV, error } = res({
+      const { data: reqV, error } = res({
         ...validResInput,
         [key]: { invalid: "invalidValue" },
       });

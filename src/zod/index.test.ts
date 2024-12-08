@@ -2,11 +2,11 @@ import { describe, it, expect } from "vitest";
 import { z, ZodError } from "zod";
 import { newZodValidator, ZodApiEndpoints } from "./index";
 import {
-  AnyResponseValidators,
-  AnyValidators,
   newValidatorMethodNotFoundError,
   newValidatorPathNotFoundError,
-} from "../core/validate";
+} from "../core/validator/validate";
+import { AnyValidators } from "../core/validator/request";
+import { AnyResponseValidators } from "../core/validator/response";
 
 describe("newZodValidator", () => {
   const pathMap = {
@@ -27,8 +27,8 @@ describe("newZodValidator", () => {
   } satisfies ZodApiEndpoints;
 
   const validReqInput = {
-    path: "/",
-    method: "get",
+    path: "/" as const,
+    method: "get" as const,
     params: { paramsName: "paramsName" },
     query: { queryName: "queryName" },
     body: { bodyName: "bodyName" },
@@ -36,24 +36,31 @@ describe("newZodValidator", () => {
   };
 
   const validResInput = {
-    path: "/",
-    method: "get",
-    statusCode: 200,
+    path: "/" as const,
+    method: "get" as const,
+    statusCode: 200 as const,
     body: { bodyNameRes: "bodyNameRes" },
     headers: { headersNameRes: "headersNameRes" },
   };
 
   it("ok", () => {
     const { req, res } = newZodValidator(pathMap);
-    const { validator: reqV, error } = req(validReqInput);
+    const { data: reqV, error } = req(validReqInput);
     expect(error).toBeNull();
+    if (error !== undefined) {
+      return;
+    }
     expect(reqV["query"]()).toEqual({ data: { queryName: "queryName" } });
     expect(reqV["params"]()).toEqual({ data: { paramsName: "paramsName" } });
     expect(reqV["body"]()).toEqual({ data: { bodyName: "bodyName" } });
     expect(reqV["headers"]()).toEqual({ data: { headersName: "headersName" } });
 
-    const { validator: resV, error: resE } = res(validResInput);
+    const { data: resV, error: resE } = res(validResInput);
     expect(resE).toBeNull();
+    if (resE !== undefined) {
+      return;
+    }
+
     expect(resV["body"]()).toEqual({ data: { bodyNameRes: "bodyNameRes" } });
     expect(resV["headers"]()).toEqual({
       data: { headersNameRes: "headersNameRes" },
@@ -81,13 +88,19 @@ describe("newZodValidator", () => {
       "headers",
     ];
     it.each(keys)("%s", (key) => {
-      const { validator: reqV, error } = req({
+      const { data: reqV, error } = req({
         ...validReqInput,
         [key]: { invalid: "invalidValue" },
       });
       expect(error).toBeNull();
+      if (error !== undefined) {
+        return;
+      }
       const { data, error: error2 } = reqV[key]();
       expect(data).toBeUndefined();
+      if (error2 === undefined) {
+        return;
+      }
       checkZodError(error2, `${key}Name`);
     });
   });
@@ -95,13 +108,19 @@ describe("newZodValidator", () => {
     const { res } = newZodValidator(pathMap);
     const keys: (keyof AnyResponseValidators)[] = ["body", "headers"];
     it.each(keys)("%s", (key) => {
-      const { validator: reqV, error } = res({
+      const { data: reqV, error } = res({
         ...validResInput,
         [key]: { invalid: "invalidValue" },
       });
       expect(error).toBeNull();
+      if (error !== undefined) {
+        return;
+      }
       const { data, error: error2 } = reqV[key]();
       expect(data).toBeUndefined();
+      if (data) {
+        return;
+      }
       checkZodError(error2, `${key}NameRes`);
     });
   });
@@ -111,14 +130,20 @@ describe("newZodValidator", () => {
       const method = "noexist-method";
       it("request", () => {
         const { req } = newZodValidator(pathMap);
-        const { validator, error } = req({ ...validReqInput, method });
+        const { data: validator, error } = req({
+          ...validReqInput,
+          method,
+        });
         expect(validator).toEqual({});
         expect(error).toEqual(newValidatorMethodNotFoundError(method));
       });
 
       it("response", () => {
         const { res } = newZodValidator(pathMap);
-        const { validator, error } = res({ ...validResInput, method });
+        const { data: validator, error } = res({
+          ...validResInput,
+          method,
+        });
         expect(validator).toEqual({});
         expect(error).toEqual(newValidatorMethodNotFoundError(method));
       });
@@ -127,14 +152,14 @@ describe("newZodValidator", () => {
       const path = "noexist-path";
       it("request", () => {
         const { req } = newZodValidator(pathMap);
-        const { validator, error } = req({ ...validReqInput, path });
+        const { data: validator, error } = req({ ...validReqInput, path });
         expect(validator).toEqual({});
         expect(error).toEqual(newValidatorPathNotFoundError(path));
       });
 
       it("response", () => {
         const { res } = newZodValidator(pathMap);
-        const { validator, error } = res({ ...validResInput, path });
+        const { data: validator, error } = res({ ...validResInput, path });
         expect(validator).toEqual({});
         expect(error).toEqual(newValidatorPathNotFoundError(path));
       });
