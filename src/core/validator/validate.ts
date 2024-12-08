@@ -29,7 +29,7 @@ export const checkValidatorsInput = <
   endpoints: E,
   input: { path: string; method: string },
 ): Result<ValidatorsInput<Path, M>, ValidatorInputError> => {
-  const method = input.method.toLowerCase();
+  const method = input.method;
   if (!isMethod(method)) {
     return Result.error(newMethodInvalidError(method));
   }

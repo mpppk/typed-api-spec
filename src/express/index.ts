@@ -20,6 +20,7 @@ import {
   RequestValidator,
   ValidatorsMap,
 } from "../core/validator/request";
+import { Result } from "../utils";
 
 /**
  * Express Request Handler, but with more strict type information.
@@ -97,14 +98,22 @@ export const validatorMiddleware = <V extends RequestValidator>(
 ) => {
   return (_req: Request, res: Response, next: NextFunction) => {
     res.locals.validate = (req: Request) => {
-      const { data: v2 } = validator({
+      const { data: v2, error } = validator({
         path: req.route?.path?.toString(),
-        method: req.method,
+        method: req.method.toLowerCase(),
         headers: req.headers,
         params: req.params,
         query: req.query,
         body: req.body,
       });
+      if (error) {
+        return {
+          query: () => Result.error(error),
+          params: () => Result.error(error),
+          body: () => Result.error(error),
+          headers: () => Result.error(error),
+        };
+      }
       return v2;
     };
     next();

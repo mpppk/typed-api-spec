@@ -12,6 +12,10 @@ import { z, ZodError } from "zod";
 import { Request } from "express";
 import { ParseUrlParams } from "../core";
 import { ToHandlers, typed } from "./zod";
+import {
+  newValidatorMethodNotFoundError,
+  newValidatorPathNotFoundError,
+} from "../core/validator/validate";
 
 type ZodValidateLocals<
   AS extends ZodApiSpec,
@@ -178,24 +182,23 @@ describe("validatorMiddleware", () => {
       };
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const res = { locals: {} } as any;
-      middleware(req as unknown as Request, res, next);
+      middleware(req as Request, res, next);
       expect(next).toHaveBeenCalled();
       expect(res.locals.validate).toEqual(expect.any(Function));
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const locals = res.locals as ZodValidateLocals<any, ParseUrlParams<"">>;
+      const locals = res.locals as ZodValidateLocals<
+        ZodApiSpec,
+        ParseUrlParams<"">
+      >;
       const validate = locals.validate(req as Request);
+      const pathErrorResult = {
+        data: undefined,
+        error: newValidatorPathNotFoundError("/users"),
+      };
 
-      const query = validate.query;
-      expect(query).toBeUndefined();
-
-      const body = validate.body;
-      expect(body).toBeUndefined();
-
-      const headers = validate.headers;
-      expect(headers).toBeUndefined();
-
-      const params = validate.params;
-      expect(params).toBeUndefined();
+      expect(validate.query?.()).toEqual(pathErrorResult);
+      expect(validate.body?.()).toEqual(pathErrorResult);
+      expect(validate.headers?.()).toEqual(pathErrorResult);
+      expect(validate.params?.()).toEqual(pathErrorResult);
     });
 
     it("have valid path and invalid method", () => {
@@ -216,18 +219,15 @@ describe("validatorMiddleware", () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const locals = res.locals as ZodValidateLocals<any, ParseUrlParams<"">>;
       const validate = locals.validate(req as Request);
+      const methodErrorResult = {
+        data: undefined,
+        error: newValidatorMethodNotFoundError("patch"),
+      };
 
-      const query = validate.query;
-      expect(query).toBeUndefined();
-
-      const body = validate.body;
-      expect(body).toBeUndefined();
-
-      const headers = validate.headers;
-      expect(headers).toBeUndefined();
-
-      const params = validate.params;
-      expect(params).toBeUndefined();
+      expect(validate.query?.()).toEqual(methodErrorResult);
+      expect(validate.body?.()).toEqual(methodErrorResult);
+      expect(validate.headers?.()).toEqual(methodErrorResult);
+      expect(validate.params?.()).toEqual(methodErrorResult);
     });
   });
 });

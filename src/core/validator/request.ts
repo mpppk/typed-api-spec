@@ -34,12 +34,6 @@ export type Validators<
 export type AnyValidators = Partial<
   Validators<AnyValidator, AnyValidator, AnyValidator, AnyValidator>
 >;
-// export type EmptyValidators = Validators<
-//   () => Result<unknown, "params validator does not configured">,
-//   () => Result<unknown, "query validator does not configured">,
-//   () => Result<unknown, "body validator does not configured">,
-//   () => Result<unknown, "headers validator does not configured">
-// >;
 export type ValidatorsMap = {
   [Path in string]: Partial<Record<Method, AnyValidators>>;
 };
