@@ -125,6 +125,22 @@ export type ValibotApiResSchema<
   SC extends keyof AResponses & StatusCode,
 > = AResponses[SC] extends AnyV ? AResponses[SC] : never;
 
+type ValibotRequestValidatorsGenerator<E extends ValibotApiEndpoints> = <
+  Path extends string,
+  M extends string,
+>(
+  input: ValidatorsRawInput<Path, M>,
+) => Result<ToValibotValidators<E, Path, M>, ValidatorInputError>;
+type ValibotResponseValidatorsGenerator<E extends ValibotApiEndpoints> = <
+  Path extends string,
+  M extends string,
+  SC extends number,
+>(
+  input: ResponseValidatorsRawInput<Path, M, SC>,
+) => Result<
+  ToValibotResponseValidators<ApiResponses<E, Path, M>, SC>,
+  ValidatorInputError
+>;
 /**
  * Create a new validator for the given endpoints.
  *
@@ -133,7 +149,7 @@ export type ValibotApiResSchema<
 export const newValibotValidator = <E extends ValibotApiEndpoints>(
   endpoints: E,
 ) => {
-  const { req, res } = createValidator(
+  return createValidator(
     endpoints,
     (spec: ValibotApiSpec, input, key) =>
       toResult(v.safeParse(spec[key]!, input[key])),
@@ -142,17 +158,9 @@ export const newValibotValidator = <E extends ValibotApiEndpoints>(
       // FIXME: schemaがundefinedの場合の処理
       return toResult(v.safeParse(schema!, input[key]));
     },
-  );
-  return {
-    req: req as <Path extends string, M extends string>(
-      input: ValidatorsRawInput<Path, M>,
-    ) => Result<ToValibotValidators<E, Path, M>, ValidatorInputError>,
-    res: res as <Path extends string, M extends string, SC extends number>(
-      input: ResponseValidatorsRawInput<Path, M, SC>,
-    ) => Result<
-      ToValibotResponseValidators<ApiResponses<E, Path, M>, SC>,
-      ValidatorInputError
-    >,
+  ) as {
+    req: ValibotRequestValidatorsGenerator<E>;
+    res: ValibotResponseValidatorsGenerator<E>;
   };
 };
 

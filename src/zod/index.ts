@@ -121,13 +121,30 @@ export type ToApiResponses<AR extends ZodAnyApiResponses> = {
   };
 };
 
+type ZodRequestValidatorsGenerator<E extends ZodApiEndpoints> = <
+  Path extends string,
+  M extends string,
+>(
+  input: ValidatorsRawInput<Path, M>,
+) => Result<ToZodValidators<E, Path, M>, ValidatorInputError>;
+type ZodResponseValidatorsGenerator<E extends ZodApiEndpoints> = <
+  Path extends string,
+  M extends string,
+  SC extends number,
+>(
+  input: ResponseValidatorsRawInput<Path, M, SC>,
+) => Result<
+  ToZodResponseValidators<ApiResponses<E, Path, M>, SC>,
+  ValidatorInputError
+>;
+
 /**
  * Create a new validator for the given endpoints.
  *
  * @param endpoints API endpoints
  */
 export const newZodValidator = <E extends ZodApiEndpoints>(endpoints: E) => {
-  const { req, res } = createValidator(
+  return createValidator(
     endpoints,
     (spec: ZodApiSpec, input, key) =>
       toResult(spec[key]!.safeParse(input[key])),
@@ -136,17 +153,9 @@ export const newZodValidator = <E extends ZodApiEndpoints>(endpoints: E) => {
       // FIXME: schemaがundefinedの場合の処理
       return toResult(schema!.safeParse(input[key]));
     },
-  );
-  return {
-    req: req as <Path extends string, M extends string>(
-      input: ValidatorsRawInput<Path, M>,
-    ) => Result<ToZodValidators<E, Path, M>, ValidatorInputError>,
-    res: res as <Path extends string, M extends string, SC extends number>(
-      input: ResponseValidatorsRawInput<Path, M, SC>,
-    ) => Result<
-      ToZodResponseValidators<ApiResponses<E, Path, M>, SC>,
-      ValidatorInputError
-    >,
+  ) as {
+    req: ZodRequestValidatorsGenerator<E>;
+    res: ZodResponseValidatorsGenerator<E>;
   };
 };
 
