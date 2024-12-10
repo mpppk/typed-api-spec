@@ -96,7 +96,7 @@ describe("newZodValidator", () => {
       }
       const { data, error: error2 } = reqV[key]();
       expect(data).toBeUndefined();
-      if (error2 === undefined) {
+      if (data) {
         return;
       }
       checkZodError(error2, `${key}Name`);

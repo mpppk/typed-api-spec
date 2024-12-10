@@ -12,6 +12,10 @@ import {
   ValibotApiSpec,
   ValibotValidators,
 } from "../valibot";
+import {
+  newValidatorMethodNotFoundError,
+  newValidatorPathNotFoundError,
+} from "../core/validator/validate";
 
 type ValibotValidateLocals<
   AS extends ValibotApiSpec,
@@ -229,27 +233,22 @@ describe("valibot", () => {
         };
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const res = { locals: {} } as any;
-        middleware(req as unknown as Request, res, next);
+        middleware(req as Request, res, next);
         expect(next).toHaveBeenCalled();
         expect(res.locals.validate).toEqual(expect.any(Function));
         const locals = res.locals as ValibotValidateLocals<
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          any,
+          (typeof pathMap)["/"]["get"],
           ParseUrlParams<"">
         >;
         const validate = locals.validate(req as Request);
-
-        const query = validate.query;
-        expect(query).toBeUndefined();
-
-        const body = validate.body;
-        expect(body).toBeUndefined();
-
-        const headers = validate.headers;
-        expect(headers).toBeUndefined();
-
-        const params = validate.params;
-        expect(params).toBeUndefined();
+        const pathErrorResult = {
+          data: undefined,
+          error: newValidatorPathNotFoundError("/users"),
+        };
+        expect(validate.query?.()).toEqual(pathErrorResult);
+        expect(validate.body?.()).toEqual(pathErrorResult);
+        expect(validate.headers?.()).toEqual(pathErrorResult);
+        expect(validate.params?.()).toEqual(pathErrorResult);
       });
 
       it("have valid path and invalid method", () => {
@@ -273,18 +272,15 @@ describe("valibot", () => {
           ParseUrlParams<"">
         >;
         const validate = locals.validate(req as Request);
+        const methodErrorResult = {
+          data: undefined,
+          error: newValidatorMethodNotFoundError("patch"),
+        };
 
-        const query = validate.query;
-        expect(query).toBeUndefined();
-
-        const body = validate.body;
-        expect(body).toBeUndefined();
-
-        const headers = validate.headers;
-        expect(headers).toBeUndefined();
-
-        const params = validate.params;
-        expect(params).toBeUndefined();
+        expect(validate.query?.()).toEqual(methodErrorResult);
+        expect(validate.body?.()).toEqual(methodErrorResult);
+        expect(validate.headers?.()).toEqual(methodErrorResult);
+        expect(validate.params?.()).toEqual(methodErrorResult);
       });
     });
   });

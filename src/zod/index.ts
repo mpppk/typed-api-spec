@@ -1,6 +1,5 @@
 import { SafeParseReturnType, z, ZodError, ZodType } from "zod";
 import {
-  ApiP,
   ApiResBody,
   ApiResHeaders,
   ApiResponses,
@@ -19,7 +18,6 @@ import { Result } from "../utils";
 import { Validators, ValidatorsRawInput } from "../core/validator/request";
 import {
   ResponseValidators,
-  ResponseValidatorsInput,
   ResponseValidatorsRawInput,
 } from "../core/validator/response";
 
@@ -46,43 +44,6 @@ export type ZodResponseValidators<
   Body extends z.ZodTypeAny | undefined,
   Headers extends z.ZodTypeAny | undefined,
 > = ResponseValidators<ZodValidator<Body>, ZodValidator<Headers>>;
-// export type ToZodResponseValidators<
-//   E extends ZodApiEndpoints,
-//   Path extends string,
-//   M extends string,
-//   SC extends number,
-//   Responses extends Path extends keyof E
-//     ? M extends keyof E[Path] & Method
-//       ? E[Path][M] extends ZodApiSpec
-//         ? ApiP<E, Path, M, "responses">
-//         : undefined
-//       : undefined
-//     : undefined = Path extends keyof E
-//     ? M extends keyof E[Path] & Method
-//       ? E[Path][M] extends ZodApiSpec
-//         ? ApiP<E, Path, M, "responses">
-//         : undefined
-//       : undefined
-//     : undefined,
-//   Body extends Responses extends ZodAnyApiResponses
-//     ? SC extends keyof Responses
-//       ? ApiResBody<Responses, SC>
-//       : undefined
-//     : undefined = Responses extends ZodAnyApiResponses
-//     ? SC extends keyof Responses
-//       ? ApiResBody<Responses, SC>
-//       : undefined
-//     : undefined,
-//   Headers extends Responses extends ZodAnyApiResponses
-//     ? SC extends keyof Responses & StatusCode
-//       ? ApiResHeaders<Responses, SC>
-//       : undefined
-//     : undefined = Responses extends ZodAnyApiResponses
-//     ? SC extends keyof Responses & StatusCode
-//       ? ApiResHeaders<Responses, SC>
-//       : undefined
-//     : undefined,
-// > = ZodResponseValidators<Body, Headers>;
 export type ToZodResponseValidators<
   Responses extends ZodAnyApiResponses | undefined,
   SC extends number,
@@ -105,7 +66,6 @@ export type ToZodValidators<
   E extends ZodApiEndpoints,
   Path extends string,
   M extends string,
-  // Spec extends ZodApiSpec | undefined,
 > = Path extends keyof E
   ? M extends keyof E[Path] & Method
     ? E[Path][M] extends ZodApiSpec
@@ -113,33 +73,6 @@ export type ToZodValidators<
       : Record<string, never>
     : Record<string, never>
   : Record<string, never>;
-// export type ToZodValidators<Spec extends ZodApiSpec | undefined> =
-//   Spec extends ZodApiSpec ? ZodValidators<Spec, string> : Record<string, never>;
-
-export type ZodRequestValidator = <
-  E extends ZodApiEndpoints,
-  Path extends string,
-  M extends string,
->(
-  input: ValidatorsRawInput<Path, M>,
-) => Result<ToZodValidators<E, Path, M>, ValidatorInputError>;
-
-export type ZodResponseValidator = <
-  E extends ZodApiEndpoints,
-  Path extends keyof E & string,
-  M extends keyof E[Path] & Method,
-  Responses extends ApiP<ToApiEndpoints<E>, Path, M, "responses">,
-  SC extends keyof Responses & StatusCode,
-  Body extends Responses extends ZodAnyApiResponses
-    ? ApiResBody<Responses, SC>
-    : undefined,
-  Headers extends Responses extends ZodAnyApiResponses
-    ? ApiResHeaders<Responses, SC>
-    : undefined,
-  // SC extends keyof ToApiResponses<> & StatusCode,
->(
-  input: ResponseValidatorsInput<Path, M, SC>,
-) => Result<ZodResponseValidators<Body, Headers>, ValidatorInputError>;
 
 type ZodTypeWithKey<Key extends string> = z.ZodType<
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

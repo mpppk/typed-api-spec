@@ -1,13 +1,20 @@
 import * as v from "valibot";
 import {
   AnyApiResponses,
+  ApiResBody,
+  ApiResHeaders,
+  ApiResponses,
   BaseApiSpec,
   DefineApiResponses,
   DefineResponse,
   Method,
   StatusCode,
 } from "../core";
-import { createValidator, Validator } from "../core/validator/validate";
+import {
+  createValidator,
+  Validator,
+  ValidatorInputError,
+} from "../core/validator/validate";
 import { Result } from "../utils";
 import {
   BaseIssue,
@@ -16,13 +23,17 @@ import {
   InferOutput,
   SafeParseResult,
 } from "valibot";
-import { Validators } from "../core/validator/request";
+import { Validators, ValidatorsRawInput } from "../core/validator/request";
+import {
+  ResponseValidators,
+  ResponseValidatorsRawInput,
+} from "../core/validator/response";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnyV = BaseSchema<any, any, any>;
 
 export type ValibotValidator<V extends AnyV | undefined> = V extends AnyV
-  ? Validator<v.InferOutput<V>, v.InferIssue<V>>
+  ? Validator<v.InferOutput<V>, [v.InferIssue<V>, ...v.InferIssue<V>[]]>
   : undefined;
 export type ValibotValidators<
   AS extends ValibotApiSpec,
@@ -35,6 +46,42 @@ export type ValibotValidators<
   ValibotValidator<AS["body"]>,
   ValibotValidator<AS["headers"]>
 >;
+
+export type ToValibotValidators<
+  E extends ValibotApiEndpoints,
+  Path extends string,
+  M extends string,
+> = Path extends keyof E
+  ? M extends keyof E[Path] & Method
+    ? E[Path][M] extends ValibotApiSpec
+      ? ValibotValidators<E[Path][M], string>
+      : Record<string, never>
+    : Record<string, never>
+  : Record<string, never>;
+
+export type ValibotResponseValidators<
+  Body extends AnyV | undefined,
+  Headers extends AnyV | undefined,
+> = ResponseValidators<ValibotValidator<Body>, ValibotValidator<Headers>>;
+
+export type ToValibotResponseValidators<
+  Responses extends ValibotAnyApiResponses | undefined,
+  SC extends number,
+> = ValibotResponseValidators<
+  Responses extends ValibotAnyApiResponses
+    ? SC extends keyof Responses
+      ? ApiResBody<Responses, SC>
+      : undefined
+    : undefined,
+  Responses extends ValibotAnyApiResponses
+    ? SC extends keyof Responses
+      ? ApiResHeaders<Responses, SC> extends AnyV
+        ? ApiResHeaders<Responses, SC>
+        : undefined
+      : undefined
+    : undefined
+>;
+
 export type InferOrUndefined<T> = T extends AnyV ? v.InferOutput<T> : undefined;
 
 export type ValibotApiEndpoints = { [Path in string]: ValibotApiEndpoint };
@@ -86,7 +133,7 @@ export type ValibotApiResSchema<
 export const newValibotValidator = <E extends ValibotApiEndpoints>(
   endpoints: E,
 ) => {
-  return createValidator(
+  const { req, res } = createValidator(
     endpoints,
     (spec: ValibotApiSpec, input, key) =>
       toResult(v.safeParse(spec[key]!, input[key])),
@@ -96,6 +143,17 @@ export const newValibotValidator = <E extends ValibotApiEndpoints>(
       return toResult(v.safeParse(schema!, input[key]));
     },
   );
+  return {
+    req: req as <Path extends string, M extends string>(
+      input: ValidatorsRawInput<Path, M>,
+    ) => Result<ToValibotValidators<E, Path, M>, ValidatorInputError>,
+    res: res as <Path extends string, M extends string, SC extends number>(
+      input: ResponseValidatorsRawInput<Path, M, SC>,
+    ) => Result<
+      ToValibotResponseValidators<ApiResponses<E, Path, M>, SC>,
+      ValidatorInputError
+    >,
+  };
 };
 
 const toResult = <T extends BaseSchema<unknown, unknown, BaseIssue<unknown>>>(

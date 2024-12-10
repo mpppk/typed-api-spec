@@ -1,13 +1,11 @@
 import { describe, it, expect } from "vitest";
 import { newValibotValidator, ValibotApiEndpoints } from "./index";
 import * as v from "valibot";
-import {
-  newValidatorMethodNotFoundError,
-  newValidatorPathNotFoundError,
-} from "../core/validator/validate";
+import { newValidatorPathNotFoundError } from "../core/validator/validate";
 import { InferIssue } from "valibot";
 import { AnyResponseValidators } from "../core/validator/response";
 import { AnyValidators } from "../core/validator/request";
+import { newMethodInvalidError } from "../core";
 
 describe("newValibotValidator", () => {
   const pathMap = {
@@ -34,7 +32,7 @@ describe("newValibotValidator", () => {
     query: { queryName: "queryName" },
     body: { bodyName: "bodyName" },
     headers: { headersName: "headersName" },
-  };
+  } as const;
 
   const validResInput = {
     path: "/",
@@ -42,13 +40,13 @@ describe("newValibotValidator", () => {
     statusCode: 200,
     body: { bodyNameRes: "bodyNameRes" },
     headers: { headersNameRes: "headersNameRes" },
-  };
+  } as const;
 
   it("ok", () => {
     const { req, res } = newValibotValidator(pathMap);
     const { data: reqV, error } = req(validReqInput);
-    expect(error).toBeNull();
-    if (error !== undefined) {
+    expect(error).toBeUndefined();
+    if (error) {
       return;
     }
     expect(reqV["query"]()).toEqual({ data: { queryName: "queryName" } });
@@ -57,7 +55,10 @@ describe("newValibotValidator", () => {
     expect(reqV["headers"]()).toEqual({ data: { headersName: "headersName" } });
 
     const { data: resV, error: resE } = res(validResInput);
-    expect(resE).toBeNull();
+    expect(resE).toBeUndefined();
+    if (resE) {
+      return;
+    }
     expect(resV["body"]()).toEqual({ data: { bodyNameRes: "bodyNameRes" } });
     expect(resV["headers"]()).toEqual({
       data: { headersNameRes: "headersNameRes" },
@@ -110,9 +111,15 @@ describe("newValibotValidator", () => {
         ...validReqInput,
         [key]: { invalid: "invalidValue" },
       });
-      expect(error).toBeNull();
+      expect(error).toBeUndefined();
+      if (error) {
+        return;
+      }
       const { data, error: error2 } = reqV[key]();
       expect(data).toBeUndefined();
+      if (data) {
+        return;
+      }
       checkValibotError(error2, `${key}Name`);
     });
   });
@@ -124,9 +131,15 @@ describe("newValibotValidator", () => {
         ...validResInput,
         [key]: { invalid: "invalidValue" },
       });
-      expect(error).toBeNull();
+      expect(error).toBeUndefined();
+      if (error) {
+        return;
+      }
       const { data, error: error2 } = reqV[key]();
       expect(data).toBeUndefined();
+      if (data) {
+        return;
+      }
       checkValibotError(error2, `${key}NameRes`);
     });
   });
@@ -136,31 +149,31 @@ describe("newValibotValidator", () => {
       const method = "noexist-method";
       it("request", () => {
         const { req } = newValibotValidator(pathMap);
-        const { validator, error } = req({ ...validReqInput, method });
-        expect(validator).toEqual({});
-        expect(error).toEqual(newValidatorMethodNotFoundError(method));
+        const { data: validator, error } = req({ ...validReqInput, method });
+        expect(validator).toBeUndefined();
+        expect(error).toEqual(newMethodInvalidError(method));
       });
 
       it("response", () => {
         const { res } = newValibotValidator(pathMap);
-        const { validator, error } = res({ ...validResInput, method });
-        expect(validator).toEqual({});
-        expect(error).toEqual(newValidatorMethodNotFoundError(method));
+        const { data: validator, error } = res({ ...validResInput, method });
+        expect(validator).toBeUndefined();
+        expect(error).toEqual(newMethodInvalidError(method));
       });
     });
     describe("path", () => {
       const path = "noexist-path";
       it("request", () => {
         const { req } = newValibotValidator(pathMap);
-        const { validator, error } = req({ ...validReqInput, path });
-        expect(validator).toEqual({});
+        const { data: validator, error } = req({ ...validReqInput, path });
+        expect(validator).toBeUndefined();
         expect(error).toEqual(newValidatorPathNotFoundError(path));
       });
 
       it("response", () => {
         const { res } = newValibotValidator(pathMap);
-        const { validator, error } = res({ ...validResInput, path });
-        expect(validator).toEqual({});
+        const { data: validator, error } = res({ ...validResInput, path });
+        expect(validator).toBeUndefined();
         expect(error).toEqual(newValidatorPathNotFoundError(path));
       });
     });
