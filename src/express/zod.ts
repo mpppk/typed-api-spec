@@ -1,9 +1,8 @@
 import {
   newZodValidator,
   ToApiEndpoints,
+  ToZodValidators,
   ZodApiEndpoints,
-  ZodApiSpec,
-  ZodValidators,
 } from "../zod";
 import { Method } from "../core";
 import {
@@ -21,10 +20,10 @@ export type ToHandler<
   ZodE extends ZodApiEndpoints,
   Path extends keyof ZodE & string,
   M extends Method,
-> = ToPureHandler<ToApiEndpoints<ZodE>[Path][M], ToValidators<ZodE[Path][M]>>;
-
-export type ToValidators<Spec extends ZodApiSpec | undefined> =
-  Spec extends ZodApiSpec ? ZodValidators<Spec, string> : Record<string, never>;
+> = ToPureHandler<
+  ToApiEndpoints<ZodE>[Path][M],
+  ToZodValidators<ZodE, Path, M>
+>;
 
 /**
  * Convert ZodApiEndpoints to Express Request Handler type map.
@@ -37,7 +36,7 @@ export type ToHandlers<
 
 export type ToValidatorsMap<ZodE extends ZodApiEndpoints> = {
   [Path in keyof ZodE & string]: {
-    [M in Method]: ToValidators<ZodE[Path][M]>;
+    [M in Method]: ToZodValidators<ZodE, Path, M>;
   };
 };
 

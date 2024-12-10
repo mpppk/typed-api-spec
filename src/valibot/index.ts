@@ -1,6 +1,9 @@
 import * as v from "valibot";
 import {
   AnyApiResponses,
+  ApiResBody,
+  ApiResHeaders,
+  ApiResponses,
   BaseApiSpec,
   DefineApiResponses,
   DefineResponse,
@@ -8,12 +11,10 @@ import {
   StatusCode,
 } from "../core";
 import {
-  preCheck,
-  ResponseValidatorsInput,
+  createValidator,
   Validator,
-  Validators,
-  ValidatorsInput,
-} from "../core/validate";
+  ValidatorInputError,
+} from "../core/validator/validate";
 import { Result } from "../utils";
 import {
   BaseIssue,
@@ -22,12 +23,17 @@ import {
   InferOutput,
   SafeParseResult,
 } from "valibot";
+import { Validators, ValidatorsRawInput } from "../core/validator/request";
+import {
+  ResponseValidators,
+  ResponseValidatorsRawInput,
+} from "../core/validator/response";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnyV = BaseSchema<any, any, any>;
 
 export type ValibotValidator<V extends AnyV | undefined> = V extends AnyV
-  ? Validator<v.InferOutput<V>, v.InferIssue<V>>
+  ? Validator<v.InferOutput<V>, [v.InferIssue<V>, ...v.InferIssue<V>[]]>
   : undefined;
 export type ValibotValidators<
   AS extends ValibotApiSpec,
@@ -40,6 +46,42 @@ export type ValibotValidators<
   ValibotValidator<AS["body"]>,
   ValibotValidator<AS["headers"]>
 >;
+
+export type ToValibotValidators<
+  E extends ValibotApiEndpoints,
+  Path extends string,
+  M extends string,
+> = Path extends keyof E
+  ? M extends keyof E[Path] & Method
+    ? E[Path][M] extends ValibotApiSpec
+      ? ValibotValidators<E[Path][M], string>
+      : Record<string, never>
+    : Record<string, never>
+  : Record<string, never>;
+
+export type ValibotResponseValidators<
+  Body extends AnyV | undefined,
+  Headers extends AnyV | undefined,
+> = ResponseValidators<ValibotValidator<Body>, ValibotValidator<Headers>>;
+
+export type ToValibotResponseValidators<
+  Responses extends ValibotAnyApiResponses | undefined,
+  SC extends number,
+> = ValibotResponseValidators<
+  Responses extends ValibotAnyApiResponses
+    ? SC extends keyof Responses
+      ? ApiResBody<Responses, SC>
+      : undefined
+    : undefined,
+  Responses extends ValibotAnyApiResponses
+    ? SC extends keyof Responses
+      ? ApiResHeaders<Responses, SC> extends AnyV
+        ? ApiResHeaders<Responses, SC>
+        : undefined
+      : undefined
+    : undefined
+>;
+
 export type InferOrUndefined<T> = T extends AnyV ? v.InferOutput<T> : undefined;
 
 export type ValibotApiEndpoints = { [Path in string]: ValibotApiEndpoint };
@@ -83,6 +125,22 @@ export type ValibotApiResSchema<
   SC extends keyof AResponses & StatusCode,
 > = AResponses[SC] extends AnyV ? AResponses[SC] : never;
 
+type ValibotRequestValidatorsGenerator<E extends ValibotApiEndpoints> = <
+  Path extends string,
+  M extends string,
+>(
+  input: ValidatorsRawInput<Path, M>,
+) => Result<ToValibotValidators<E, Path, M>, ValidatorInputError>;
+type ValibotResponseValidatorsGenerator<E extends ValibotApiEndpoints> = <
+  Path extends string,
+  M extends string,
+  SC extends number,
+>(
+  input: ResponseValidatorsRawInput<Path, M, SC>,
+) => Result<
+  ToValibotResponseValidators<ApiResponses<E, Path, M>, SC>,
+  ValidatorInputError
+>;
 /**
  * Create a new validator for the given endpoints.
  *
@@ -91,75 +149,19 @@ export type ValibotApiResSchema<
 export const newValibotValidator = <E extends ValibotApiEndpoints>(
   endpoints: E,
 ) => {
-  const req = <
-    Path extends keyof E & string,
-    M extends keyof E[Path] & Method,
-    Validator extends E[Path][M] extends ValibotApiSpec
-      ? ValibotValidators<E[Path][M], "">
-      : Record<string, never>,
-  >(
-    input: ValidatorsInput,
-  ) => {
-    const r = preCheck(endpoints, input.path, input.method);
-    if (r.error) {
-      return { validator: {} as Validator, error: r.error };
-    }
-    const spec = r.data;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const zodValidators: Record<string, any> = {};
-    const s = spec as Partial<ValibotApiSpec>;
-    if (s.params !== undefined) {
-      const params = s.params;
-      zodValidators["params"] = () =>
-        toResult(v.safeParse(params, input.params));
-    }
-    if (s.query !== undefined) {
-      const query = s.query;
-      zodValidators["query"] = () => toResult(v.safeParse(query, input.query));
-    }
-    if (s.body !== undefined) {
-      const body = s.body;
-      zodValidators["body"] = () => toResult(v.safeParse(body, input.body));
-    }
-    if (s.headers !== undefined) {
-      const headers = s.headers;
-      zodValidators["headers"] = () =>
-        toResult(v.safeParse(headers, input.headers));
-    }
-    return { validator: zodValidators as Validator, error: null };
+  return createValidator(
+    endpoints,
+    (spec: ValibotApiSpec, input, key) =>
+      toResult(v.safeParse(spec[key]!, input[key])),
+    (spec: ValibotApiSpec, input, key) => {
+      const schema = spec["responses"][input.statusCode as StatusCode]?.[key];
+      // FIXME: schemaがundefinedの場合の処理
+      return toResult(v.safeParse(schema!, input[key]));
+    },
+  ) as {
+    req: ValibotRequestValidatorsGenerator<E>;
+    res: ValibotResponseValidatorsGenerator<E>;
   };
-  const res = <
-    Path extends keyof E & string,
-    M extends keyof E[Path] & Method,
-    Validator extends E[Path][M] extends ValibotApiSpec
-      ? ValibotValidators<E[Path][M], "">
-      : Record<string, never>,
-  >(
-    input: ResponseValidatorsInput,
-  ) => {
-    const r = preCheck(endpoints, input.path, input.method);
-    if (r.error) {
-      return { validator: {} as Validator, error: r.error };
-    }
-    const spec = r.data;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const zodValidators: Record<string, any> = {};
-    const resBody = spec?.responses?.[input.statusCode as StatusCode]?.body;
-    if (resBody !== undefined) {
-      zodValidators["body"] = () => toResult(v.safeParse(resBody, input.body));
-    }
-    const resHeaders =
-      spec?.responses?.[input.statusCode as StatusCode]?.headers;
-    if (resHeaders !== undefined) {
-      zodValidators["headers"] = () =>
-        toResult(v.safeParse(resHeaders, input.headers));
-    }
-    return {
-      validator: zodValidators as Validator,
-      error: null,
-    };
-  };
-  return { req, res };
 };
 
 const toResult = <T extends BaseSchema<unknown, unknown, BaseIssue<unknown>>>(

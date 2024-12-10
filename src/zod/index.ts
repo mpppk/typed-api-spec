@@ -1,5 +1,8 @@
 import { SafeParseReturnType, z, ZodError, ZodType } from "zod";
 import {
+  ApiResBody,
+  ApiResHeaders,
+  ApiResponses,
   BaseApiSpec,
   DefineApiResponses,
   DefineResponse,
@@ -7,13 +10,16 @@ import {
   StatusCode,
 } from "../core";
 import {
-  preCheck,
-  ResponseValidatorsInput,
+  createValidator,
   Validator,
-  Validators,
-  ValidatorsInput,
-} from "../core/validate";
+  ValidatorInputError,
+} from "../core/validator/validate";
 import { Result } from "../utils";
+import { Validators, ValidatorsRawInput } from "../core/validator/request";
+import {
+  ResponseValidators,
+  ResponseValidatorsRawInput,
+} from "../core/validator/response";
 
 export const anyZ = <T>() => z.any() as ZodType<T>;
 export type ZodValidator<V extends z.ZodTypeAny | undefined> =
@@ -34,6 +40,40 @@ export type ZodValidators<
   ZodValidator<AS["body"]>,
   ZodValidator<AS["headers"]>
 >;
+export type ZodResponseValidators<
+  Body extends z.ZodTypeAny | undefined,
+  Headers extends z.ZodTypeAny | undefined,
+> = ResponseValidators<ZodValidator<Body>, ZodValidator<Headers>>;
+export type ToZodResponseValidators<
+  Responses extends ZodAnyApiResponses | undefined,
+  SC extends number,
+> = ZodResponseValidators<
+  Responses extends ZodAnyApiResponses
+    ? SC extends keyof Responses
+      ? ApiResBody<Responses, SC>
+      : undefined
+    : undefined,
+  Responses extends ZodAnyApiResponses
+    ? SC extends keyof Responses
+      ? ApiResHeaders<Responses, SC> extends z.ZodTypeAny
+        ? ApiResHeaders<Responses, SC>
+        : undefined
+      : undefined
+    : undefined
+>;
+
+export type ToZodValidators<
+  E extends ZodApiEndpoints,
+  Path extends string,
+  M extends string,
+> = Path extends keyof E
+  ? M extends keyof E[Path] & Method
+    ? E[Path][M] extends ZodApiSpec
+      ? ZodValidators<E[Path][M], string>
+      : Record<string, never>
+    : Record<string, never>
+  : Record<string, never>;
+
 type ZodTypeWithKey<Key extends string> = z.ZodType<
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   Record<Key, any>,
@@ -81,81 +121,42 @@ export type ToApiResponses<AR extends ZodAnyApiResponses> = {
   };
 };
 
+type ZodRequestValidatorsGenerator<E extends ZodApiEndpoints> = <
+  Path extends string,
+  M extends string,
+>(
+  input: ValidatorsRawInput<Path, M>,
+) => Result<ToZodValidators<E, Path, M>, ValidatorInputError>;
+type ZodResponseValidatorsGenerator<E extends ZodApiEndpoints> = <
+  Path extends string,
+  M extends string,
+  SC extends number,
+>(
+  input: ResponseValidatorsRawInput<Path, M, SC>,
+) => Result<
+  ToZodResponseValidators<ApiResponses<E, Path, M>, SC>,
+  ValidatorInputError
+>;
+
 /**
  * Create a new validator for the given endpoints.
  *
  * @param endpoints API endpoints
  */
 export const newZodValidator = <E extends ZodApiEndpoints>(endpoints: E) => {
-  const req = <
-    Path extends keyof E & string,
-    M extends keyof E[Path] & Method,
-    Validator extends E[Path][M] extends ZodApiSpec
-      ? ZodValidators<E[Path][M], "">
-      : Record<string, never>,
-  >(
-    input: ValidatorsInput,
-  ) => {
-    const r = preCheck(endpoints, input.path, input.method);
-    if (r.error) {
-      return { validator: {} as Validator, error: r.error };
-    }
-    const spec = r.data;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const zodValidators: Record<string, any> = {};
-    const s = spec as Partial<ZodApiSpec>;
-    if (s.params !== undefined) {
-      const params = s.params;
-      zodValidators["params"] = () => toResult(params.safeParse(input.params));
-    }
-    if (s.query !== undefined) {
-      const query = s.query;
-      zodValidators["query"] = () => toResult(query.safeParse(input.query));
-    }
-    if (s.body !== undefined) {
-      const body = s.body;
-      zodValidators["body"] = () => toResult(body.safeParse(input.body));
-    }
-    if (s.headers !== undefined) {
-      const headers = s.headers;
-      zodValidators["headers"] = () =>
-        toResult(headers.safeParse(input.headers));
-    }
-    return { validator: zodValidators as Validator, error: null };
+  return createValidator(
+    endpoints,
+    (spec: ZodApiSpec, input, key) =>
+      toResult(spec[key]!.safeParse(input[key])),
+    (spec: ZodApiSpec, input, key) => {
+      const schema = spec["responses"][input.statusCode as StatusCode]?.[key];
+      // FIXME: schemaがundefinedの場合の処理
+      return toResult(schema!.safeParse(input[key]));
+    },
+  ) as {
+    req: ZodRequestValidatorsGenerator<E>;
+    res: ZodResponseValidatorsGenerator<E>;
   };
-  const res = <
-    Path extends keyof E & string,
-    M extends keyof E[Path] & Method,
-    Validator extends E[Path][M] extends ZodApiSpec
-      ? ZodValidators<E[Path][M], "">
-      : Record<string, never>,
-  >(
-    input: ResponseValidatorsInput,
-  ) => {
-    const r = preCheck(endpoints, input.path, input.method);
-    if (r.error) {
-      return { validator: {} as Validator, error: r.error };
-    }
-    const spec = r.data;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const zodValidators: Record<string, any> = {};
-    const resBody = spec?.responses?.[input.statusCode as StatusCode]?.body;
-    if (resBody !== undefined) {
-      zodValidators["body"] = () => toResult(resBody.safeParse(input.body));
-    }
-    const resHeaders =
-      spec?.responses?.[input.statusCode as StatusCode]?.headers;
-    if (resHeaders !== undefined) {
-      // const headers = s.headers;
-      zodValidators["headers"] = () =>
-        toResult(resHeaders.safeParse(input.headers));
-    }
-    return {
-      validator: zodValidators as Validator,
-      error: null,
-    };
-  };
-  return { req, res };
 };
 
 const toResult = <T, U>(

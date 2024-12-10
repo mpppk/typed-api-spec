@@ -1,14 +1,16 @@
-import {
-  AnyResponseValidators,
-  AnyValidators,
-  ResponseValidatorsInput,
-  runResponseValidators,
-  runValidators,
-  ValidatorsInput,
-} from "../core/validate";
 import { memoize, Result, tupleIteratorToObject, unreachable } from "../utils";
 import { match } from "path-to-regexp";
 import { UnknownApiEndpoints } from "../core";
+import {
+  AnyValidators,
+  RequestValidator,
+  runValidators,
+} from "../core/validator/request";
+import {
+  AnyResponseValidators,
+  ResponseValidator,
+  runResponseValidators,
+} from "../core/validator/response";
 
 const dummyHost = "https://example.com";
 
@@ -111,15 +113,8 @@ const newResponseErrorHandler = (policy: "throw" | "log") => {
 
 export const withValidation = <
   Fetch extends typeof fetch,
-  Validators extends (input: ValidatorsInput) => {
-    validator: AnyValidators;
-    error: unknown;
-  },
-  ResponseValidators extends (input: ResponseValidatorsInput) => {
-    validator: AnyResponseValidators;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    error: any;
-  },
+  Validators extends RequestValidator,
+  ResponseValidators extends ResponseValidator,
   Endpoints extends UnknownApiEndpoints,
 >(
   f: Fetch,
@@ -135,18 +130,22 @@ export const withValidation = <
     const [input, init] = args;
     const vInput = toInputWithMatcher(input, init);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { validator, error } = validatorGenerator(vInput);
+    const { data: validator, error } = validatorGenerator(vInput);
     handleError(runValidators(validator, error));
     const res = await f(input, init);
     const res1 = res.clone();
     // TODO: jsonじゃない時どうするか
     // TODO: response bodyを直接渡すのはおかしい
+    const headers: Record<string, string> = {};
+    res1.headers.forEach((value, key) => {
+      headers[key] = value;
+    });
     const responseValidator = responseValidatorGenerator({
       path: vInput.path,
       method: vInput.method,
       statusCode: res1.status,
       body: await res1.json(),
-      headers: res1.headers,
+      headers,
     });
     handleResponseError(runResponseValidators(responseValidator));
     // // TODO: レスポンスをvalidate

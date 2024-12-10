@@ -2,7 +2,7 @@ import { IRouter, RequestHandler } from "express";
 import {
   Method,
   AnyApiResponses,
-  ApiRes,
+  ApiResBody,
   ApiSpec,
   AnyApiSpec,
   AnyApiEndpoints,
@@ -17,9 +17,10 @@ import { StatusCode } from "../core";
 import { ParsedQs } from "qs";
 import {
   AnyValidators,
-  ValidatorsInput,
+  RequestValidator,
   ValidatorsMap,
-} from "../core/validate";
+} from "../core/validator/request";
+import { Result } from "../utils";
 
 /**
  * Express Request Handler, but with more strict type information.
@@ -62,10 +63,10 @@ export type ExpressResponse<
   SC extends keyof Responses & StatusCode,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   LocalsObj extends Record<string, any> = Record<string, any>,
-> = Omit<Response<ApiRes<Responses, SC>, LocalsObj, SC>, "status"> & {
+> = Omit<Response<ApiResBody<Responses, SC>, LocalsObj, SC>, "status"> & {
   status: <SC extends keyof Responses & StatusCode>(
     s: SC,
-  ) => Response<ApiRes<Responses, SC>, LocalsObj, SC>;
+  ) => Response<ApiResBody<Responses, SC>, LocalsObj, SC>;
 };
 
 export type ValidateLocals<Vs extends AnyValidators | Record<string, never>> = {
@@ -91,24 +92,28 @@ export type RouterT<
   ) => RouterT<E, V, SC>;
 };
 
-export const validatorMiddleware = <
-  V extends (input: ValidatorsInput) => {
-    validator: AnyValidators;
-    error: unknown;
-  },
->(
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const validatorMiddleware = <V extends RequestValidator>(
   validator: V,
 ) => {
   return (_req: Request, res: Response, next: NextFunction) => {
     res.locals.validate = (req: Request) => {
-      const { validator: v2 } = validator({
+      const { data: v2, error } = validator({
         path: req.route?.path?.toString(),
-        method: req.method,
+        method: req.method.toLowerCase(),
         headers: req.headers,
         params: req.params,
         query: req.query,
         body: req.body,
       });
+      if (error) {
+        return {
+          query: () => Result.error(error),
+          params: () => Result.error(error),
+          body: () => Result.error(error),
+          headers: () => Result.error(error),
+        };
+      }
       return v2;
     };
     next();
