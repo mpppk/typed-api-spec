@@ -23,10 +23,13 @@ import {
   InferOutput,
   SafeParseResult,
 } from "valibot";
-import { Validators, ValidatorsRawInput } from "../core/validator/request";
 import {
-  ResponseValidators,
-  ResponseValidatorsRawInput,
+  SpecValidator,
+  SpecValidatorGeneratorRawInput,
+} from "../core/validator/request";
+import {
+  ResponseSpecValidator,
+  ResponseSpecValidatorGeneratorRawInput,
 } from "../core/validator/response";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -40,7 +43,7 @@ export type ValibotValidators<
   // FIXME
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   ParamKeys extends string,
-> = Validators<
+> = SpecValidator<
   ValibotValidator<AS["params"]>,
   ValibotValidator<AS["query"]>,
   ValibotValidator<AS["body"]>,
@@ -62,7 +65,7 @@ export type ToValibotValidators<
 export type ValibotResponseValidators<
   Body extends AnyV | undefined,
   Headers extends AnyV | undefined,
-> = ResponseValidators<ValibotValidator<Body>, ValibotValidator<Headers>>;
+> = ResponseSpecValidator<ValibotValidator<Body>, ValibotValidator<Headers>>;
 
 export type ToValibotResponseValidators<
   Responses extends ValibotAnyApiResponses | undefined,
@@ -129,14 +132,14 @@ type ValibotRequestValidatorsGenerator<E extends ValibotApiEndpoints> = <
   Path extends string,
   M extends string,
 >(
-  input: ValidatorsRawInput<Path, M>,
+  input: SpecValidatorGeneratorRawInput<Path, M>,
 ) => Result<ToValibotValidators<E, Path, M>, ValidatorInputError>;
 type ValibotResponseValidatorsGenerator<E extends ValibotApiEndpoints> = <
   Path extends string,
   M extends string,
   SC extends number,
 >(
-  input: ResponseValidatorsRawInput<Path, M, SC>,
+  input: ResponseSpecValidatorGeneratorRawInput<Path, M, SC>,
 ) => Result<
   ToValibotResponseValidators<ApiResponses<E, Path, M>, SC>,
   ValidatorInputError

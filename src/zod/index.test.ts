@@ -2,8 +2,8 @@ import { describe, it, expect } from "vitest";
 import { z, ZodError } from "zod";
 import { newZodValidator, ZodApiEndpoints } from "./index";
 import { newValidatorPathNotFoundError } from "../core/validator/validate";
-import { AnyValidators } from "../core/validator/request";
-import { AnyResponseValidators } from "../core/validator/response";
+import { AnySpecValidator } from "../core/validator/request";
+import { AnyResponseSpecValidator } from "../core/validator/response";
 import { newMethodInvalidError } from "../core";
 
 describe("newZodValidator", () => {
@@ -79,7 +79,7 @@ describe("newZodValidator", () => {
 
   describe("invalid request input", () => {
     const { req } = newZodValidator(pathMap);
-    const keys: (keyof AnyValidators)[] = [
+    const keys: (keyof AnySpecValidator)[] = [
       "query",
       "params",
       "body",
@@ -104,7 +104,7 @@ describe("newZodValidator", () => {
   });
   describe("invalid response input", () => {
     const { res } = newZodValidator(pathMap);
-    const keys: (keyof AnyResponseValidators)[] = ["body", "headers"];
+    const keys: (keyof AnyResponseSpecValidator)[] = ["body", "headers"];
     it.each(keys)("%s", (key) => {
       const { data: reqV, error } = res({
         ...validResInput,

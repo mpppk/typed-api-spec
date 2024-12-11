@@ -2,14 +2,14 @@ import { memoize, Result, tupleIteratorToObject, unreachable } from "../utils";
 import { match } from "path-to-regexp";
 import { UnknownApiEndpoints } from "../core";
 import {
-  AnyValidators,
-  RequestValidator,
-  runValidators,
+  AnySpecValidator,
+  RequestSpecValidatorGenerator,
+  runSpecValidator,
 } from "../core/validator/request";
 import {
-  AnyResponseValidators,
-  ResponseValidator,
-  runResponseValidators,
+  AnyResponseSpecValidator,
+  ResponseSpecValidatorGenerator,
+  runResponseSpecValidator,
 } from "../core/validator/response";
 
 const dummyHost = "https://example.com";
@@ -75,7 +75,7 @@ const toInput =
   };
 
 const newErrorHandler = (policy: "throw" | "log") => {
-  return (results: ReturnType<typeof runValidators>) => {
+  return (results: ReturnType<typeof runSpecValidator>) => {
     switch (policy) {
       case "throw":
         handleValidatorsError(results, (reason, error) => {
@@ -93,7 +93,7 @@ const newErrorHandler = (policy: "throw" | "log") => {
   };
 };
 const newResponseErrorHandler = (policy: "throw" | "log") => {
-  return (results: ReturnType<typeof runResponseValidators>) => {
+  return (results: ReturnType<typeof runResponseSpecValidator>) => {
     switch (policy) {
       case "throw":
         handleResponseValidatorsError(results, (reason, error) => {
@@ -113,8 +113,8 @@ const newResponseErrorHandler = (policy: "throw" | "log") => {
 
 export const withValidation = <
   Fetch extends typeof fetch,
-  Validators extends RequestValidator,
-  ResponseValidators extends ResponseValidator,
+  Validators extends RequestSpecValidatorGenerator,
+  ResponseValidators extends ResponseSpecValidatorGenerator,
   Endpoints extends UnknownApiEndpoints,
 >(
   f: Fetch,
@@ -131,7 +131,7 @@ export const withValidation = <
     const vInput = toInputWithMatcher(input, init);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data: validator, error } = validatorGenerator(vInput);
-    handleError(runValidators(validator, error));
+    handleError(runSpecValidator(validator, error));
     const res = await f(input, init);
     const res1 = res.clone();
     // TODO: jsonじゃない時どうするか
@@ -147,7 +147,7 @@ export const withValidation = <
       body: await res1.json(),
       headers,
     });
-    handleResponseError(runResponseValidators(responseValidator));
+    handleResponseError(runResponseSpecValidator(responseValidator));
     // // TODO: レスポンスをvalidate
     return res;
   };
@@ -156,7 +156,7 @@ export const withValidation = <
 
 export class ValidateError extends Error {
   constructor(
-    public reason: keyof AnyValidators,
+    public reason: keyof AnySpecValidator,
     public error: unknown,
   ) {
     super("Validation error");
@@ -165,10 +165,10 @@ export class ValidateError extends Error {
 
 const handleValidatorsError = (
   results: Record<
-    Exclude<keyof AnyValidators, "responses">,
+    Exclude<keyof AnySpecValidator, "responses">,
     Result<unknown, unknown>
   >,
-  cb: (reason: keyof AnyValidators, error: unknown) => void,
+  cb: (reason: keyof AnySpecValidator, error: unknown) => void,
 ) => {
   if (results.params?.error) {
     cb("params", results.params.error);
@@ -186,10 +186,10 @@ const handleValidatorsError = (
 
 const handleResponseValidatorsError = (
   results: Record<
-    Exclude<keyof AnyResponseValidators, "responses">,
+    Exclude<keyof AnyResponseSpecValidator, "responses">,
     Result<unknown, unknown>
   >,
-  cb: (reason: keyof AnyValidators, error: unknown) => void,
+  cb: (reason: keyof AnySpecValidator, error: unknown) => void,
 ) => {
   if (results.body?.error) {
     cb("body", results.body.error);
