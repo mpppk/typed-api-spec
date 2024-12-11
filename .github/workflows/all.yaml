@@ -8,14 +8,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-      - run: npm ci -w packages/typed-api-spec
-      - run: npm run build  -w packages/typed-api-spec
-      - run: npm test -w packages/typed-api-spec
+      - run: npm ci -w pkgs/typed-api-spec
+      - run: npm run build  -w pkgs/typed-api-spec
+      - run: npm test -w pkgs/typed-api-spec
   doc:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
       - uses: actions/configure-pages@v5
-      - run: npm --prefix docs ci -w packages/docs
-      - run: npm --prefix docs run build -w packages/docs
+      - run: npm --prefix docs ci -w pkgs/docs
+      - run: npm --prefix docs run build -w pkgs/docs
