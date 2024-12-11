@@ -2,7 +2,7 @@
   "name": "@notainc/typed-api-spec",
   "version": "0.1.0",
   "scripts": {
-    "install:optional-peer-dependencies": "npm install --no-save zod valibot express @types/express fastify fastify-type-provider-zod",
+    "install:optional-peer-dependencies": "npm install --no-save zod valibot@0 express@4 @types/express@4 fastify fastify-type-provider-zod",
     "build": "tsup ./src",
     "watch:build": "tsup ./src --watch",
     "format": "prettier --write .",
