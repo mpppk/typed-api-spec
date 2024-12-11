@@ -73,48 +73,39 @@
   "exports": {
     ".": {
       "require": "./dist/index.js",
-      "import": "./dist/index.mjs",
-      "types": "./dist/index.d.ts"
+      "import": "./dist/index.mjs"
     },
     "./core": {
       "require": "./dist/core/index.js",
-      "import": "./dist/core/index.mjs",
-      "types": "./dist/core/index.d.ts"
+      "import": "./dist/core/index.mjs"
     },
     "./express": {
       "require": "./dist/express/index.js",
-      "import": "./dist/express/index.mjs",
-      "types": "./dist/express/index.d.ts"
+      "import": "./dist/express/index.mjs"
     },
     "./express/zod": {
       "require": "./dist/express/zod.js",
-      "import": "./dist/express/zod.mjs",
-      "types": "./dist/express/zod.d.ts"
+      "import": "./dist/express/zod.mjs"
     },
     "./express/valibot": {
       "require": "./dist/express/valibot.js",
-      "import": "./dist/express/valibot.mjs",
-      "types": "./dist/express/valibot.d.ts"
+      "import": "./dist/express/valibot.mjs"
     },
     "./fetch": {
       "require": "./dist/fetch/index.js",
-      "import": "./dist/fetch/index.mjs",
-      "types": "./dist/fetch/index.d.ts"
+      "import": "./dist/fetch/index.mjs"
     },
     "./json": {
       "require": "./dist/json/index.js",
-      "import": "./dist/json/index.mjs",
-      "types": "./dist/json/index.d.ts"
+      "import": "./dist/json/index.mjs"
     },
     "./zod": {
       "require": "./dist/zod/index.js",
-      "import": "./dist/zod/index.mjs",
-      "types": "./dist/zod/index.d.ts"
+      "import": "./dist/zod/index.mjs"
     },
     "./valibot": {
       "require": "./dist/valibot/index.js",
-      "import": "./dist/valibot/index.mjs",
-      "types": "./dist/valibot/index.d.ts"
+      "import": "./dist/valibot/index.mjs"
     }
   },
   "main": "../../dist/index.js",
