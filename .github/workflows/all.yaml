@@ -8,7 +8,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-      - run: npm install -w pkgs/typed-api-spec
+      - run: npm ci -w pkgs/typed-api-spec
       - run: npm run build  -w pkgs/typed-api-spec
       - run: npm test -w pkgs/typed-api-spec
   doc:
