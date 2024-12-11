@@ -13,7 +13,7 @@ import {
   checkValidatorsInput,
   ValidatorInputError,
 } from "./validate";
-import { AnyValidators } from "./request";
+import { AnySpecValidator } from "./request";
 
 export const listDefinedResponseApiSpecKeys = <Response extends AnyResponse>(
   res: Response,
@@ -21,38 +21,37 @@ export const listDefinedResponseApiSpecKeys = <Response extends AnyResponse>(
   return apiSpecResponseKeys.filter((key) => res[key] !== undefined);
 };
 
-export type ResponseValidator = (
-  input: ResponseValidatorsRawInput<string, string, number>,
-) => Result<AnyResponseValidators, ValidatorInputError>;
+export type ResponseSpecValidatorGenerator = (
+  input: ResponseSpecValidatorGeneratorRawInput<string, string, number>,
+) => Result<AnyResponseSpecValidator, ValidatorInputError>;
 export type ResponseValidatorGenerator = (
   spec: AnyApiSpec,
-  input: ResponseValidatorsInput<string, Method, StatusCode>,
+  input: ResponseSpecValidatorGeneratorInput<string, Method, StatusCode>,
   key: ApiSpecResponseKey,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ) => any;
-export const createResponseValidator = <E extends AnyApiEndpoints>(
+export const createResponseSpecValidatorGenerator = <E extends AnyApiEndpoints>(
   endpoints: E,
   resValidatorGenerator: ResponseValidatorGenerator,
 ) => {
-  return <Validators extends AnyValidators>(
-    input: ResponseValidatorsInput<string, Method, StatusCode>,
-  ): Result<Validators, ValidatorInputError> => {
+  return (
+    input: ResponseSpecValidatorGeneratorInput<string, Method, StatusCode>,
+  ): Result<AnyResponseSpecValidator, ValidatorInputError> => {
     const { data: vInput, error } = checkValidatorsInput(endpoints, input);
     if (error) {
       return Result.error(error);
     }
-    const validator: AnyValidators = {};
+    const validator: AnySpecValidator = {};
     const spec = endpoints[vInput.path][vInput.method]!;
-    // const spec = r.data! as AnyApiSpec;
     const response = spec?.responses?.[input.statusCode as StatusCode] ?? {};
     listDefinedResponseApiSpecKeys(response).forEach((key) => {
       validator[key] = () => resValidatorGenerator(spec, input, key);
     });
-    return Result.data(validator as Validators);
+    return Result.data(validator);
   };
 };
 
-export type ResponseValidators<
+export type ResponseSpecValidator<
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   BodyValidator extends AnyValidator | undefined,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -61,11 +60,11 @@ export type ResponseValidators<
   body: BodyValidator;
   headers: HeadersValidator;
 };
-export type AnyResponseValidators = Partial<
-  ResponseValidators<AnyValidator, AnyValidator>
+export type AnyResponseSpecValidator = Partial<
+  ResponseSpecValidator<AnyValidator, AnyValidator>
 >;
-export const runResponseValidators = (
-  r: Result<AnyResponseValidators, ValidatorInputError>,
+export const runResponseSpecValidator = (
+  r: Result<AnyResponseSpecValidator, ValidatorInputError>,
 ) => {
   const newD = () => Result.data(undefined);
   return {
@@ -76,7 +75,7 @@ export const runResponseValidators = (
   };
 };
 
-export type ResponseValidatorsRawInput<
+export type ResponseSpecValidatorGeneratorRawInput<
   Path extends string,
   M extends string,
   SC extends number,
@@ -87,7 +86,7 @@ export type ResponseValidatorsRawInput<
   body?: unknown;
   headers: Record<string, string | string[] | undefined>;
 };
-export type ResponseValidatorsInput<
+export type ResponseSpecValidatorGeneratorInput<
   Path extends string,
   M extends Method,
   SC extends StatusCode,

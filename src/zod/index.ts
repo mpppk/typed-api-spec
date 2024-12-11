@@ -15,10 +15,13 @@ import {
   ValidatorInputError,
 } from "../core/validator/validate";
 import { Result } from "../utils";
-import { Validators, ValidatorsRawInput } from "../core/validator/request";
 import {
-  ResponseValidators,
-  ResponseValidatorsRawInput,
+  SpecValidator,
+  SpecValidatorGeneratorRawInput,
+} from "../core/validator/request";
+import {
+  ResponseSpecValidator,
+  ResponseSpecValidatorGeneratorRawInput,
 } from "../core/validator/response";
 
 export const anyZ = <T>() => z.any() as ZodType<T>;
@@ -34,7 +37,7 @@ export type ZodValidators<
   // FIXME
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   ParamKeys extends string,
-> = Validators<
+> = SpecValidator<
   ZodValidator<AS["params"]>,
   ZodValidator<AS["query"]>,
   ZodValidator<AS["body"]>,
@@ -43,7 +46,7 @@ export type ZodValidators<
 export type ZodResponseValidators<
   Body extends z.ZodTypeAny | undefined,
   Headers extends z.ZodTypeAny | undefined,
-> = ResponseValidators<ZodValidator<Body>, ZodValidator<Headers>>;
+> = ResponseSpecValidator<ZodValidator<Body>, ZodValidator<Headers>>;
 export type ToZodResponseValidators<
   Responses extends ZodAnyApiResponses | undefined,
   SC extends number,
@@ -125,14 +128,14 @@ type ZodRequestValidatorsGenerator<E extends ZodApiEndpoints> = <
   Path extends string,
   M extends string,
 >(
-  input: ValidatorsRawInput<Path, M>,
+  input: SpecValidatorGeneratorRawInput<Path, M>,
 ) => Result<ToZodValidators<E, Path, M>, ValidatorInputError>;
 type ZodResponseValidatorsGenerator<E extends ZodApiEndpoints> = <
   Path extends string,
   M extends string,
   SC extends number,
 >(
-  input: ResponseValidatorsRawInput<Path, M, SC>,
+  input: ResponseSpecValidatorGeneratorRawInput<Path, M, SC>,
 ) => Result<
   ToZodResponseValidators<ApiResponses<E, Path, M>, SC>,
   ValidatorInputError

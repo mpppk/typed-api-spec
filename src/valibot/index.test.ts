@@ -3,8 +3,8 @@ import { newValibotValidator, ValibotApiEndpoints } from "./index";
 import * as v from "valibot";
 import { newValidatorPathNotFoundError } from "../core/validator/validate";
 import { InferIssue } from "valibot";
-import { AnyResponseValidators } from "../core/validator/response";
-import { AnyValidators } from "../core/validator/request";
+import { AnyResponseSpecValidator } from "../core/validator/response";
+import { AnySpecValidator } from "../core/validator/request";
 import { newMethodInvalidError } from "../core";
 
 describe("newValibotValidator", () => {
@@ -100,7 +100,7 @@ describe("newValibotValidator", () => {
 
   describe("invalid request input", () => {
     const { req } = newValibotValidator(pathMap);
-    const keys: (keyof AnyValidators)[] = [
+    const keys: (keyof AnySpecValidator)[] = [
       "query",
       "params",
       "body",
@@ -125,7 +125,7 @@ describe("newValibotValidator", () => {
   });
   describe("invalid response input", () => {
     const { res } = newValibotValidator(pathMap);
-    const keys: (keyof AnyResponseValidators)[] = ["body", "headers"];
+    const keys: (keyof AnyResponseSpecValidator)[] = ["body", "headers"];
     it.each(keys)("%s", (key) => {
       const { data: reqV, error } = res({
         ...validResInput,

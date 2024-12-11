@@ -16,9 +16,9 @@ import {
 import { StatusCode } from "../core";
 import { ParsedQs } from "qs";
 import {
-  AnyValidators,
-  RequestValidator,
-  ValidatorsMap,
+  AnySpecValidator,
+  RequestSpecValidatorGenerator,
+  SpecValidatorMap,
 } from "../core/validator/request";
 import { Result } from "../utils";
 
@@ -41,15 +41,18 @@ export type Handler<
 
 export type ToHandler<
   Spec extends AnyApiSpec | undefined,
-  Validators extends AnyValidators | undefined,
+  Validators extends AnySpecValidator | undefined,
 > = Handler<
   Spec,
   ValidateLocals<
-    Validators extends AnyValidators ? Validators : Record<string, never>
+    Validators extends AnySpecValidator ? Validators : Record<string, never>
   >
 >;
 
-export type ToHandlers<E extends AnyApiEndpoints, V extends ValidatorsMap> = {
+export type ToHandlers<
+  E extends AnyApiEndpoints,
+  V extends SpecValidatorMap,
+> = {
   [Path in keyof E & string]: {
     [M in Method]: ToHandler<E[Path][M], V[Path][M]>;
   };
@@ -69,7 +72,9 @@ export type ExpressResponse<
   ) => Response<ApiResBody<Responses, SC>, LocalsObj, SC>;
 };
 
-export type ValidateLocals<Vs extends AnyValidators | Record<string, never>> = {
+export type ValidateLocals<
+  Vs extends AnySpecValidator | Record<string, never>,
+> = {
   validate: (req: Request<ParamsDictionary, unknown, unknown, unknown>) => Vs;
 };
 
@@ -78,7 +83,7 @@ export type ValidateLocals<Vs extends AnyValidators | Record<string, never>> = {
  */
 export type RouterT<
   E extends AnyApiEndpoints,
-  V extends ValidatorsMap,
+  V extends SpecValidatorMap,
   SC extends StatusCode = StatusCode,
 > = Omit<IRouter, Method> & {
   [M in Method]: <Path extends string & keyof E>(
@@ -93,7 +98,7 @@ export type RouterT<
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const validatorMiddleware = <V extends RequestValidator>(
+export const validatorMiddleware = <V extends RequestSpecValidatorGenerator>(
   validator: V,
 ) => {
   return (_req: Request, res: Response, next: NextFunction) => {

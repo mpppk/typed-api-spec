@@ -19,7 +19,7 @@ export const listDefinedRequestApiSpecKeys = <Spec extends AnyApiSpec>(
   return apiSpecRequestKeys.filter((key) => spec[key] !== undefined);
 };
 
-export type Validators<
+export type SpecValidator<
   ParamsValidator extends AnyValidator | undefined,
   QueryValidator extends AnyValidator | undefined,
   BodyValidator extends AnyValidator | undefined,
@@ -31,14 +31,17 @@ export type Validators<
   body: BodyValidator;
   headers: HeadersValidator;
 };
-export type AnyValidators = Partial<
-  Validators<AnyValidator, AnyValidator, AnyValidator, AnyValidator>
+export type AnySpecValidator = Partial<
+  SpecValidator<AnyValidator, AnyValidator, AnyValidator, AnyValidator>
 >;
-export type ValidatorsMap = {
-  [Path in string]: Partial<Record<Method, AnyValidators>>;
+export type SpecValidatorMap = {
+  [Path in string]: Partial<Record<Method, AnySpecValidator>>;
 };
 
-export type ValidatorsRawInput<Path extends string, Method extends string> = {
+export type SpecValidatorGeneratorRawInput<
+  Path extends string,
+  Method extends string,
+> = {
   path: Path;
   method: Method;
   params: Record<string, string | string[]>;
@@ -46,7 +49,10 @@ export type ValidatorsRawInput<Path extends string, Method extends string> = {
   body?: Record<string, string>;
   headers: Record<string, string | string[] | undefined>;
 };
-export type ValidatorsInput<Path extends string, M extends Method> = {
+export type SpecValidatorGeneratorInput<
+  Path extends string,
+  M extends Method,
+> = {
   path: Path;
   method: M;
   params: Record<string, string | string[]>;
@@ -55,8 +61,8 @@ export type ValidatorsInput<Path extends string, M extends Method> = {
   headers: Record<string, string | string[] | undefined>;
 };
 
-export const runValidators = (
-  validators: AnyValidators | undefined,
+export const runSpecValidator = (
+  validators: AnySpecValidator | undefined,
   error: unknown,
 ) => {
   const newD = () => Result.data(undefined);
@@ -69,27 +75,27 @@ export const runValidators = (
   };
 };
 
-export type RequestValidator = (
-  input: ValidatorsRawInput<string, string>,
-) => Result<AnyValidators, ValidatorInputError>;
+export type RequestSpecValidatorGenerator = (
+  input: SpecValidatorGeneratorRawInput<string, string>,
+) => Result<AnySpecValidator, ValidatorInputError>;
 export type RequestValidatorGenerator = (
   spec: AnyApiSpec,
-  input: ValidatorsInput<string, Method>,
+  input: SpecValidatorGeneratorInput<string, Method>,
   key: ApiSpecRequestKey,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ) => any;
-export const createRequestValidator = <E extends AnyApiEndpoints>(
+export const createRequestSpecValidatorGenerator = <E extends AnyApiEndpoints>(
   endpoints: E,
   specValidatorGenerator: RequestValidatorGenerator,
-): RequestValidator => {
+): RequestSpecValidatorGenerator => {
   return (
-    input: ValidatorsRawInput<string, string>,
-  ): Result<AnyValidators, ValidatorInputError> => {
+    input: SpecValidatorGeneratorRawInput<string, string>,
+  ): Result<AnySpecValidator, ValidatorInputError> => {
     const { data: vInput, error } = checkValidatorsInput(endpoints, input);
     if (error) {
       return Result.error(error);
     }
-    const validators: AnyValidators = {};
+    const validators: AnySpecValidator = {};
     const spec = endpoints[vInput.path][vInput.method]!;
     listDefinedRequestApiSpecKeys(spec).forEach((key) => {
       validators[key] = () => specValidatorGenerator(spec, vInput, key);

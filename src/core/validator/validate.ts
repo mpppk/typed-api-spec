@@ -8,13 +8,13 @@ import {
   newMethodInvalidError,
 } from "../spec";
 import {
-  createResponseValidator,
+  createResponseSpecValidatorGenerator,
   ResponseValidatorGenerator,
 } from "./response";
 import {
-  createRequestValidator,
+  createRequestSpecValidatorGenerator,
   RequestValidatorGenerator,
-  ValidatorsInput,
+  SpecValidatorGeneratorInput,
 } from "./request";
 
 export type Validator<Data, Error> = () => Result<Data, Error>;
@@ -28,7 +28,7 @@ export const checkValidatorsInput = <
 >(
   endpoints: E,
   input: { path: string; method: string },
-): Result<ValidatorsInput<Path, M>, ValidatorInputError> => {
+): Result<SpecValidatorGeneratorInput<Path, M>, ValidatorInputError> => {
   const method = input.method;
   if (!isMethod(method)) {
     return Result.error(newMethodInvalidError(method));
@@ -41,7 +41,7 @@ export const checkValidatorsInput = <
   if (methodE) {
     return Result.error(methodE);
   }
-  return Result.data(input as ValidatorsInput<Path, M>);
+  return Result.data(input as SpecValidatorGeneratorInput<Path, M>);
 };
 
 export const validatePath = <E extends AnyApiEndpoints, Path extends string>(
@@ -93,7 +93,13 @@ export const createValidator = <E extends AnyApiEndpoints>(
   reqV: RequestValidatorGenerator,
   resV: ResponseValidatorGenerator,
 ) => {
-  const req = createRequestValidator<typeof endpoints>(endpoints, reqV);
-  const res = createResponseValidator<typeof endpoints>(endpoints, resV);
+  const req = createRequestSpecValidatorGenerator<typeof endpoints>(
+    endpoints,
+    reqV,
+  );
+  const res = createResponseSpecValidatorGenerator<typeof endpoints>(
+    endpoints,
+    resV,
+  );
   return { req, res };
 };
