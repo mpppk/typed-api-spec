@@ -2,7 +2,7 @@ import * as v from "valibot";
 import {
   ToApiEndpoints,
   ValibotApiEndpoints,
-} from "@notainc/typed-api-spec/src/valibot";
+} from "@notainc/typed-api-spec/valibot";
 
 const JsonHeader = v.object({
   "Content-Type": v.literal("application/json"),

@@ -1,0 +1,17 @@
+{
+  "scripts": {
+    "format": "prettier --write .",
+    "watch:type-check": "npx tsc --noEmit --watch",
+    "test": "run-p test:*",
+    "test:unit": "vitest",
+    "test:lint": "eslint .",
+    "test:format": "prettier --check .",
+    "test:type-check": "tsc --noEmit",
+    "express:zod:server": "tsx express/zod/express.ts"
+  },
+  "dependencies": {
+    "@types/express": "^4.17.21",
+    "express": "^4.21.2",
+    "fastify-type-provider-zod": "^2.1.0"
+  }
+}

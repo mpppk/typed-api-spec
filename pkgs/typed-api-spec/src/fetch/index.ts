@@ -168,3 +168,5 @@ type FetchT<UrlPrefix extends UrlPrefixPattern, E extends ApiEndpoints> = <
 ) => Promise<ResBody>;
 
 export default FetchT;
+
+export * from "./validation";

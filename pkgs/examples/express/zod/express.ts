@@ -1,7 +1,7 @@
 import express from "express";
-import { asAsync } from "@notainc/typed-api-spec/src/express";
 import { pathMap } from "../../spec/zod";
-import { ToHandlers, typed } from "@notainc/typed-api-spec/src/express/zod";
+import { ToHandlers, typed } from "@notainc/typed-api-spec/express/zod";
+import { asAsync } from "@notainc/typed-api-spec/express";
 
 const emptyMiddleware = (
   req: express.Request,

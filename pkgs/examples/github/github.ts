@@ -1,4 +1,4 @@
-import { DefineApiEndpoints, FetchT } from "@notainc/typed-api-spec/src";
+import { DefineApiEndpoints, FetchT } from "@notainc/typed-api-spec";
 
 const GITHUB_API_ORIGIN = "https://api.github.com";
 
