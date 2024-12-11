@@ -1,4 +1,4 @@
-import { DefineApiEndpoints, FetchT } from "../../src";
+import { DefineApiEndpoints, FetchT } from "@notainc/typed-api-spec/src";
 
 export type PathMap = DefineApiEndpoints<{
   "/users": {

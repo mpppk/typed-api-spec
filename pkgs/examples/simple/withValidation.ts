@@ -1,5 +1,8 @@
-import { newZodValidator, ZodApiEndpoints } from "../../src";
-import { ValidateError, withValidation } from "../../src/fetch/validation";
+import { newZodValidator, ZodApiEndpoints } from "@notainc/typed-api-spec/src";
+import {
+  ValidateError,
+  withValidation,
+} from "@notainc/typed-api-spec/src/fetch/validation";
 import { z, ZodError } from "zod";
 
 const GITHUB_API_ORIGIN = "https://api.github.com";

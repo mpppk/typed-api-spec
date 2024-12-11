@@ -1,7 +1,7 @@
-import type { PathMap } from "../../spec/zod";
-import JSONT from "../../../src/json";
-import { unreachable } from "../../../src/utils";
-import type FetchT from "../../../src/fetch";
+import JSONT from "@notainc/typed-api-spec/src/json";
+import { unreachable } from "@notainc/typed-api-spec/src/utils";
+import type FetchT from "@notainc/typed-api-spec/src/fetch";
+import { PathMap } from "../../spec/zod";
 
 const fetchT = fetch as FetchT<typeof origin, PathMap>;
 const origin = "http://localhost:3000";
@@ -34,22 +34,6 @@ const main = async () => {
     // case-insensitive method example
     await fetchT(`${origin}/users?page=1`, { method: "GET" });
   }
-  {
-    // query parameter example
-    // TODO: Add core information for query parameter
-    const path = `${origin}/users?page=1`;
-    const method = "get";
-    const res = await fetchT(path, { method });
-    if (res.ok) {
-      // r is the response schema defined in pathMap["/users"]["get"].res["20X"]
-      const r = await res.json();
-      console.log(`${path}:${method} => ${r.userNames}`);
-    } else {
-      // e is the response schema defined in pathMap["/users"]["get"].res other than "20X"
-      const e = await res.json();
-      console.log(`${path}:${method} => ${e.errorMessage}`);
-    }
-  }
 
   {
     const path = `${origin}/users`;
@@ -65,10 +49,16 @@ const main = async () => {
       // r is the response schema defined in pathMap["/users"]["post"].res["20X"]
       const r = await res.json();
       console.log(`${path}:${method} => ${r.userId}`);
+      console.log(res.headers.get("Content-Type"));
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const contentType: "application/json" = res.headers.get("Content-Type");
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const hasContentType: true = res.headers.has("Content-Type");
     } else {
       // e is the response schema defined in pathMap["/users"]["post"].res other than "20X"
-      const e = await res.json();
-      console.log(`${path}:${method} => ${e.errorMessage}`);
+      const e = await res.text();
+      console.log(`error:${path}:${method} => ${JSON.stringify(e)}`);
+      console.log(res.status);
     }
   }
 

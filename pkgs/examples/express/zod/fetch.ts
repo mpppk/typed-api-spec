@@ -1,7 +1,7 @@
-import type { PathMap } from "../../spec/valibot";
-import JSONT from "../../../src/json";
-import { unreachable } from "../../../src/utils";
-import type FetchT from "../../../src/fetch";
+import type { PathMap } from "../../spec/zod";
+import JSONT from "@notainc/typed-api-spec/src/json";
+import { unreachable } from "@notainc/typed-api-spec/src/utils";
+import type FetchT from "@notainc/typed-api-spec/src/fetch";
 
 const fetchT = fetch as FetchT<typeof origin, PathMap>;
 const origin = "http://localhost:3000";
