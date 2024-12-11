@@ -72,7 +72,7 @@ app.get("users", (req, res) => {
 
 :::note[Server integration]
 
-You can make it even easier by using some server-oriented integrations such as [Express](/pkgs/docs/server/express) and [Fastify](/pkgs/docs/server/fastify).
+You can make it even easier by using some server-oriented integrations such as [Express](/docs/server/express) and [Fastify](/docs/server/fastify).
 
 ```typescript
 const app = express();
@@ -82,7 +82,7 @@ wApp.get("users", (req, res) => {
 })
 ```
 
-For more information, see the [Server](/pkgs/docs/category/server) page.
+For more information, see the [Server](/docs/category/server) page.
 
 :::
 

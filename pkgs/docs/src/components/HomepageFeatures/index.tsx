@@ -1,9 +1,9 @@
 import clsx from "clsx";
 import Heading from "@theme/Heading";
 import styles from "./styles.module.css";
-import mountainSvg from "static/img/undraw_docusaurus_mountain.svg";
-import treeSvg from "static/img/undraw_docusaurus_tree.svg";
-import reactSvg from "static/img/undraw_docusaurus_react.svg";
+import mountainSvg from "../../../static/img/undraw_docusaurus_mountain.svg";
+import treeSvg from "../../../static/img/undraw_docusaurus_tree.svg";
+import reactSvg from "../../../static/img/undraw_docusaurus_react.svg";
 
 type FeatureItem = {
   title: string;

@@ -30,4 +30,4 @@ const Spec = {
 ### Using server integration
 
 If you use `express`, you can use official integration to validate request parameters based on the API specification.
-See the [express](/pkgs/docs/server/express) page for more information.
+See the [express](/docs/server/express) page for more information.

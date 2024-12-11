@@ -22,11 +22,11 @@ type Spec = DefineApiEndpoints<{
 }>;
 ```
 
-See [API Specification](/pkgs/docs/api-specification) page for more details.
+See [API Specification](/docs/api-specification) page for more details.
 
 ### Type-safe, zero-runtime API client
 typed-api-spec provides strict typed [fetch](https://developer.mozilla.org/en-US/docs/Web/API/Window/fetch).
-For example, if you define API response schema by [API Specification](/pkgs/docs/api-specification), you can get the typed response data.
+For example, if you define API response schema by [API Specification](/docs/api-specification), you can get the typed response data.
 It is just native [fetch](https://developer.mozilla.org/en-US/docs/Web/API/Window/fetch), so:
 - zero runtime: 0kb bundle size
 - zero dependencies
@@ -38,9 +38,9 @@ const res = await fetchT("/users");
 const data = await res.json(); // data is { userNames: string[] }
 ```
  
-See [Client](/pkgs/docs/client) page for more details.
+See [Client](/docs/client) page for more details.
 
 ### Server Framework & Validation library integration
 typed-api-spec can be integrated with various server frameworks(like [Express](https://expressjs.com/), [Fastify](https://fastify.dev/)) and validation libraries(like [zod](https://zod.dev/), [Valibot](https://valibot.dev/)).
 
-See [Server](/pkgs/docs/category/server) and [Validation](/pkgs/docs/category/validation) page for more details.
+See [Server](/docs/category/server) and [Validation](/docs/category/validation) page for more details.

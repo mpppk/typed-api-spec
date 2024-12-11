@@ -59,4 +59,4 @@ console.log(routes["/users"]["get"])
 
 ## Supported validation libraries
 
-* [zod](/pkgs/docs/validation/zod)
+* [zod](/docs/validation/zod)

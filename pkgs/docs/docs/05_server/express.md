@@ -79,8 +79,8 @@ The upcoming Express5 release will support async error handling, making this met
 
 ## Supported validation libraries
 
-* [zod](/pkgs/docs/validation/zod)
-* [valibot](/pkgs/docs/validation/valibot)
+* [zod](/docs/validation/zod)
+* [valibot](/docs/validation/valibot)
 
 ## Playground
 
