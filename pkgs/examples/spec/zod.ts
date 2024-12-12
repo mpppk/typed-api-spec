@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { ToApiEndpoints, ZodApiEndpoints } from "@notainc/typed-api-spec/src";
+import { ToApiEndpoints, ZodApiEndpoints } from "@notainc/typed-api-spec/zod";
 
 const JsonHeader = z.union([
   z.object({ "content-type": z.literal("application/json") }),

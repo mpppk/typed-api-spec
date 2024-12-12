@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "scripts": {
     "install:optional-peer-dependencies": "npm install --no-save zod valibot@0 express@4 @types/express@4 fastify fastify-type-provider-zod@2",
-    "build": "tsup ./src",
-    "watch:build": "tsup ./src --watch",
+    "build": "tsup",
+    "watch:build": "tsup --watch",
     "format": "prettier --write .",
     "watch:type-check": "npx tsc --noEmit --watch",
     "test": "run-p test:*",
@@ -40,6 +40,7 @@
   },
   "peerDependencies": {
     "@types/express": "^4",
+    "@types/express-serve-static-core": "^4",
     "express": "^4",
     "fastify": "^4 || ^5.0.0",
     "fastify-type-provider-zod": "^2",
@@ -60,6 +61,9 @@
     "@types/express": {
       "optional": true
     },
+    "@types/express-serve-static-core": {
+      "optional": true
+    },
     "fastify": {
       "optional": true
     },
@@ -73,44 +77,58 @@
   ],
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "require": "./dist/index.js",
       "import": "./dist/index.mjs"
     },
     "./core": {
+      "types": "./dist/core/index.d.ts",
       "require": "./dist/core/index.js",
       "import": "./dist/core/index.mjs"
     },
     "./express": {
+      "types": "./dist/express/index.d.ts",
       "require": "./dist/express/index.js",
       "import": "./dist/express/index.mjs"
     },
     "./express/zod": {
+      "types": "./dist/express/zod.d.ts",
       "require": "./dist/express/zod.js",
       "import": "./dist/express/zod.mjs"
     },
     "./express/valibot": {
+      "types": "./dist/express/valibot.d.ts",
       "require": "./dist/express/valibot.js",
       "import": "./dist/express/valibot.mjs"
     },
+    "./fastify/zod": {
+      "types": "./dist/fastify/zod.d.ts",
+      "require": "./dist/fastify/zod.js",
+      "import": "./dist/fastify/zod.mjs"
+    },
     "./fetch": {
+      "types": "./dist/fetch/index.d.ts",
       "require": "./dist/fetch/index.js",
       "import": "./dist/fetch/index.mjs"
     },
     "./json": {
+      "types": "./dist/json/index.d.ts",
       "require": "./dist/json/index.js",
       "import": "./dist/json/index.mjs"
     },
     "./zod": {
+      "types": "./dist/zod/index.d.ts",
       "require": "./dist/zod/index.js",
       "import": "./dist/zod/index.mjs"
     },
     "./valibot": {
+      "types": "./dist/valibot/index.d.ts",
       "require": "./dist/valibot/index.js",
       "import": "./dist/valibot/index.mjs"
     }
   },
-  "main": "../../dist/index.js",
-  "module": "../../dist/index.mjs",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
   "dependencies": {
     "path-to-regexp": "^8.2.0"

@@ -1,6 +1,5 @@
-import JSONT from "@notainc/typed-api-spec/src/json";
-import { unreachable } from "@notainc/typed-api-spec/src/utils";
-import type FetchT from "@notainc/typed-api-spec/src/fetch";
+import JSONT from "@notainc/typed-api-spec/json";
+import type FetchT from "@notainc/typed-api-spec/fetch";
 import { PathMap } from "../../spec/zod";
 
 const fetchT = fetch as FetchT<typeof origin, PathMap>;
@@ -27,7 +26,7 @@ const main = async () => {
         break;
       }
       default:
-        unreachable(res);
+        return res satisfies never;
     }
   }
   {

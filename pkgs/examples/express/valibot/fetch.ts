@@ -1,7 +1,6 @@
 import type { PathMap } from "../../spec/valibot";
-import JSONT from "@notainc/typed-api-spec/src/json";
-import { unreachable } from "@notainc/typed-api-spec/src/utils";
-import type FetchT from "@notainc/typed-api-spec/src/fetch";
+import JSONT from "@notainc/typed-api-spec/json";
+import type FetchT from "@notainc/typed-api-spec/fetch";
 
 const fetchT = fetch as FetchT<typeof origin, PathMap>;
 const origin = "http://localhost:3000";
@@ -27,7 +26,7 @@ const main = async () => {
         break;
       }
       default:
-        unreachable(res);
+        return res satisfies never;
     }
   }
   {
