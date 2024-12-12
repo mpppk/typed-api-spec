@@ -77,54 +77,54 @@
   ],
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "require": "./dist/index.js",
-      "import": "./dist/index.mjs",
-      "types": "./dist/index.d.ts"
+      "import": "./dist/index.mjs"
     },
     "./core": {
+      "types": "./dist/core/index.d.ts",
       "require": "./dist/core/index.js",
-      "import": "./dist/core/index.mjs",
-      "types": "./dist/core/index.d.ts"
+      "import": "./dist/core/index.mjs"
     },
     "./express": {
+      "types": "./dist/express/index.d.ts",
       "require": "./dist/express/index.js",
-      "import": "./dist/express/index.mjs",
-      "types": "./dist/express/index.d.ts"
+      "import": "./dist/express/index.mjs"
     },
     "./express/zod": {
+      "types": "./dist/express/zod.d.ts",
       "require": "./dist/express/zod.js",
-      "import": "./dist/express/zod.mjs",
-      "types": "./dist/express/zod.d.ts"
+      "import": "./dist/express/zod.mjs"
     },
     "./express/valibot": {
+      "types": "./dist/express/valibot.d.ts",
       "require": "./dist/express/valibot.js",
-      "import": "./dist/express/valibot.mjs",
-      "types": "./dist/express/valibot.d.ts"
+      "import": "./dist/express/valibot.mjs"
     },
     "./fastify/zod": {
+      "types": "./dist/fastify/zod.d.ts",
       "require": "./dist/fastify/zod.js",
-      "import": "./dist/fastify/zod.mjs",
-      "types": "./dist/fastify/zod.d.ts"
+      "import": "./dist/fastify/zod.mjs"
     },
     "./fetch": {
+      "types": "./dist/fetch/index.d.ts",
       "require": "./dist/fetch/index.js",
-      "import": "./dist/fetch/index.mjs",
-      "types": "./dist/fetch/index.d.ts"
+      "import": "./dist/fetch/index.mjs"
     },
     "./json": {
+      "types": "./dist/json/index.d.ts",
       "require": "./dist/json/index.js",
-      "import": "./dist/json/index.mjs",
-      "types": "./dist/json/index.d.ts"
+      "import": "./dist/json/index.mjs"
     },
     "./zod": {
+      "types": "./dist/zod/index.d.ts",
       "require": "./dist/zod/index.js",
-      "import": "./dist/zod/index.mjs",
-      "types": "./dist/zod/index.d.ts"
+      "import": "./dist/zod/index.mjs"
     },
     "./valibot": {
+      "types": "./dist/valibot/index.d.ts",
       "require": "./dist/valibot/index.js",
-      "import": "./dist/valibot/index.mjs",
-      "types": "./dist/valibot/index.d.ts"
+      "import": "./dist/valibot/index.mjs"
     }
   },
   "main": "./dist/index.js",
