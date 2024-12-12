@@ -3,7 +3,6 @@
     "format": "prettier --write .",
     "watch:type-check": "npx tsc --noEmit --watch",
     "test": "run-p test:*",
-    "test:unit": "vitest",
     "test:lint": "eslint .",
     "test:format": "prettier --check .",
     "test:type-check": "tsc --noEmit",
