@@ -40,6 +40,7 @@
   },
   "peerDependencies": {
     "@types/express": "^4",
+    "@types/express-serve-static-core": "^4",
     "express": "^4",
     "fastify": "^4 || ^5.0.0",
     "fastify-type-provider-zod": "^2",
@@ -58,6 +59,9 @@
       "optional": true
     },
     "@types/express": {
+      "optional": true
+    },
+    "@types/express-serve-static-core": {
       "optional": true
     },
     "fastify": {
