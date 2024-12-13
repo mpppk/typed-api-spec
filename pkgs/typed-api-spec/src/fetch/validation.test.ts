@@ -4,14 +4,14 @@ import { newZodValidator, ZodApiEndpoints } from "../zod";
 import { z } from "zod";
 import { toLCObj } from "../utils";
 
-const newFetch = (
+const newMockFetch = (
   body: Record<string, string>,
   headers: Record<string, string>,
-) => {
-  return vi.fn(
-    () => new Response(JSON.stringify(body), { headers: toLCObj(headers) }),
+) => newRawMockFetch(body, { headers: toLCObj(headers) });
+const newRawMockFetch = (body: Record<string, string>, init: ResponseInit) =>
+  vi.fn(
+    () => new Response(JSON.stringify(body), init),
   ) as unknown as typeof fetch;
-};
 describe("withValidation", () => {
   const pathMap = {
     "/:paramsName": {
@@ -35,7 +35,7 @@ describe("withValidation", () => {
   } satisfies ZodApiEndpoints;
   const path = "/p?queryName=q";
   describe("invalid request", () => {
-    const ft = newFetch({ bodyNameRes: "b" }, { headersNameRes: "h" });
+    const ft = newMockFetch({ bodyNameRes: "b" }, { headersNameRes: "h" });
     const { req, res } = newZodValidator(pathMap);
     const fetchV = withValidation(ft, pathMap, req, res);
     it("query", async () => {
@@ -64,7 +64,7 @@ describe("withValidation", () => {
   });
   describe("status code 200", () => {
     it("valid response", async () => {
-      const ft = newFetch({ bodyNameRes: "b" }, { headersNameRes: "h" });
+      const ft = newMockFetch({ bodyNameRes: "b" }, { headersNameRes: "h" });
       const { req, res } = newZodValidator(pathMap);
       const fetchV = withValidation(ft, pathMap, req, res);
       const r = await fetchV(path, { headers: { headersName: "h" } });
@@ -72,7 +72,10 @@ describe("withValidation", () => {
     });
     describe("invalid response", () => {
       it("body", async () => {
-        const ft = newFetch({ invalid: "invalid" }, { headersNameRes: "h" });
+        const ft = newMockFetch(
+          { invalid: "invalid" },
+          { headersNameRes: "h" },
+        );
         const { req, res } = newZodValidator(pathMap);
         const fetchV = withValidation(ft, pathMap, req, res);
         await expect(() =>
@@ -82,7 +85,7 @@ describe("withValidation", () => {
         );
       });
       it("headers", async () => {
-        const ft = newFetch({ bodyNameRes: "b" }, { invalid: "invalid" });
+        const ft = newMockFetch({ bodyNameRes: "b" }, { invalid: "invalid" });
         const { req, res } = newZodValidator(pathMap);
         const fetchV = withValidation(ft, pathMap, req, res);
         await expect(() =>
@@ -95,7 +98,13 @@ describe("withValidation", () => {
   });
   describe("status code 400", () => {
     it("valid response", async () => {
-      const ft = newFetch({ message: "m" }, { headersNameRes: "h" });
+      const ft = newRawMockFetch(
+        { message: "m" },
+        {
+          headers: toLCObj({ headersNameRes: "h" }),
+          status: 400,
+        },
+      );
       const { req, res } = newZodValidator(pathMap);
       const fetchV = withValidation(ft, pathMap, req, res);
       const r = await fetchV(path, { headers: { headersName: "h" } });
