@@ -22,7 +22,12 @@ const depRules = [
   },
   {
     module: "src/zod",
-    allowReferenceFrom: [...dRef, "src/express/zod", "src/fastify/zod"],
+    allowReferenceFrom: [
+      ...dRef,
+      "src/express/zod",
+      "src/fastify/zod",
+      "**/*.test.ts",
+    ],
     allowSameModule: true,
   },
 ];

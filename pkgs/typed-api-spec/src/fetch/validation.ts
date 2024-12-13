@@ -71,6 +71,8 @@ const toInput =
       method: init?.method?.toLowerCase() ?? "get",
       headers: headersToRecord(init?.headers ?? {}),
       params: cp.params,
+      // FIXME: JSON APIじゃない時どうするか
+      body: init?.body ? JSON.parse(init.body.toString()) : undefined,
       query,
     };
   };
