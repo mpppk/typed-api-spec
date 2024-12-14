@@ -6,11 +6,13 @@
     "test:lint": "eslint .",
     "test:format": "prettier --check .",
     "test:type-check": "tsc --noEmit",
-    "express:zod:server": "tsx express/zod/express.ts",
-    "example:zod:client": "tsx express/zod/fetch.ts",
-    "express:valibot:server": "tsx express/valibot/express.ts",
-    "example:valibot:client": "tsx express/valibot/fetch.ts",
-    "example:withValidation": "tsx simple/withValidation.ts"
+    "ex:express:zod:server": "tsx express/zod/express.ts",
+    "ex:express:zod:client": "tsx express/zod/fetch.ts",
+    "ex:express:valibot:server": "tsx express/valibot/express.ts",
+    "ex:express:valibot:client": "tsx express/valibot/fetch.ts",
+    "ex:fastify:zod:server": "tsx fastify/zod/fastify.ts",
+    "ex:fasitify:zod:client": "tsx fastify/zod/fetch.ts",
+    "ex:withValidation": "tsx simple/withValidation.ts"
   },
   "dependencies": {
     "@types/express": "^4",

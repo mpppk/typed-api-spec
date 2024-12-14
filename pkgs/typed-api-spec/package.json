@@ -11,9 +11,7 @@
     "test:unit": "vitest",
     "test:lint": "eslint .",
     "test:format": "prettier --check .",
-    "test:type-check": "tsc --noEmit",
-    "example:fasitify-zod": "tsx examples/fastify/zod/fastify.ts",
-    "example:fasitify-zod-fetch": "tsx examples/fastify/zod/fetch.ts"
+    "test:type-check": "tsc --noEmit"
   },
   "author": "mpppk",
   "license": "MIT",
