@@ -193,7 +193,6 @@ export const asAsync = <Router extends IRouter | RouterT<any, any>>(
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           return o.apply(target, args as any);
         }
-        console.log("args", args);
         const handlers = args
           .slice(1)
           // wrap all middleware and handlers

@@ -8,6 +8,8 @@
     "test:type-check": "tsc --noEmit",
     "express:zod:server": "tsx express/zod/express.ts",
     "example:zod:client": "tsx express/zod/fetch.ts",
+    "express:valibot:server": "tsx express/valibot/express.ts",
+    "example:valibot:client": "tsx express/valibot/fetch.ts",
     "example:withValidation": "tsx simple/withValidation.ts"
   },
   "dependencies": {
