@@ -13,10 +13,10 @@ const spec = {
     },
   },
 } satisfies ZodApiEndpoints;
-// type Spec = ToApiEndpoints<typeof spec>;
 const spec2 = {
   "/repos/:owner/:repo/topics": {
     get: {
+      // Invalid response schema
       responses: { 200: { body: z.object({ noexist: z.string() }) } },
     },
   },

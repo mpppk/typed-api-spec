@@ -149,7 +149,7 @@ export const wrap = <Handler extends RequestHandler>(
   handler: AsyncRequestHandler<Handler>,
 ): Handler => {
   return ((req, res, next) => {
-    handler(req, res, next).catch(next);
+    handler(req, res, next)?.catch(next);
   }) as Handler;
 };
 
@@ -193,6 +193,7 @@ export const asAsync = <Router extends IRouter | RouterT<any, any>>(
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           return o.apply(target, args as any);
         }
+        console.log("args", args);
         const handlers = args
           .slice(1)
           // wrap all middleware and handlers

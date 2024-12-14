@@ -6,7 +6,9 @@
     "test:lint": "eslint .",
     "test:format": "prettier --check .",
     "test:type-check": "tsc --noEmit",
-    "express:zod:server": "tsx express/zod/express.ts"
+    "express:zod:server": "tsx express/zod/express.ts",
+    "example:zod:client": "tsx express/zod/fetch.ts",
+    "example:withValidation": "tsx simple/withValidation.ts"
   },
   "dependencies": {
     "@types/express": "^4",
