@@ -21,3 +21,15 @@ export const ZodSpec = {
   },
 } satisfies ZodApiEndpoints;
 export type Spec = ToApiEndpoints<typeof ZodSpec>;
+
+// See https://docs.github.com/ja/rest/repos/repos?apiVersion=2022-11-28#get-all-repository-topics
+export const InvalidResponseZodSpec = {
+  "/repos/:owner/:repo/topics": {
+    get: {
+      responses: {
+        200: { body: z.object({ noexistProps: z.string().array() }) },
+      },
+    },
+  },
+} satisfies ZodApiEndpoints;
+export type InvalidResponseSpec = ToApiEndpoints<typeof InvalidResponseZodSpec>;
