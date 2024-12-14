@@ -1,6 +1,7 @@
 import { newZodValidator, ZodApiEndpoints } from "@notainc/typed-api-spec/zod";
-import { ValidateError, withValidation } from "@notainc/typed-api-spec/fetch";
-import { z, ZodError } from "zod";
+import { withValidation } from "@notainc/typed-api-spec/fetch";
+import { z } from "zod";
+import { SpecValidatorError } from "@notainc/typed-api-spec/fetch";
 
 const GITHUB_API_ORIGIN = "https://api.github.com";
 
@@ -47,9 +48,11 @@ const main = async () => {
         `${GITHUB_API_ORIGIN}/repos/nota/typed-api-spec/topics?page=1`,
         { headers: { Accept: "application/vnd.github+json" } },
       );
-    } catch (e: unknown) {
-      if (e instanceof ValidateError) {
-        console.log("error thrown", (e.error as ZodError).format());
+    } catch (e) {
+      if (e instanceof SpecValidatorError) {
+        console.log("error thrown", e.error);
+      } else {
+        throw e;
       }
     }
   }

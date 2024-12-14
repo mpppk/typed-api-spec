@@ -5,13 +5,13 @@ import {
   AnySpecValidator,
   RequestSpecValidatorGenerator,
   runSpecValidator,
-} from "../core/validator/request";
+} from "../core";
 import {
   AnyResponseSpecValidator,
   ResponseSpecValidatorGenerator,
   runResponseSpecValidator,
-} from "../core/validator/response";
-import { ValidatorInputError } from "../core/validator/validate";
+} from "../core";
+import { ValidatorInputError } from "../core";
 
 const dummyHost = "https://example.com";
 
