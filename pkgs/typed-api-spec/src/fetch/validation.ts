@@ -5,12 +5,13 @@ import {
   AnySpecValidator,
   RequestSpecValidatorGenerator,
   runSpecValidator,
-} from "../core/validator/request";
+} from "../core";
 import {
   AnyResponseSpecValidator,
   ResponseSpecValidatorGenerator,
   runResponseSpecValidator,
-} from "../core/validator/response";
+} from "../core";
+import { ValidatorInputError } from "../core";
 
 const dummyHost = "https://example.com";
 
@@ -67,24 +68,36 @@ const toInput =
 
     return {
       path: cp.matched,
-      method: init?.method ?? "GET",
+      method: init?.method?.toLowerCase() ?? "get",
       headers: headersToRecord(init?.headers ?? {}),
       params: cp.params,
+      // FIXME: JSON APIじゃない時どうするか
+      body: init?.body ? JSON.parse(init.body.toString()) : undefined,
       query,
     };
   };
 
 const newErrorHandler = (policy: "throw" | "log") => {
-  return (results: ReturnType<typeof runSpecValidator>) => {
+  return (
+    results: ReturnType<typeof runSpecValidator>,
+    error: ValidatorInputError | undefined,
+  ) => {
     switch (policy) {
       case "throw":
+        if (error) {
+          console.log(error);
+          throw new SpecValidatorError("preCheck", error);
+        }
         handleValidatorsError(results, (reason, error) => {
-          throw new ValidateError(reason, error);
+          throw new SpecValidatorError(reason, error);
         });
         break;
       case "log":
+        if (error) {
+          console.error(new SpecValidatorError("preCheck", error));
+        }
         handleValidatorsError(results, (reason, error) => {
-          console.error(new ValidateError(reason, error));
+          console.error(new SpecValidatorError(reason, error));
         });
         break;
       default:
@@ -97,12 +110,12 @@ const newResponseErrorHandler = (policy: "throw" | "log") => {
     switch (policy) {
       case "throw":
         handleResponseValidatorsError(results, (reason, error) => {
-          throw new ValidateError(reason, error);
+          throw new SpecValidatorError(reason, error);
         });
         break;
       case "log":
         handleResponseValidatorsError(results, (reason, error) => {
-          console.error(new ValidateError(reason, error));
+          console.error(new SpecValidatorError(reason, error));
         });
         break;
       default:
@@ -129,9 +142,8 @@ export const withValidation = <
   const ftc = async (...args: Parameters<Fetch>) => {
     const [input, init] = args;
     const vInput = toInputWithMatcher(input, init);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data: validator, error } = validatorGenerator(vInput);
-    handleError(runSpecValidator(validator, error));
+    handleError(runSpecValidator(validator), error);
     const res = await f(input, init);
     const res1 = res.clone();
     // TODO: jsonじゃない時どうするか
@@ -145,7 +157,7 @@ export const withValidation = <
       method: vInput.method,
       statusCode: res1.status,
       body: await res1.json(),
-      headers,
+      headers: headersToRecord(res1.headers ?? {}),
     });
     handleResponseError(runResponseSpecValidator(responseValidator));
     // // TODO: レスポンスをvalidate
@@ -154,10 +166,11 @@ export const withValidation = <
   return ftc as Fetch;
 };
 
-export class ValidateError extends Error {
+export class SpecValidatorError extends Error {
   constructor(
-    public reason: keyof AnySpecValidator,
-    public error: unknown,
+    public reason: keyof AnySpecValidator | "preCheck",
+    public error: ValidatorInputError,
+    public message: string = JSON.stringify({ reason, ...error }),
   ) {
     super("Validation error");
   }
@@ -166,9 +179,9 @@ export class ValidateError extends Error {
 const handleValidatorsError = (
   results: Record<
     Exclude<keyof AnySpecValidator, "responses">,
-    Result<unknown, unknown>
+    Result<unknown, ValidatorInputError>
   >,
-  cb: (reason: keyof AnySpecValidator, error: unknown) => void,
+  cb: (reason: keyof AnySpecValidator, error: ValidatorInputError) => void,
 ) => {
   if (results.params?.error) {
     cb("params", results.params.error);
@@ -187,9 +200,9 @@ const handleValidatorsError = (
 const handleResponseValidatorsError = (
   results: Record<
     Exclude<keyof AnyResponseSpecValidator, "responses">,
-    Result<unknown, unknown>
+    Result<unknown, ValidatorInputError>
   >,
-  cb: (reason: keyof AnySpecValidator, error: unknown) => void,
+  cb: (reason: keyof AnySpecValidator, error: ValidatorInputError) => void,
 ) => {
   if (results.body?.error) {
     cb("body", results.body.error);

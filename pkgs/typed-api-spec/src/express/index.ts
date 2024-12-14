@@ -149,7 +149,7 @@ export const wrap = <Handler extends RequestHandler>(
   handler: AsyncRequestHandler<Handler>,
 ): Handler => {
   return ((req, res, next) => {
-    handler(req, res, next).catch(next);
+    handler(req, res, next)?.catch(next);
   }) as Handler;
 };
 

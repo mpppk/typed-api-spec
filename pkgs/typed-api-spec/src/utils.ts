@@ -61,3 +61,14 @@ export function tupleIteratorToObject<T extends string | number | symbol, U>(
   }
   return result;
 }
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const toLCObj = <Keys extends string, Values>(
+  obj: Record<Keys, Values>,
+): Record<Lowercase<Keys>, Values> => {
+  const newObj: Partial<Record<Lowercase<Keys>, Values>> = {};
+  for (const key in obj) {
+    newObj[key.toLowerCase() as Lowercase<Keys>] = obj[key];
+  }
+  return newObj as Record<Lowercase<Keys>, Values>;
+};

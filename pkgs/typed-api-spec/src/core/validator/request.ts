@@ -61,13 +61,9 @@ export type SpecValidatorGeneratorInput<
   headers: Record<string, string | string[] | undefined>;
 };
 
-export const runSpecValidator = (
-  validators: AnySpecValidator | undefined,
-  error: unknown,
-) => {
+export const runSpecValidator = (validators: AnySpecValidator | undefined) => {
   const newD = () => Result.data(undefined);
   return {
-    preCheck: error,
     params: validators?.params?.() ?? newD(),
     query: validators?.query?.() ?? newD(),
     body: validators?.body?.() ?? newD(),

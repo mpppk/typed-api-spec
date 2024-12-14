@@ -21,7 +21,8 @@ const newApp = () => {
   // ```
   const wApp = asAsync(typed(pathMap, app));
   wApp.get("/users", emptyMiddleware, (req, res) => {
-    {
+    // eslint-disable-next-line no-constant-condition
+    if (false) {
       // @ts-expect-error params is not defined because pathMap["/users"]["get"].params is not defined
       res.locals.validate(req).params();
     }
