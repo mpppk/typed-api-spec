@@ -1,6 +1,7 @@
 {
   "workspaces": [
-    "pkgs/*"
+    "pkgs/*",
+    "example-projects/*"
   ],
   "scripts": {
     "pkg:new": "npm init -y -w pkgs/${PKG}",

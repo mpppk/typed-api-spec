@@ -160,7 +160,6 @@ export const withValidation = <
       headers: headersToRecord(res1.headers ?? {}),
     });
     handleResponseError(runResponseSpecValidator(responseValidator));
-    // // TODO: レスポンスをvalidate
     return res;
   };
   return ftc as Fetch;
